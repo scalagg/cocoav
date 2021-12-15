@@ -1,0 +1,57 @@
+plugins {
+    id "maven-publish"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "org.jetbrains.kotlin.jvm" version "1.6.0"
+}
+
+allprojects {
+    group "gg.scala.cocoa"
+    version "v_stb-1.0.0"
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+
+        maven {
+            url "https://nexus.velocitypowered.com/repository/maven-public/"
+        }
+        maven {
+            url "https://jitpack.io"
+        }
+    }
+
+    dependencies {
+        compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
+
+        implementation "com.velocitypowered:velocity-api:3.0.1"
+        annotationProcessor "com.velocitypowered:velocity-api:3.0.1"
+
+        implementation 'com.google.inject:guice:5.0.1'
+        implementation "com.github.GrowlyX:data-store:0249e4d2a5"
+    }
+
+    compileKotlin {
+        kotlinOptions.javaParameters = true
+        kotlinOptions.jvmTarget = "1.8"
+    }
+
+    shadowJar {
+        archiveClassifier.set("")
+
+        exclude "**/*.kotlin_metadata"
+        exclude "**/*.kotlin_builtins"
+        exclude "META-INF/"
+
+        archiveFileName = "cocoav.jar"
+    }
+
+    publishing {
+        publications {
+            shadow(MavenPublication) { publication ->
+                project.shadow.component(publication)
+            }
+        }
+    }
+
+    tasks.build.dependsOn(shadowJar, publishing)
+}

@@ -1,6 +1,7 @@
 package gg.scala.cocoa
 
 import com.google.inject.Inject
+import com.velocitypowered.api.plugin.Dependency
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
@@ -29,5 +30,5 @@ class CocoaVelocityPlugin
         val directory: Path
     )
 {
-
+    private val directoryFile = directory.toFile()
 }

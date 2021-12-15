@@ -26,6 +26,8 @@ allprojects {
         implementation "com.velocitypowered:velocity-api:3.0.1"
         annotationProcessor "com.velocitypowered:velocity-api:3.0.1"
 
+        implementation fileTree("internal")
+
         implementation 'com.google.inject:guice:5.0.1'
         implementation "com.github.GrowlyX:data-store:0249e4d2a5"
     }

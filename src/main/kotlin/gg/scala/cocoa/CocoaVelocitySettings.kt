@@ -9,7 +9,8 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  */
 class CocoaVelocitySettings(
     val proxyId: String = "proxy-1",
-    val credentials: BananaCredentials = BananaCredentials()
+    val credentials: BananaCredentials = BananaCredentials(),
+    val mongoUri: String = "mongodb://127.0.0.1:27017"
 ) : CocoaSettingsModel()
 {
     override fun getAbstractType() = CocoaVelocitySettings::class.java

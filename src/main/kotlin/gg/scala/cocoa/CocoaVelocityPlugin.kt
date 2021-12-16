@@ -15,6 +15,8 @@ import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.banana.Banana
 import gg.scala.banana.BananaBuilder
 import gg.scala.banana.options.BananaOptions
+import gg.scala.cocoa.command.GListCommand
+import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
@@ -24,6 +26,7 @@ import gg.scala.cocoa.presence.CocoaServerPresence
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
+import revxrsal.commands.velocity.VelocityCommandHandler
 import java.io.File
 import java.nio.file.Path
 import java.util.*
@@ -67,12 +70,12 @@ constructor(
     var proxyBanana by Delegates.notNull<Banana>()
     var spigotBanana by Delegates.notNull<Banana>()
 
-    var maintenanceLayer by Delegates.notNull<RedisStorageLayer<UUID>>()
-    var settingsLayer by Delegates.notNull<RedisStorageLayer<Boolean>>()
+    private var maintenanceLayer by Delegates.notNull<RedisStorageLayer<UUID>>()
+    private var settingsLayer by Delegates.notNull<RedisStorageLayer<Boolean>>()
 
-    val proxySettings = mutableMapOf<String, Boolean>()
+    private val proxySettings = mutableMapOf<String, Boolean>()
 
-    var maintenanceRank: String? = null
+    private var maintenanceRank: String? = null
 
     val maintenance: Boolean
         get() = proxySettings.getOrDefault("maintenance", false)
@@ -91,12 +94,22 @@ constructor(
         CocoaSettingsProcessor.loadSettings<CocoaVelocitySettings>("settings")
         CocoaSettingsProcessor.loadSettings<CocoaServerPresenceSettings>("presence")
 
+        DataStoreHandler.initialLoad()
+
         startRedisFunctionality()
     }
 
     @Subscribe
-    fun onInitialize(event: ProxyInitializeEvent?)
+    fun onInitialize(event: ProxyInitializeEvent)
     {
+        val commandManager = VelocityCommandHandler
+            .create(this, server)
+
+        commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
+        commandManager.register(
+            LobbyCommand, GListCommand
+        )
+
         server.eventManager.register(this, PlayerListener)
         server.eventManager.register(this, CocoaServerPresence)
     }
@@ -183,7 +196,7 @@ constructor(
         return (info.name.contains("hub") || info.name.contains("lobby"))
     }
 
-    fun isRestrictedLobbyServer(info: ServerInfo): Boolean
+    private fun isRestrictedLobbyServer(info: ServerInfo): Boolean
     {
         return (info.name.contains("hub") || info.name.contains("lobby")) && info.name.contains("restricted")
     }

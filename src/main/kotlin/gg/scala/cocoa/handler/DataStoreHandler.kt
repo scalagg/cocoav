@@ -4,8 +4,10 @@ import com.mongodb.client.model.Filters
 import com.solexgames.datastore.commons.connection.impl.mongo.UriMongoConnection
 import com.solexgames.datastore.commons.layer.impl.MongoStorageLayer
 import com.solexgames.datastore.commons.storage.impl.MongoStorageBuilder
+import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.lemon.Grant
 import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import org.bson.conversions.Bson
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -25,7 +27,10 @@ object DataStoreHandler {
 
     fun initialLoad()
     {
-        val mongoConnection = UriMongoConnection("mongodb://127.0.0.1:27017")
+        val settings = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
+        val mongoConnection = UriMongoConnection(
+            settings.mongoUri
+        )
         val database = "SolexGames"
 
         this.rankLayer = MongoStorageBuilder<Rank>()

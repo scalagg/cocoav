@@ -72,7 +72,7 @@ object PlayerListener
                 {
                     CocoaRedisHandler.sendStaffNotification(
                         event.player,
-                        "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
+                        "&b${color(event.player.uniqueId) + event.player.username}&3 disconnected from &b$serverName&3."
                     )
                 }
 
@@ -118,14 +118,14 @@ object PlayerListener
             {
                 CocoaRedisHandler.sendStaffNotification(
                     event.player,
-                    "§b${color(event.player.uniqueId) + event.player.username}§3 joined §b$serverName§3 from §b${previousServer.serverInfo.name}§3."
+                    "&b${color(event.player.uniqueId) + event.player.username}&3 joined &b$serverName&3 from &b${previousServer.serverInfo.name}&3."
                 )
             } else
             {
                 plugin.server.scheduler.buildTask(plugin) {
                     CocoaRedisHandler.sendStaffNotification(
                         event.player,
-                        "§b${color(event.player.uniqueId) + event.player.username}§3 connected to §b$serverName§3."
+                        "&b${color(event.player.uniqueId) + event.player.username}&3 connected to &b$serverName&3."
                     )
                 }.delay(HUNDRED_MILLI).schedule()
             }

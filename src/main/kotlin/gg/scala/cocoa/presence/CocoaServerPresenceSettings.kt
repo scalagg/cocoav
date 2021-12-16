@@ -8,4 +8,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  */
 class CocoaServerPresenceSettings(
 
-) : CocoaSettingsModel
+) : CocoaSettingsModel()
+{
+    override fun getAbstractType() = CocoaServerPresenceSettings::class.java
+}

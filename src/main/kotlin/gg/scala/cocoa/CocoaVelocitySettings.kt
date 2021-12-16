@@ -1,7 +1,6 @@
 package gg.scala.cocoa
 
 import gg.scala.banana.credentials.BananaCredentials
-import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsModel
 
 /**
@@ -10,6 +9,8 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  */
 class CocoaVelocitySettings(
     val proxyId: String = "proxy-1",
-    val credentials: BananaCredentials = BananaCredentials(),
-    val presence: CocoaServerPresenceSettings
-) : CocoaSettingsModel
+    val credentials: BananaCredentials = BananaCredentials()
+) : CocoaSettingsModel()
+{
+    override fun getAbstractType() = CocoaVelocitySettings::class.java
+}

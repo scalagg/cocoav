@@ -1,5 +1,6 @@
 package gg.scala.cocoa
 
+import co.schemati.trevor.api.TrevorService
 import com.google.inject.Inject
 import com.solexgames.datastore.commons.connection.impl.redis.AuthRedisConnection
 import com.solexgames.datastore.commons.connection.impl.redis.NoAuthRedisConnection
@@ -34,6 +35,8 @@ import java.io.File
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 import kotlin.properties.Delegates
 
@@ -190,6 +193,34 @@ constructor(
             .setType(Boolean::class.java)
             .setSection("cocoa:settings")
             .build()
+
+        val executor = Executors.newScheduledThreadPool(1)
+
+        executor.scheduleAtFixedRate({
+            server.allPlayers.forEach {
+                DataStoreHandler.updateRank(it.uniqueId)
+            }
+        }, 0L, 2L, TimeUnit.SECONDS)
+
+        executor.scheduleAtFixedRate({
+            settingsLayer.fetchAllEntries().thenAccept {
+                proxySettings.clear()
+
+                it.forEach { entry ->
+                    proxySettings[entry.key] = entry.value
+                }
+            }
+
+            try {
+                settingsLayer.runCommand {
+                    it.hset("cocoa:players", "global", TrevorService.getAPI().instanceData.playerCount.toString())
+
+                    maintenanceRank = it.hget("cocoa:metadata", "maintenance-rank")
+                }
+            } catch (e: Exception) {
+                logger.warning("Failed to update online players! Is Trevor not enabled?")
+            }
+        }, 0L, 1L, TimeUnit.SECONDS)
     }
 
     fun fetchBestLobby(): RegisteredServer?

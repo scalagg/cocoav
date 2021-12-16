@@ -8,7 +8,6 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  * @since 12/15/2021
  */
 class CocoaVelocitySettings(
-    val proxyId: String = "proxy-1",
     val credentials: BananaCredentials = BananaCredentials(),
     val mongoUri: String = "mongodb://127.0.0.1:27017"
 ) : CocoaSettingsModel()

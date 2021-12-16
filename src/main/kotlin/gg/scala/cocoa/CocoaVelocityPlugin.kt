@@ -20,6 +20,7 @@ import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.listener.PlayerListener
+import gg.scala.cocoa.presence.CocoaServerPresence
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
@@ -97,6 +98,7 @@ constructor(
     fun onInitialize(event: ProxyInitializeEvent?)
     {
         server.eventManager.register(this, PlayerListener)
+        server.eventManager.register(this, CocoaServerPresence)
     }
 
     private fun startRedisFunctionality()

@@ -5,20 +5,31 @@ import com.solexgames.datastore.commons.connection.impl.redis.AuthRedisConnectio
 import com.solexgames.datastore.commons.connection.impl.redis.NoAuthRedisConnection
 import com.solexgames.datastore.commons.layer.impl.RedisStorageLayer
 import com.solexgames.datastore.commons.storage.impl.RedisStorageBuilder
-import com.velocitypowered.api.plugin.Dependency
+import com.velocitypowered.api.event.Subscribe
+import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
+import com.velocitypowered.api.proxy.server.RegisteredServer
+import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.banana.Banana
 import gg.scala.banana.BananaBuilder
 import gg.scala.banana.options.BananaOptions
+import gg.scala.cocoa.handler.CocoaRedisHandler
+import gg.scala.cocoa.handler.DataStoreHandler
+import gg.scala.cocoa.handler.LemonRedisHandler
+import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
+import java.io.File
 import java.nio.file.Path
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.logging.Logger
 import kotlin.properties.Delegates
+
 
 /**
  * @author GrowlyX
@@ -34,13 +45,13 @@ import kotlin.properties.Delegates
     ]
 )
 class CocoaVelocityPlugin
-    @Inject
-    constructor(
-        val server: ProxyServer,
-        val logger: Logger,
-        @DataDirectory
-        private val directory: Path
-    )
+@Inject
+constructor(
+    val server: ProxyServer,
+    val logger: Logger,
+    @DataDirectory
+    private val directory: Path
+)
 {
     companion object
     {
@@ -48,7 +59,7 @@ class CocoaVelocityPlugin
         var INSTANCE by Delegates.notNull<CocoaVelocityPlugin>()
     }
 
-    val directoryFile = directory.toFile()
+    val directoryFile: File = directory.toFile()
 
     var uuidCache by Delegates.notNull<RedisUUIDCache>()
 
@@ -57,6 +68,13 @@ class CocoaVelocityPlugin
 
     var maintenanceLayer by Delegates.notNull<RedisStorageLayer<UUID>>()
     var settingsLayer by Delegates.notNull<RedisStorageLayer<Boolean>>()
+
+    val proxySettings = mutableMapOf<String, Boolean>()
+
+    var maintenanceRank: String? = null
+
+    val maintenance: Boolean
+        get() = proxySettings.getOrDefault("maintenance", false)
 
     init
     {
@@ -73,6 +91,12 @@ class CocoaVelocityPlugin
         CocoaSettingsProcessor.loadSettings<CocoaServerPresenceSettings>("presence")
 
         startRedisFunctionality()
+    }
+
+    @Subscribe
+    fun onInitialize(event: ProxyInitializeEvent?)
+    {
+        server.eventManager.register(this, PlayerListener)
     }
 
     private fun startRedisFunctionality()
@@ -104,18 +128,20 @@ class CocoaVelocityPlugin
             )
             .build()
 
-//        proxyBanana.registerClass(CocoaRedisHandler)
-//        spigotBanana.registerClass(LemonRedisHandler)
+        proxyBanana.registerClass(CocoaRedisHandler)
+        spigotBanana.registerClass(LemonRedisHandler)
 
         proxyBanana.subscribe()
         spigotBanana.subscribe()
 
-        val connection = if (!settings.credentials.authenticate) {
+        val connection = if (!settings.credentials.authenticate)
+        {
             NoAuthRedisConnection(
                 settings.credentials.address,
                 settings.credentials.port
             )
-        } else {
+        } else
+        {
             AuthRedisConnection(
                 settings.credentials.address,
                 settings.credentials.port,
@@ -134,5 +160,87 @@ class CocoaVelocityPlugin
             .setType(Boolean::class.java)
             .setSection("cocoa:settings")
             .build()
+    }
+
+    fun fetchBestLobby(): RegisteredServer?
+    {
+        return server.allServers
+            .sortedBy { it.playersConnected.size }
+            .firstOrNull { isLobbyServer(it.serverInfo) }
+    }
+
+    fun fetchBestRestrictedLobby(): RegisteredServer?
+    {
+        return server.allServers
+            .sortedBy { it.playersConnected.size }
+            .firstOrNull { isRestrictedLobbyServer(it.serverInfo) } ?: fetchBestLobby()
+    }
+
+    fun isLobbyServer(info: ServerInfo): Boolean
+    {
+        return (info.name.contains("hub") || info.name.contains("lobby"))
+    }
+
+    fun isRestrictedLobbyServer(info: ServerInfo): Boolean
+    {
+        return (info.name.contains("hub") || info.name.contains("lobby")) && info.name.contains("restricted")
+    }
+
+    fun addToMaintenanceList(uuid: UUID): CompletableFuture<Void>
+    {
+        return maintenanceLayer.saveEntry(uuid.toString(), uuid)
+    }
+
+    fun removeFromMaintenanceList(uuid: UUID): CompletableFuture<Void>
+    {
+        return maintenanceLayer.deleteEntry(uuid.toString())
+    }
+
+    fun updateMaintenanceRank(rank: Rank)
+    {
+        settingsLayer.runCommand {
+            it.hset("cocoa:metadata", "maintenance-rank", rank.uuid.toString())
+        }
+    }
+
+    fun updateMaintenanceMode(rank: Rank?): CompletableFuture<Void>
+    {
+        val newValue = !maintenance
+        proxySettings["maintenance"] = newValue
+
+        if (rank != null)
+        {
+            settingsLayer.runCommand {
+                it.hset("cocoa:metadata", "maintenance-rank", rank.uuid.toString())
+            }
+        }
+
+        return settingsLayer.saveEntry("maintenance", newValue)
+    }
+
+    fun shouldAllowOrStay(uuid: UUID): Boolean
+    {
+        val maintenanceRank = maintenanceRank()
+
+        val rankOfPlayer = DataStoreHandler.findRank(
+            DataStoreHandler.rankOf[uuid]
+        ) ?: DataStoreHandler.getDefaultRank()
+
+        return rankOfPlayer.weight >= maintenanceRank.weight
+    }
+
+    fun maintenanceRank(): Rank
+    {
+        maintenanceRank ?: return DataStoreHandler.getDefaultRank()
+
+        try
+        {
+            return DataStoreHandler.findRank(
+                UUID.fromString(maintenanceRank)
+            ) ?: return DataStoreHandler.getDefaultRank()
+        } catch (ignored: Exception)
+        {
+            return DataStoreHandler.getDefaultRank()
+        }
     }
 }

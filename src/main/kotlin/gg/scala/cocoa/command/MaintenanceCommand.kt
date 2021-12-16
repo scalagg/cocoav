@@ -20,10 +20,8 @@ object MaintenanceCommand
     @Dependency
     lateinit var plugin: CocoaVelocityPlugin
 
-
     @Subcommand("update")
     @Description("Update maintenance mode's rank.")
-    @AutoComplete("@ranks")
     fun onUpdateRank(sender: VelocityCommandActor, rank: Rank)
     {
         val currentStatus = plugin.maintenance
@@ -43,7 +41,6 @@ object MaintenanceCommand
 
     @Subcommand("toggle")
     @Description("Toggle maintenance mode.")
-    @AutoComplete("@ranks")
     fun onToggle(sender: VelocityCommandActor, rank: Rank?)
     {
         val currentStatus = plugin.maintenance

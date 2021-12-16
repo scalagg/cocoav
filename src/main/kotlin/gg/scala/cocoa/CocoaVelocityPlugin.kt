@@ -17,6 +17,7 @@ import gg.scala.banana.BananaBuilder
 import gg.scala.banana.options.BananaOptions
 import gg.scala.cocoa.command.GListCommand
 import gg.scala.cocoa.command.LobbyCommand
+import gg.scala.cocoa.command.MaintenanceCommand
 import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
@@ -26,6 +27,8 @@ import gg.scala.cocoa.presence.CocoaServerPresence
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
+import revxrsal.commands.exception.CommandErrorException
+import revxrsal.commands.exception.InvalidCommandException
 import revxrsal.commands.velocity.VelocityCommandHandler
 import java.io.File
 import java.nio.file.Path
@@ -105,9 +108,21 @@ constructor(
         val commandManager = VelocityCommandHandler
             .create(this, server)
 
+        commandManager.registerContextResolver(Rank::class.java) {
+            val firstArg = it.input().removeFirst()
+
+            return@registerContextResolver DataStoreHandler.findRank(firstArg)
+                ?: throw CommandErrorException("Sorry, that rank does not exist.")
+        }
+
+        commandManager.autoCompleter.registerParameterSuggestions(Rank::class.java) { _, _, _ ->
+            return@registerParameterSuggestions DataStoreHandler.ranks.values.map { it.name }
+        }
+
         commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
+
         commandManager.register(
-            LobbyCommand, GListCommand
+            LobbyCommand, GListCommand, MaintenanceCommand
         )
 
         server.eventManager.register(this, PlayerListener)
@@ -199,16 +214,6 @@ constructor(
     private fun isRestrictedLobbyServer(info: ServerInfo): Boolean
     {
         return (info.name.contains("hub") || info.name.contains("lobby")) && info.name.contains("restricted")
-    }
-
-    fun addToMaintenanceList(uuid: UUID): CompletableFuture<Void>
-    {
-        return maintenanceLayer.saveEntry(uuid.toString(), uuid)
-    }
-
-    fun removeFromMaintenanceList(uuid: UUID): CompletableFuture<Void>
-    {
-        return maintenanceLayer.deleteEntry(uuid.toString())
     }
 
     fun updateMaintenanceRank(rank: Rank)

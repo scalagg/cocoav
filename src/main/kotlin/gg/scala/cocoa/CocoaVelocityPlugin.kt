@@ -7,6 +7,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import java.nio.file.Path
 import java.util.logging.Logger
+import kotlin.properties.Delegates
 
 /**
  * @author GrowlyX
@@ -30,5 +31,16 @@ class CocoaVelocityPlugin
         val directory: Path
     )
 {
+    companion object
+    {
+        @JvmStatic
+        var INSTANCE by Delegates.notNull<CocoaVelocityPlugin>()
+    }
+
+    init
+    {
+        INSTANCE = this
+    }
+
     private val directoryFile = directory.toFile()
 }

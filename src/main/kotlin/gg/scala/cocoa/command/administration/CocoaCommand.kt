@@ -3,6 +3,7 @@ package gg.scala.cocoa.command.administration
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
+import gg.scala.cocoa.permission.annotation.CocoaPermission
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -19,20 +20,10 @@ import revxrsal.commands.velocity.annotation.CommandPermission
  */
 object CocoaCommand
 {
-    @Dependency
-    lateinit var plugin: CocoaVelocityPlugin
-
     @Command("cocoa-reload")
+    @CocoaPermission("cocoa.command.reload")
     fun onReload(actor: VelocityCommandActor)
     {
-        if (!actor.isConsole)
-        {
-            if (!actor.requirePlayer().hasCocoaPermission("cocoa.command.reload"))
-            {
-                throw CommandErrorException("You do not have permission to perform this command!")
-            }
-        }
-
         val start = System.currentTimeMillis()
 
         actor.reply {

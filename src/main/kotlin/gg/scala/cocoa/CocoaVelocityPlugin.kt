@@ -26,6 +26,7 @@ import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.listener.PlayerListener
+import gg.scala.cocoa.permission.CocoaPlayerPermissionsAdapter
 import gg.scala.cocoa.presence.CocoaServerPresence
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
@@ -119,6 +120,7 @@ constructor(
             return@registerParameterSuggestions DataStoreHandler.ranks.values.map { it.name }
         }
 
+        commandManager.registerPermissionReader(CocoaPlayerPermissionsAdapter)
         commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
 
         commandManager.register(

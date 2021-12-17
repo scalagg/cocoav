@@ -4,17 +4,21 @@ import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
+import gg.scala.cocoa.permission.annotation.CocoaPermission
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import revxrsal.commands.annotation.*
+import revxrsal.commands.annotation.Command
+import revxrsal.commands.annotation.Dependency
+import revxrsal.commands.annotation.Description
+import revxrsal.commands.annotation.Subcommand
 import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.velocity.VelocityCommandActor
-import revxrsal.commands.velocity.annotation.CommandPermission
 
 /**
  * @author GrowlyX
  * @since 12/16/2021
  */
 @Command("maintenance")
+@CocoaPermission("cocoa.command.maintenance")
 object MaintenanceCommand
 {
     @Dependency
@@ -24,14 +28,6 @@ object MaintenanceCommand
     @Description("Update maintenance mode's rank.")
     fun onUpdateRank(sender: VelocityCommandActor, rank: Rank)
     {
-        if (!sender.isConsole)
-        {
-            if (!sender.requirePlayer().hasCocoaPermission("cocoa.command.maintenance"))
-            {
-                throw CommandErrorException("You do not have permission to perform this command!")
-            }
-        }
-
         val currentStatus = plugin.maintenance
 
         if (!currentStatus)
@@ -51,14 +47,6 @@ object MaintenanceCommand
     @Description("Toggle maintenance mode.")
     fun onToggle(sender: VelocityCommandActor, rank: Rank?)
     {
-        if (!sender.isConsole)
-        {
-            if (!sender.requirePlayer().hasCocoaPermission("cocoa.command.maintenance"))
-            {
-                throw CommandErrorException("You do not have permission to perform this command!")
-            }
-        }
-
         val currentStatus = plugin.maintenance
 
         if (!currentStatus && rank == null)
@@ -93,14 +81,6 @@ object MaintenanceCommand
     @Description("View maintenance information.")
     fun onList(sender: VelocityCommandActor)
     {
-        if (!sender.isConsole)
-        {
-            if (!sender.requirePlayer().hasCocoaPermission("cocoa.command.maintenance"))
-            {
-                throw CommandErrorException("You do not have permission to perform this command!")
-            }
-        }
-
         val currentStatus = plugin.maintenance
 
         if (!currentStatus)

@@ -27,4 +27,9 @@ object CocoaPlayerPermissions
     {
         return permissions[uniqueId]!!.contains(permission)
     }
+
+    fun UUID.hasCocoaPermission(permission: String): Boolean
+    {
+        return permissions[this]!!.contains(permission)
+    }
 }

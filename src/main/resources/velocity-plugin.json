@@ -1,0 +1,13 @@
+{
+  "id": "cocoa",
+  "name": "Cocoa",
+  "version": "1.0.0-stb-v3",
+  "url": "https://scala.gg/",
+  "authors": [
+    "GrowlyX"
+  ],
+  "dependencies": [
+    "trevor"
+  ],
+  "main": "gg.scala.cocoa.CocoaVelocityPlugin"
+}

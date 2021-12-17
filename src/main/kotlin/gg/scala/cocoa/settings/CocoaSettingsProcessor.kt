@@ -35,12 +35,12 @@ object CocoaSettingsProcessor
 
     inline fun <reified T> loadSettings(id: String)
     {
+        saveSettingsToFile(T::class, id)
+
         val reader = File(
             CocoaVelocityPlugin.INSTANCE.directoryFile,
             "$id.json"
         ).reader()
-
-        saveSettingsToFile(T::class, id)
 
         settings[T::class] = Serializers.gson.fromJson(reader, T::class.java) as CocoaSettingsModel
     }

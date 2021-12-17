@@ -89,8 +89,6 @@ constructor(
     init
     {
         INSTANCE = this
-
-        enable()
     }
 
     private fun enable()
@@ -110,6 +108,8 @@ constructor(
     {
         val commandManager = VelocityCommandHandler
             .create(this, server)
+
+        enable()
 
         commandManager.registerContextResolver(Rank::class.java) {
             val firstArg = it.input().removeFirst()

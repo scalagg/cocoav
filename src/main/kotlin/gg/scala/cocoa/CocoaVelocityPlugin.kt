@@ -16,9 +16,10 @@ import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.banana.Banana
 import gg.scala.banana.BananaBuilder
 import gg.scala.banana.options.BananaOptions
-import gg.scala.cocoa.command.GListCommand
+import gg.scala.cocoa.command.GlobalListCommand
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MaintenanceCommand
+import gg.scala.cocoa.command.administration.CocoaCommand
 import gg.scala.cocoa.command.administration.XServerCommand
 import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.handler.DataStoreHandler
@@ -30,7 +31,6 @@ import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
 import revxrsal.commands.exception.CommandErrorException
-import revxrsal.commands.exception.InvalidCommandException
 import revxrsal.commands.velocity.VelocityCommandHandler
 import java.io.File
 import java.nio.file.Path
@@ -126,8 +126,9 @@ constructor(
         commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
 
         commandManager.register(
-            LobbyCommand, GListCommand,
-            MaintenanceCommand, XServerCommand
+            LobbyCommand, GlobalListCommand,
+            MaintenanceCommand, XServerCommand,
+            CocoaCommand
         )
 
         server.eventManager.register(this, PlayerListener)

@@ -2,7 +2,9 @@ package gg.scala.cocoa.command
 
 import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocityPlugin
+import gg.scala.cocoa.permission.CocoaPlayerPermissions
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.Dependency
 import revxrsal.commands.exception.CommandErrorException

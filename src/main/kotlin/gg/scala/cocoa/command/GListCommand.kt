@@ -27,7 +27,9 @@ object GListCommand
 
         player.sendMessage(
             LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&eThere are &l$playerCount&e player${
+                .deserialize("&eThere ${
+                    if (playerCount == 1) "is" else "are"
+                } &l$playerCount&e player${
                     if (playerCount == 1) "" else "s"
                 } connected.")
         )

@@ -17,6 +17,10 @@ object CocoaServerPresence
     private val plugin = CocoaVelocityPlugin.INSTANCE
     private val ampersand = LegacyComponentSerializer.legacyAmpersand()
 
+    private val whitelisted by lazy {
+        ServerPing.Version(-1, "● Whitelisted")
+    }
+
     @Subscribe
     fun onProxyPing(event: ProxyPingEvent)
     {
@@ -24,7 +28,13 @@ object CocoaServerPresence
             .locate<CocoaServerPresenceSettings>()!!
 
         event.ping = ServerPing(
-            event.ping.version,
+            if (plugin.maintenance)
+            {
+                whitelisted
+            } else
+            {
+                event.ping.version
+            },
             event.ping.players.orElse(null),
             ampersand.deserialize(
                 if (plugin.maintenance)

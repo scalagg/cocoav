@@ -58,7 +58,7 @@ object PlayerListener
     @Subscribe
     fun onDisconnect(event: DisconnectEvent)
     {
-        val isStaffMember = event.player.hasPermission("cocoa.staff")
+        val isStaffMember = event.player.hasCocoaPermission("cocoa.staff")
 
         plugin.server.scheduler.buildTask(plugin) {
             val player = plugin.server
@@ -72,7 +72,7 @@ object PlayerListener
                 {
                     CocoaRedisHandler.sendStaffNotification(
                         event.player,
-                        "&b${color(event.player.uniqueId) + event.player.username}&3 disconnected from &b$serverName&3."
+                        "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
                     )
                 }
 
@@ -110,7 +110,7 @@ object PlayerListener
         val previousServer = event.previousServer
             .orElse(null)
 
-        if (event.player.hasPermission("cocoa.staff"))
+        if (event.player.hasCocoaPermission("cocoa.staff"))
         {
             val serverName = event.server.serverInfo.name
 
@@ -118,14 +118,14 @@ object PlayerListener
             {
                 CocoaRedisHandler.sendStaffNotification(
                     event.player,
-                    "&b${color(event.player.uniqueId) + event.player.username}&3 joined &b$serverName&3 from &b${previousServer.serverInfo.name}&3."
+                    "§b${color(event.player.uniqueId) + event.player.username}§3 joined §b$serverName§3 from §b${previousServer.serverInfo.name}§3."
                 )
             } else
             {
                 plugin.server.scheduler.buildTask(plugin) {
                     CocoaRedisHandler.sendStaffNotification(
                         event.player,
-                        "&b${color(event.player.uniqueId) + event.player.username}&3 connected to &b$serverName&3."
+                        "§b${color(event.player.uniqueId) + event.player.username}§3 connected to §b$serverName§3."
                     )
                 }.delay(HUNDRED_MILLI).schedule()
             }

@@ -14,6 +14,7 @@ import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.permission.CocoaPlayerPermissions
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
 
@@ -149,6 +150,16 @@ object PlayerListener
 
                 event.result = KickedFromServerEvent
                     .RedirectPlayer.create(newServer)
+            } else
+            {
+                event.serverKickReason.ifPresent {
+                    val newComponent = LegacyComponentSerializer.legacyAmpersand()
+                        .deserialize("&cYou've been kicked from the server:&r\n")
+                        .append(it)
+
+                    event.result = KickedFromServerEvent
+                        .DisconnectPlayer.create(newComponent)
+                }
             }
         }
     }

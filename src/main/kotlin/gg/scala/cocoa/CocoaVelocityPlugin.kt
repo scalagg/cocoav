@@ -46,15 +46,6 @@ import kotlin.properties.Delegates
  * @author GrowlyX
  * @since 12/15/2021
  */
-@Plugin(
-    id = "cocoa",
-    name = "cocoa",
-    version = "v_stb-1.0.0",
-    url = "https://scala.gg",
-    authors = [
-        "Scala"
-    ]
-)
 class CocoaVelocityPlugin
 @Inject
 constructor(
@@ -70,7 +61,12 @@ constructor(
         var INSTANCE by Delegates.notNull<CocoaVelocityPlugin>()
     }
 
-    val directoryFile: File = directory.toFile()
+    val directoryFile: File = directory.toFile().also {
+        if (!it.exists())
+        {
+            it.mkdirs()
+        }
+    }
 
     var uuidCache by Delegates.notNull<RedisUUIDCache>()
 

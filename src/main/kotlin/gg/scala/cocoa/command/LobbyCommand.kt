@@ -33,6 +33,11 @@ object LobbyCommand
         val bestHubServer = if (isStaffMember)
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
+        if (bestHubServer == null)
+        {
+            throw CommandErrorException("There are no lobbies available.")
+        }
+
         player.createConnectionRequest(bestHubServer)
             .connect()
     }

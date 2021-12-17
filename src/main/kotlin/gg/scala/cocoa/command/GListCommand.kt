@@ -23,9 +23,13 @@ object GListCommand
     @Command("glist")
     fun onHub(player: Player)
     {
+        val playerCount = TrevorService.getAPI().instanceData.playerCount
+
         player.sendMessage(
             LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&eThere are &b${TrevorService.getAPI().instanceData.playerCount}&e players connected.")
+                .deserialize("&eThere are &l$playerCount&e player${
+                    if (playerCount == 1) "" else "s"
+                } connected.")
         )
     }
 }

@@ -140,13 +140,16 @@ object PlayerListener
             val newServer = if (event.player.hasCocoaPermission("cocoa.staff"))
                 plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
-            event.serverKickReason.ifPresent {
-                event.player.sendMessage(CocoaVelocityConstants.DOWNED)
-                event.player.sendMessage(it)
-            }
+            if (newServer != null)
+            {
+                event.serverKickReason.ifPresent {
+                    event.player.sendMessage(CocoaVelocityConstants.DOWNED)
+                    event.player.sendMessage(it)
+                }
 
-            event.result = KickedFromServerEvent
-                .RedirectPlayer.create(newServer)
+                event.result = KickedFromServerEvent
+                    .RedirectPlayer.create(newServer)
+            }
         }
     }
 }

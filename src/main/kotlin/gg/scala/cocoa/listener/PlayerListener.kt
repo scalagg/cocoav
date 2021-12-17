@@ -136,30 +136,32 @@ object PlayerListener
     @Subscribe
     fun onKick(event: KickedFromServerEvent)
     {
-        if (!plugin.isLobbyServer(event.server.serverInfo))
+        val kickedServer = event.server.serverInfo
+
+        if (!plugin.isLobbyServer(kickedServer))
         {
             val newServer = if (event.player.hasCocoaPermission("cocoa.staff"))
                 plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
+            val newComponent = LegacyComponentSerializer.legacyAmpersand()
+                .deserialize("&cYou've been kicked from ${kickedServer.name}:&r")
+
+            event.serverKickReason.ifPresent {
+                newComponent.append(CocoaVelocityConstants.NEW_LINE)
+                newComponent.append(it)
+            }
+
+            event.result = KickedFromServerEvent
+                .DisconnectPlayer.create(newComponent)
+
             if (newServer != null)
             {
-                event.serverKickReason.ifPresent {
-                    event.player.sendMessage(CocoaVelocityConstants.DOWNED)
-                    event.player.sendMessage(it)
-                }
-
                 event.result = KickedFromServerEvent
-                    .RedirectPlayer.create(newServer)
+                    .RedirectPlayer.create(newServer, newComponent)
             } else
             {
-                event.serverKickReason.ifPresent {
-                    val newComponent = LegacyComponentSerializer.legacyAmpersand()
-                        .deserialize("&cYou've been kicked from the server:&r\n")
-                        .append(it)
-
-                    event.result = KickedFromServerEvent
-                        .DisconnectPlayer.create(newComponent)
-                }
+                event.result = KickedFromServerEvent
+                    .DisconnectPlayer.create(newComponent)
             }
         }
     }

@@ -17,9 +17,5 @@ object CocoaVelocityConstants
     )
 
     @JvmStatic
-    val DOWNED = Component.text(
-        "The server you are on is now down for:"
-    ).color(
-        TextColor.fromHexString("#ee6a6a")
-    )
+    val NEW_LINE = Component.text("\n")
 }

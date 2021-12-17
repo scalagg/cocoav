@@ -19,6 +19,7 @@ import gg.scala.banana.options.BananaOptions
 import gg.scala.cocoa.command.GListCommand
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MaintenanceCommand
+import gg.scala.cocoa.command.administration.XServerCommand
 import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
@@ -125,7 +126,8 @@ constructor(
         commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
 
         commandManager.register(
-            LobbyCommand, GListCommand, MaintenanceCommand
+            LobbyCommand, GListCommand,
+            MaintenanceCommand, XServerCommand
         )
 
         server.eventManager.register(this, PlayerListener)

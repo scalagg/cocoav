@@ -10,7 +10,7 @@ import java.util.*
  */
 object CocoaPlayerPermissions
 {
-    val permissions = mutableMapOf<UUID, List<String>>()
+    private val permissions = mutableMapOf<UUID, List<String>>()
 
     fun calculatePermissions(uniqueId: UUID)
     {
@@ -21,8 +21,6 @@ object CocoaPlayerPermissions
         permissions[uniqueId] = rank.getCompoundedPermissions()
             .filter { it.startsWith("%") }
             .map { it.removePrefix("%") }
-
-        println("Setting up permissions for: $uniqueId")
     }
 
     fun Player.hasCocoaPermission(permission: String): Boolean

@@ -21,6 +21,8 @@ object CocoaPlayerPermissions
         permissions[uniqueId] = rank.getCompoundedPermissions()
             .filter { it.startsWith("%") }
             .map { it.removePrefix("%") }
+
+        println("Setting up permissions for: $uniqueId")
     }
 
     fun Player.hasCocoaPermission(permission: String): Boolean

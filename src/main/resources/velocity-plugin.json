@@ -6,8 +6,6 @@
   "authors": [
     "GrowlyX"
   ],
-  "dependencies": [
-    "trevor"
-  ],
+  "dependencies": [],
   "main": "gg.scala.cocoa.CocoaVelocityPlugin"
 }

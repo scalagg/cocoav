@@ -18,6 +18,7 @@ object CocoaSettingsProcessor
     fun initialLoad()
     {
         Serializers.useGsonBuilderThenRebuild {
+            it.setPrettyPrinting()
             it.registerTypeAdapter(
                 CocoaSettingsModel::class.java,
                 AbstractTypeSerializer<CocoaSettingsModel>()

@@ -1,6 +1,7 @@
 package gg.scala.cocoa.command.administration
 
 import com.velocitypowered.api.proxy.server.ServerInfo
+import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.Single
@@ -15,7 +16,6 @@ import java.net.InetSocketAddress
  * @since 12/16/2021
  */
 @Command("xserver")
-@CommandPermission("cocoa.command.xserver")
 object XServerCommand
 {
     @Subcommand("register")
@@ -26,6 +26,14 @@ object XServerCommand
         port: Int
     )
     {
+        if (!actor.isConsole)
+        {
+            if (!actor.requirePlayer().hasCocoaPermission("cocoa.command.xserver"))
+            {
+                throw CommandErrorException("You do not have permission to perform this command!")
+            }
+        }
+
         actor.server.registerServer(
             ServerInfo(id, InetSocketAddress(hostName, port))
         )
@@ -41,6 +49,14 @@ object XServerCommand
         actor: VelocityCommandActor, @Single id: String
     )
     {
+        if (!actor.isConsole)
+        {
+            if (!actor.requirePlayer().hasCocoaPermission("cocoa.command.xserver"))
+            {
+                throw CommandErrorException("You do not have permission to perform this command!")
+            }
+        }
+
         val server = actor.server.allServers.firstOrNull {
             it.serverInfo.name.equals(id, true)
         } ?: throw CommandErrorException("That server does not exist.")

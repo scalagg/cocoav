@@ -2,6 +2,7 @@ package gg.scala.cocoa
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
 /**
  * @author GrowlyX
@@ -17,5 +18,6 @@ object CocoaVelocityConstants
     )
 
     @JvmStatic
-    val NEW_LINE = Component.text("\n")
+    val NEW_LINE = LegacyComponentSerializer
+        .legacyAmpersand().deserialize("&r\n")
 }

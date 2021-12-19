@@ -36,19 +36,19 @@ object CocoaCommand
 
         actor.reply {
             LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(" &eReloaded &fsettings.json&e...")
+                .deserialize(" &eReloaded &fsettings.json&e... &8(${System.currentTimeMillis() - start}ms)")
         }
 
         CocoaSettingsProcessor.loadSettings<CocoaServerPresenceSettings>("presence")
 
         actor.reply {
             LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(" &eReloaded &fpresence.json&e...")
+                .deserialize(" &eReloaded &fpresence.json&e... &8(${System.currentTimeMillis() - start}ms)")
         }
 
         actor.reply {
             LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&a&lFinished!&a We took ${System.currentTimeMillis() - start}ms.")
+                .deserialize("&a&lFinished!&a We took ${System.currentTimeMillis() - start}ms in total.")
         }
     }
 }

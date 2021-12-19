@@ -20,6 +20,7 @@ import gg.scala.cocoa.command.GlobalListCommand
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MaintenanceCommand
 import gg.scala.cocoa.command.administration.CocoaCommand
+import gg.scala.cocoa.command.administration.SendCommand
 import gg.scala.cocoa.command.administration.XServerCommand
 import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.handler.DataStoreHandler
@@ -126,7 +127,7 @@ constructor(
         commandManager.register(
             LobbyCommand, GlobalListCommand,
             MaintenanceCommand, XServerCommand,
-            CocoaCommand
+            CocoaCommand, SendCommand
         )
 
         server.eventManager.register(this, PlayerListener)

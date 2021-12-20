@@ -1,5 +1,6 @@
 package gg.scala.cocoa.presence
 
+import co.schemati.trevor.api.TrevorService
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyPingEvent
 import com.velocitypowered.api.proxy.server.ServerPing
@@ -35,7 +36,10 @@ object CocoaServerPresence
             {
                 event.ping.version
             },
-            event.ping.players.orElse(null),
+            ServerPing.Players(
+                TrevorService.getAPI().instanceData.playerCount,
+                1, mutableListOf()
+            ),
             ampersand.deserialize(
                 if (plugin.maintenance)
                 {

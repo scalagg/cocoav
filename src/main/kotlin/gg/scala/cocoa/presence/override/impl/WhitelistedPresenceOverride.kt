@@ -16,7 +16,7 @@ object WhitelistedPresenceOverride : PresenceOverride
     private val plugin = CocoaVelocityPlugin.INSTANCE
 
     override fun getUniqueId() = "maintenance"
-    override fun getWeight() = 10
+    override fun getWeight() = 4
 
     override fun ableToBeManuallyToggle() = false
     override fun shouldOverride() = plugin.maintenance

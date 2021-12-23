@@ -19,8 +19,10 @@ import gg.scala.cocoa.command.GlobalListCommand
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MaintenanceCommand
 import gg.scala.cocoa.command.administration.CocoaCommand
+import gg.scala.cocoa.command.administration.CountdownCommand
 import gg.scala.cocoa.command.administration.SendCommand
 import gg.scala.cocoa.command.administration.XServerCommand
+import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
@@ -97,6 +99,7 @@ constructor(
 
         CocoaSettingsProcessor.loadSettings<CocoaVelocitySettings>("settings")
         CocoaSettingsProcessor.loadSettings<CocoaServerPresenceSettings>("presence")
+        CocoaSettingsProcessor.loadSettings<CocoaCountdownSettings>("countdown")
 
         DataStoreHandler.initialLoad()
 
@@ -131,7 +134,7 @@ constructor(
         commandManager.register(
             LobbyCommand, GlobalListCommand,
             MaintenanceCommand, XServerCommand,
-            CocoaCommand, SendCommand
+            CocoaCommand, SendCommand, CountdownCommand
         )
 
         server.eventManager.register(this, PlayerListener)

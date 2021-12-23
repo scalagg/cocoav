@@ -2,6 +2,7 @@ package gg.scala.cocoa.command.administration
 
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
+import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
 import gg.scala.cocoa.permission.annotation.CocoaPermission
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
@@ -44,6 +45,13 @@ object CocoaCommand
         actor.reply {
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize(" &eReloaded &fpresence.json&e... &8(${System.currentTimeMillis() - start}ms)")
+        }
+
+        CocoaSettingsProcessor.loadSettings<CocoaCountdownSettings>("countdown")
+
+        actor.reply {
+            LegacyComponentSerializer.legacyAmpersand()
+                .deserialize(" &eReloaded &countdown.json&e... &8(${System.currentTimeMillis() - start}ms)")
         }
 
         actor.reply {

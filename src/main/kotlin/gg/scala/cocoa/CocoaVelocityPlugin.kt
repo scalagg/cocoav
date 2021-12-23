@@ -8,7 +8,6 @@ import com.solexgames.datastore.commons.layer.impl.RedisStorageLayer
 import com.solexgames.datastore.commons.storage.impl.RedisStorageBuilder
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
-import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.RegisteredServer
@@ -28,8 +27,10 @@ import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.permission.CocoaPlayerPermissionsAdapter
-import gg.scala.cocoa.presence.CocoaServerPresence
+import gg.scala.cocoa.presence.CocoaServerPresenceHandler
+import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
+import gg.scala.cocoa.presence.override.impl.WhitelistedPresenceOverride
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
 import revxrsal.commands.exception.CommandErrorException
@@ -99,6 +100,9 @@ constructor(
 
         DataStoreHandler.initialLoad()
 
+        CocoaServerPresenceHandler.initialLoad()
+        CocoaServerPresenceHandler.trackPresence(WhitelistedPresenceOverride)
+
         startRedisFunctionality()
     }
 
@@ -131,7 +135,7 @@ constructor(
         )
 
         server.eventManager.register(this, PlayerListener)
-        server.eventManager.register(this, CocoaServerPresence)
+        server.eventManager.register(this, CocoaServerPresenceSubscriber)
     }
 
     private fun startRedisFunctionality()

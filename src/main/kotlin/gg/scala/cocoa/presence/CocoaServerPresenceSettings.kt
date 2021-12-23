@@ -11,5 +11,6 @@ class CocoaServerPresenceSettings(
     val whitelistedPresence: String = "cocoaV Lol",
 ) : CocoaSettingsModel()
 {
-    override fun getAbstractType() = CocoaServerPresenceSettings::class.java
+    override fun getAbstractType() =
+        CocoaServerPresenceSettings::class.java
 }

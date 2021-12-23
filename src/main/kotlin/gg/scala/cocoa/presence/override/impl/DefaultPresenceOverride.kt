@@ -13,7 +13,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 object DefaultPresenceOverride : PresenceOverride
 {
     override fun getUniqueId() = "default"
-    override fun getWeight() = 1
+    override fun getWeight() = 0
 
     override fun ableToBeManuallyToggle() = false
     override fun shouldOverride() = true

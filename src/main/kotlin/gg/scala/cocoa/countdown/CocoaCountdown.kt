@@ -7,11 +7,12 @@ import gg.scala.cocoa.expirable.Expirable
  * @since 12/17/2021
  */
 class CocoaCountdown(
-    val id: String,
-    duration: Long
+    val id: String, duration: Long
 ) : Expirable(
     System.currentTimeMillis(), duration
 )
 {
-    val activated = false
+    var activated = false
+
+
 }

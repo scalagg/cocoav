@@ -55,6 +55,7 @@ allprojects {
         compileOnly fileTree("lib")
 
         implementation 'com.github.Revxrsal:Lamp:1.9'
+        implementation 'org.apache.httpcomponents:httpclient:4.5.13'
 
         implementation 'com.google.inject:guice:5.0.1'
         implementation "com.github.GrowlyX:data-store:0249e4d2a5"
@@ -82,10 +83,6 @@ allprojects {
             }
         }
     }
-
-//    blossom {
-//        replaceToken '@VERSION@', "origin/$gitBranch/$gitHash"
-//    }
 
     tasks.build.dependsOn(shadowJar, publishing)
 }

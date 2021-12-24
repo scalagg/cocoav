@@ -75,6 +75,7 @@ object CocoaRedisSubscriber : BananaHandler
     fun sendStaffNotification(
         sender: Player?,
         notification: String,
+        permission: String = "lemon.staff"
     )
     {
         buildMessage(
@@ -82,7 +83,7 @@ object CocoaRedisSubscriber : BananaHandler
             HashMap<String, String>().also {
                 it["sender-fancy"] = sender?.username ?: ""
                 it["message"] = notification
-                it["permission"] = "lemon.staff"
+                it["permission"] = permission
                 it["message-type"] = "NOTIFICATION"
 
                 it["server"] = "proxy"

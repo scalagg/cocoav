@@ -10,10 +10,14 @@ import com.velocitypowered.api.event.player.ServerConnectedEvent
 import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
+import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.cocoa.handler.DataStoreHandler
+import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.permission.CocoaPlayerPermissions
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
+import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
@@ -46,6 +50,45 @@ object PlayerListener
 
                 DataStoreHandler.rankOf.remove(uniqueId)
                 return
+            }
+        }
+
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
+
+        if (settings.networking.handleNetworkingChecks)
+        {
+            try
+            {
+                val networkModel = CocoaNetworkAddressHandler
+                    .requestHostData(
+                        event.player.remoteAddress
+                            .address.hostAddress
+                    )
+
+                if (networkModel == null)
+                {
+                    event.result = CocoaVelocityConstants
+                        .DENIED_NETWORKING_ERROR
+                } else
+                {
+                    if (networkModel.shouldBlock)
+                    {
+                        event.result = CocoaVelocityConstants
+                            .DENIED_NETWORKING_INVALID
+
+                        CocoaRedisSubscriber.sendStaffNotification(
+                            null, "§4§o${
+                                event.player.username
+                            }§c tried logging on with a VPN.",
+                            "lemon.networking"
+                        )
+                    }
+                }
+            } catch (ignored: Exception)
+            {
+                event.result = CocoaVelocityConstants
+                    .DENIED_NETWORKING_ERROR
             }
         }
     }
@@ -160,7 +203,7 @@ object PlayerListener
         }
     }
 
-    fun color(uuid: UUID): String
+    private fun color(uuid: UUID): String
     {
         return DataStoreHandler.findRank(
             DataStoreHandler.rankOf[uuid] ?: DataStoreHandler.getDefaultRank().uuid

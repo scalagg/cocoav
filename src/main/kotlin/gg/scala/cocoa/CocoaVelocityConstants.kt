@@ -1,7 +1,5 @@
 package gg.scala.cocoa
 
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
 /**
@@ -11,11 +9,15 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 object CocoaVelocityConstants
 {
     @JvmStatic
-    val MAINTENANCE = Component.text(
-        "Sorry, the server is whitelisted.\nCheck our Discord for more information!"
-    ).color(
-        TextColor.fromHexString("#ee6a6a")
-    )
+    val MAINTENANCE by lazy {
+        LegacyComponentSerializer.legacyAmpersand()
+            .deserialize(
+                """
+                    &cWe're currently under maintenance.
+                    &cAdditional info may be found at &ldiscord.gg/minequest&c.
+                """.trimIndent()
+            )
+    }
 
     @JvmStatic
     val NEW_LINE = LegacyComponentSerializer

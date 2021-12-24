@@ -19,10 +19,10 @@ import java.util.concurrent.TimeUnit
  * @since 12/23/2021
  */
 @Command("countdown")
-@CocoaPermission("cocoa.command.countdown")
 object CountdownCommand
 {
     @Subcommand("staging")
+    @CocoaPermission("cocoa.command.countdown")
     fun onTopic(
         actor: VelocityCommandActor,
         presence: String
@@ -41,6 +41,7 @@ object CountdownCommand
     }
 
     @Subcommand("commenced")
+    @CocoaPermission("cocoa.command.countdown")
     fun onEnded(
         actor: VelocityCommandActor,
         presence: String
@@ -59,6 +60,7 @@ object CountdownCommand
     }
 
     @Subcommand("start-now")
+    @CocoaPermission("cocoa.command.countdown")
     fun onStartNow(actor: VelocityCommandActor)
     {
         CocoaCountdown.addedAt = System.currentTimeMillis()
@@ -75,6 +77,7 @@ object CountdownCommand
     }
 
     @Subcommand("stop")
+    @CocoaPermission("cocoa.command.countdown")
     fun onStop(actor: VelocityCommandActor)
     {
         CocoaCountdown.activated = false
@@ -90,6 +93,7 @@ object CountdownCommand
     }
 
     @Subcommand("duration")
+    @CocoaPermission("cocoa.command.countdown")
     fun onDuration(
         actor: VelocityCommandActor,
         @Single duration: String

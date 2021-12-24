@@ -17,10 +17,10 @@ import java.net.InetSocketAddress
  * @since 12/16/2021
  */
 @Command("xserver")
-@CocoaPermission("cocoa.command.xserver")
 object XServerCommand
 {
     @Subcommand("register")
+    @CocoaPermission("cocoa.command.xserver")
     fun onServerRegister(
         actor: VelocityCommandActor,
         @Single id: String,
@@ -39,6 +39,7 @@ object XServerCommand
     }
 
     @Subcommand("unregister")
+    @CocoaPermission("cocoa.command.xserver")
     fun onServerUnregister(
         actor: VelocityCommandActor, @Single id: String
     )

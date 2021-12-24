@@ -1,7 +1,7 @@
 {
   "id": "cocoa",
   "name": "Cocoa",
-  "version": "@version",
+  "version": "@VERSION@",
   "url": "https://scala.gg/",
   "authors": [
     "GrowlyX"

@@ -18,7 +18,6 @@ import revxrsal.commands.velocity.VelocityCommandActor
  * @since 12/16/2021
  */
 @Command("maintenance")
-@CocoaPermission("cocoa.command.maintenance")
 object MaintenanceCommand
 {
     @Dependency
@@ -26,6 +25,7 @@ object MaintenanceCommand
 
     @Subcommand("update")
     @Description("Update maintenance mode's rank.")
+    @CocoaPermission("cocoa.command.xserver")
     fun onUpdateRank(sender: VelocityCommandActor, rank: Rank)
     {
         val currentStatus = plugin.maintenance
@@ -45,6 +45,7 @@ object MaintenanceCommand
 
     @Subcommand("toggle")
     @Description("Toggle maintenance mode.")
+    @CocoaPermission("cocoa.command.xserver")
     fun onToggle(sender: VelocityCommandActor, rank: Rank?)
     {
         val currentStatus = plugin.maintenance
@@ -78,6 +79,7 @@ object MaintenanceCommand
     }
 
     @Subcommand("info")
+    @CocoaPermission("cocoa.command.xserver")
     @Description("View maintenance information.")
     fun onList(sender: VelocityCommandActor)
     {

@@ -123,47 +123,40 @@ object CountdownCommand
     }
 
     @Subcommand("info")
-    @CocoaPermission("cocoa.command.countdown")
+//    @CocoaPermission("cocoa.command.countdown")
     fun onInfo(actor: VelocityCommandActor)
     {
         val duration = CocoaCountdown.INSTANCE.duration
 
-        val message = """
+        var message = """
             &a&lCocoa Countdown:
             
              &aPresence:
               &7● &fStaging:
-               ${CocoaCountdown.INSTANCE.presenceFormat}
+               &e${CocoaCountdown.INSTANCE.presenceFormat}
               &7● &fCommenced:
-               ${CocoaCountdown.INSTANCE.commencedFormat}
+               &e${CocoaCountdown.INSTANCE.commencedFormat}
                
-             &fSettings:
+             &aSettings:
               &7● &fActive: ${
                   if (CocoaCountdown.INSTANCE.activated)
                     "&aYes" else "&cNo"
               }
               &7● &fDuration: 
-              ${
-                  if (duration == 0L)
-                  {
-                      " &cNot set"
-                  } else
-                  {
-                      """
-                           &6- &fDetailed: &7${
-                               formatIntoDetailedString(
-                                   TimeUnit.MILLISECONDS.toSeconds(duration).toInt()
-                               )
-                           }
-                           &6- &fAbbreviated: &7${
-                               formatIntoDetailedString(
-                                   TimeUnit.MILLISECONDS.toSeconds(duration).toInt()
-                               )
-                           }
-                      """.trimIndent()
-                  }
-              }
-            
         """.trimIndent()
+
+        message += if (duration == 0L)
+        {
+            "  &cNot set"
+        } else
+        {
+            "\n   &6- &fDetailed: &7${formatIntoDetailedString(TimeUnit.MILLISECONDS.toSeconds(duration).toInt())}\n   &6- &fAbbreviated: &7${formatIntoAbbreviatedString(TimeUnit.MILLISECONDS.toSeconds(duration).toInt())}"
+        }
+
+
+        actor.reply {
+            LegacyComponentSerializer.legacyAmpersand()
+                .deserialize(message)
+        }
     }
 }

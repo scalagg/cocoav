@@ -17,6 +17,7 @@ class CocoaCountdown : LemonExpirable(
         @JvmStatic
         var INSTANCE by Delegates.notNull<CocoaCountdown>()
 
+        @JvmStatic
         fun initialLoad()
         {
             INSTANCE = CocoaSettingsProcessor

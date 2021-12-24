@@ -7,7 +7,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  * @since 12/23/2021
  */
 class CocoaCountdownSettings(
-    val countdown: CocoaCountdown = CocoaCountdown.INSTANCE
+    val countdown: CocoaCountdown = CocoaCountdown()
 ) : CocoaSettingsModel()
 {
     override fun getAbstractType() = CocoaCountdownSettings::class.java

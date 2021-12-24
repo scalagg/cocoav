@@ -10,7 +10,8 @@ import java.util.regex.Pattern
 private val timePattern = Pattern.compile("(?:([0-9]+)\\s*y[a-z]*[,\\s]*)?(?:([0-9]+)\\s*mo[a-z]*[,\\s]*)?(?:([0-9]+)\\s*w[a-z]*[,\\s]*)?(?:([0-9]+)\\s*d[a-z]*[,\\s]*)?(?:([0-9]+)\\s*h[a-z]*[,\\s]*)?(?:([0-9]+)\\s*m[a-z]*[,\\s]*)?(?:([0-9]+)\\s*(?:s[a-z]*)?)?", 2)
 
 fun parseDuration(time: String): Long {
-    val m = timePattern.matcher(time)
+    val matcher = timePattern.matcher(time)
+
     var years = 0
     var months = 0
     var weeks = 0
@@ -20,42 +21,42 @@ fun parseDuration(time: String): Long {
     var seconds = 0
     var found = false
 
-    while (m.find()) {
-        if (m.group() != null && m.group().isNotEmpty()) {
-            for (c in 0 until m.groupCount()) {
-                if (m.group(c) != null && m.group(c).isNotEmpty()) {
+    while (matcher.find()) {
+        if (matcher.group() != null && matcher.group().isNotEmpty()) {
+            for (c in 0 until matcher.groupCount()) {
+                if (matcher.group(c) != null && matcher.group(c).isNotEmpty()) {
                     found = true
                     break
                 }
             }
 
             if (found) {
-                if (m.group(1) != null && m.group(1).isNotEmpty()) {
-                    years = Integer.parseInt(m.group(1))
+                if (matcher.group(1) != null && matcher.group(1).isNotEmpty()) {
+                    years = Integer.parseInt(matcher.group(1))
                 }
 
-                if (m.group(2) != null && m.group(2).isNotEmpty()) {
-                    months = Integer.parseInt(m.group(2))
+                if (matcher.group(2) != null && matcher.group(2).isNotEmpty()) {
+                    months = Integer.parseInt(matcher.group(2))
                 }
 
-                if (m.group(3) != null && m.group(3).isNotEmpty()) {
-                    weeks = Integer.parseInt(m.group(3))
+                if (matcher.group(3) != null && matcher.group(3).isNotEmpty()) {
+                    weeks = Integer.parseInt(matcher.group(3))
                 }
 
-                if (m.group(4) != null && m.group(4).isNotEmpty()) {
-                    days = Integer.parseInt(m.group(4))
+                if (matcher.group(4) != null && matcher.group(4).isNotEmpty()) {
+                    days = Integer.parseInt(matcher.group(4))
                 }
 
-                if (m.group(5) != null && m.group(5).isNotEmpty()) {
-                    hours = Integer.parseInt(m.group(5))
+                if (matcher.group(5) != null && matcher.group(5).isNotEmpty()) {
+                    hours = Integer.parseInt(matcher.group(5))
                 }
 
-                if (m.group(6) != null && m.group(6).isNotEmpty()) {
-                    minutes = Integer.parseInt(m.group(6))
+                if (matcher.group(6) != null && matcher.group(6).isNotEmpty()) {
+                    minutes = Integer.parseInt(matcher.group(6))
                 }
 
-                if (m.group(7) != null && m.group(7).isNotEmpty()) {
-                    seconds = Integer.parseInt(m.group(7))
+                if (matcher.group(7) != null && matcher.group(7).isNotEmpty()) {
+                    seconds = Integer.parseInt(matcher.group(7))
                 }
                 break
             }

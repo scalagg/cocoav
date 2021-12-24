@@ -1,12 +1,37 @@
 plugins {
     id "maven-publish"
+    id 'net.kyori.blossom' version '1.1.0'
     id "com.github.johnrengelman.shadow" version "6.1.0"
     id "org.jetbrains.kotlin.jvm" version "1.6.0"
 }
 
+def gitHash = { ->
+    def stdout = new ByteArrayOutputStream()
+
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+
+    return stdout.toString()
+            .trim().toString()
+} as String
+
+def gitBranch = { ->
+    def stdout = new ByteArrayOutputStream()
+
+    exec {
+        commandLine 'git', 'branch', '--show-current'
+        standardOutput = stdout
+    }
+
+    return stdout.toString()
+            .trim().toString()
+} as String
+
 allprojects {
     group "gg.scala.cocoa"
-    version "v_stb-1.0.0"
+    version gitHash
 
     repositories {
         mavenCentral()
@@ -56,6 +81,10 @@ allprojects {
                 project.shadow.component(publication)
             }
         }
+    }
+
+    blossom {
+        replaceToken '@version', "origin/$gitBranch/$gitHash"
     }
 
     tasks.build.dependsOn(shadowJar, publishing)

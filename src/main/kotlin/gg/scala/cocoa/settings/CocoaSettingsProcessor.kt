@@ -38,7 +38,7 @@ object CocoaSettingsProcessor
 
     inline fun <reified T> loadSettings(id: String)
     {
-        saveSettingsToFile(T::class, id)
+        saveSettingsToFile(T::class, id, commit = false)
 
         val reader = File(
             CocoaVelocityPlugin.INSTANCE.directoryFile,

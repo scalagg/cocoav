@@ -22,6 +22,31 @@ import revxrsal.commands.velocity.annotation.CommandPermission
  */
 object CocoaCommand
 {
+    @Command("plv")
+    fun onPluginsVelocity(
+        actor: VelocityCommandActor
+    )
+    {
+        val plugins = CocoaVelocityPlugin.INSTANCE
+            .server.pluginManager.plugins
+
+        if (plugins.isEmpty())
+        {
+            throw CommandErrorException("There are no plugins on this velocity instance.")
+        }
+
+        actor.reply {
+            LegacyComponentSerializer.legacyAmpersand()
+                .deserialize("Plugins (${plugins.size}): &3${
+                    plugins.joinToString(
+                        "&f, &3"
+                    ) {
+                        it.description.name.orElse(it.description.id) 
+                    }
+                }")
+        }
+    }
+
     @Command("center-presence")
     @CocoaPermission("cocoa.command.reload")
     fun onCenter(actor: VelocityCommandActor)

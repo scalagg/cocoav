@@ -9,6 +9,7 @@ import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
+import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.serializers.Serializers
@@ -36,7 +37,7 @@ object CocoaRedisSubscriber : BananaHandler
     val settings = mutableMapOf(
         "countdown" to CocoaCountdownSettings::class,
         "settings" to CocoaVelocitySettings::class,
-        "presence" to CocoaCountdownPresence::class
+        "presence" to CocoaServerPresenceSettings::class
     )
 
     @Subscribe("cloud-sync")

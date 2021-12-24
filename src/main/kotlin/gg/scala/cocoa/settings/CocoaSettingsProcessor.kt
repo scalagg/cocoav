@@ -75,15 +75,21 @@ object CocoaSettingsProcessor
                 file, Charsets.UTF_8
             )
 
-            CocoaVelocityPlugin.INSTANCE.cloudLayer
-                .saveEntry(id, Serializers.gson.toJson(settings[kClass]))
-                .thenRun {
-                    CocoaRedisSubscriber.buildMessage(
-                        "cloud-sync", mutableMapOf()
-                    ).dispatch(
-                        CocoaVelocityPlugin.INSTANCE.proxyBanana
-                    )
-                }
+            try
+            {
+                CocoaVelocityPlugin.INSTANCE.cloudLayer
+                    .saveEntry(id, Serializers.gson.toJson(settings[kClass]))
+                    .thenRun {
+                        CocoaRedisSubscriber.buildMessage(
+                            "cloud-sync", mutableMapOf()
+                        ).dispatch(
+                            CocoaVelocityPlugin.INSTANCE.proxyBanana
+                        )
+                    }
+            } catch (exception: Exception)
+            {
+                println("[Cocoa] Failed to commit to cloud: ${exception.message}")
+            }
         }
     }
 }

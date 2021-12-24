@@ -1,9 +1,8 @@
 package gg.scala.cocoa.command
 
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.handler.CocoaRedisHandler
-import gg.scala.cocoa.lemon.rank.Rank
-import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
+import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
+import gg.scala.cocoa.lemon.rank.LemonSpigotRank
 import gg.scala.cocoa.permission.annotation.CocoaPermission
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
@@ -26,7 +25,7 @@ object MaintenanceCommand
     @Subcommand("update")
     @Description("Update maintenance mode's rank.")
     @CocoaPermission("cocoa.command.xserver")
-    fun onUpdateRank(sender: VelocityCommandActor, rank: Rank)
+    fun onUpdateRank(sender: VelocityCommandActor, lemonSpigotRank: LemonSpigotRank)
     {
         val currentStatus = plugin.maintenance
 
@@ -35,33 +34,33 @@ object MaintenanceCommand
             throw CommandErrorException("You must enable maintenance mode to perform this command.")
         }
 
-        plugin.updateMaintenanceRank(rank)
+        plugin.updateMaintenanceRank(lemonSpigotRank)
 
         sender.reply {
             LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&aMaintenance mode rank has been set to: &f${rank.name}")
+                .deserialize("&aMaintenance mode rank has been set to: &f${lemonSpigotRank.name}")
         }
     }
 
     @Subcommand("toggle")
     @Description("Toggle maintenance mode.")
     @CocoaPermission("cocoa.command.xserver")
-    fun onToggle(sender: VelocityCommandActor, rank: Rank?)
+    fun onToggle(sender: VelocityCommandActor, lemonSpigotRank: LemonSpigotRank?)
     {
         val currentStatus = plugin.maintenance
 
-        if (!currentStatus && rank == null)
+        if (!currentStatus && lemonSpigotRank == null)
         {
             throw CommandErrorException("You must define a rank to toggle maintenance mode")
         }
 
-        plugin.updateMaintenanceMode(rank).thenRun {
+        plugin.updateMaintenanceMode(lemonSpigotRank).thenRun {
             sender.reply {
                 LegacyComponentSerializer.legacyAmpersand()
                     .deserialize(
                         if (!currentStatus)
                         {
-                            CocoaRedisHandler.buildMessage(
+                            CocoaRedisSubscriber.buildMessage(
                                 "maintenance-kick",
                                 mapOf()
                             ).dispatch(

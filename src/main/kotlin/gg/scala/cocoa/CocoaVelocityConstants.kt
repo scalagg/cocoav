@@ -13,7 +13,7 @@ object CocoaVelocityConstants
         LegacyComponentSerializer.legacyAmpersand()
             .deserialize(
                 """
-                    &cWe're currently under maintenance.
+                    &cThe network is currently whitelisted.
                     &cAdditional info may be found at &ldiscord.gg/minequest&c.
                 """.trimIndent()
             )

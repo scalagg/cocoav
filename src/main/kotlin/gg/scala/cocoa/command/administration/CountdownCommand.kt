@@ -28,7 +28,7 @@ object CountdownCommand
         presence: String
     )
     {
-        CocoaCountdown.presenceFormat = presence
+        CocoaCountdown.INSTANCE.presenceFormat = presence
 
         CocoaSettingsProcessor.saveSettingsToFile(
             CocoaCountdownSettings::class, "countdown"
@@ -47,7 +47,7 @@ object CountdownCommand
         presence: String
     )
     {
-        CocoaCountdown.commencedFormat = presence
+        CocoaCountdown.INSTANCE.commencedFormat = presence
 
         CocoaSettingsProcessor.saveSettingsToFile(
             CocoaCountdownSettings::class, "countdown"
@@ -63,8 +63,8 @@ object CountdownCommand
     @CocoaPermission("cocoa.command.countdown")
     fun onStartNow(actor: VelocityCommandActor)
     {
-        CocoaCountdown.addedAt = System.currentTimeMillis()
-        CocoaCountdown.activated = true
+        CocoaCountdown.INSTANCE.addedAt = System.currentTimeMillis()
+        CocoaCountdown.INSTANCE.activated = true
 
         CocoaSettingsProcessor.saveSettingsToFile(
             CocoaCountdownSettings::class, "countdown"
@@ -80,7 +80,7 @@ object CountdownCommand
     @CocoaPermission("cocoa.command.countdown")
     fun onStop(actor: VelocityCommandActor)
     {
-        CocoaCountdown.activated = false
+        CocoaCountdown.INSTANCE.activated = false
 
         CocoaSettingsProcessor.saveSettingsToFile(
             CocoaCountdownSettings::class, "countdown"
@@ -101,7 +101,7 @@ object CountdownCommand
     {
         try
         {
-            CocoaCountdown.duration = parseDuration(duration)
+            CocoaCountdown.INSTANCE.duration = parseDuration(duration)
         } catch (ignored: Exception)
         {
             throw CommandErrorException("That is an invalid date!")
@@ -115,7 +115,7 @@ object CountdownCommand
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize("&aYou've set the &lDURATION&a to:\n${
                     formatIntoAbbreviatedString(
-                        TimeUnit.MILLISECONDS.toSeconds(CocoaCountdown.duration).toInt()
+                        TimeUnit.MILLISECONDS.toSeconds(CocoaCountdown.INSTANCE.duration).toInt()
                     )
                 }")
         }

@@ -19,7 +19,7 @@ object CocoaCountdownPresence : PresenceOverride
     override fun getWeight() = 5
 
     override fun ableToBeManuallyToggle() = false
-    override fun shouldOverride() = CocoaCountdown.activated
+    override fun shouldOverride() = CocoaCountdown.INSTANCE.activated
 
     override fun updatePresence(): TextComponent
     {
@@ -30,7 +30,7 @@ object CocoaCountdownPresence : PresenceOverride
             .split("\n")[0]
 
         val secondsUntilEnd = TimeUnit.MILLISECONDS.toSeconds(
-            (CocoaCountdown.duration + CocoaCountdown.addedAt) - System.currentTimeMillis()
+            (CocoaCountdown.INSTANCE.duration + CocoaCountdown.INSTANCE.addedAt) - System.currentTimeMillis()
         ).toInt()
 
         val ended = secondsUntilEnd < 0
@@ -43,10 +43,10 @@ object CocoaCountdownPresence : PresenceOverride
                 "$firstLineOfNormal\n${
                     if (ended)
                     {
-                        CocoaCountdown.commencedFormat
+                        CocoaCountdown.INSTANCE.commencedFormat
                     } else
                     {
-                        CocoaCountdown.presenceFormat
+                        CocoaCountdown.INSTANCE.presenceFormat
                             .replace("[abbrev]", abbreviated)
                             .replace("[detailed]", detailed)
                     }

@@ -5,8 +5,8 @@ import com.solexgames.datastore.commons.connection.impl.mongo.UriMongoConnection
 import com.solexgames.datastore.commons.layer.impl.MongoStorageLayer
 import com.solexgames.datastore.commons.storage.impl.MongoStorageBuilder
 import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.lemon.Grant
-import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.lemon.LemonSpigotGrant
+import gg.scala.cocoa.lemon.rank.LemonSpigotRank
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import org.bson.conversions.Bson
 import java.util.*
@@ -18,10 +18,10 @@ import java.util.concurrent.CompletableFuture
  */
 object DataStoreHandler {
 
-    val ranks = mutableMapOf<UUID, Rank>()
+    val ranks = mutableMapOf<UUID, LemonSpigotRank>()
 
-    lateinit var rankLayer: MongoStorageLayer<Rank>
-    lateinit var grantLayer: MongoStorageLayer<Grant>
+    lateinit var lemonSpigotRankLayer: MongoStorageLayer<LemonSpigotRank>
+    lateinit var lemonSpigotGrantLayer: MongoStorageLayer<LemonSpigotGrant>
 
     val rankOf = mutableMapOf<UUID, UUID>()
 
@@ -33,15 +33,15 @@ object DataStoreHandler {
         )
         val database = "SolexGames"
 
-        this.rankLayer = MongoStorageBuilder<Rank>()
+        this.lemonSpigotRankLayer = MongoStorageBuilder<LemonSpigotRank>()
             .setDatabase(database).setCollection("lemon_ranks")
-            .setConnection(mongoConnection).setType(Rank::class.java).build()
+            .setConnection(mongoConnection).setType(LemonSpigotRank::class.java).build()
 
-        this.grantLayer = MongoStorageBuilder<Grant>()
+        this.lemonSpigotGrantLayer = MongoStorageBuilder<LemonSpigotGrant>()
             .setDatabase(database).setCollection("lemon_grants")
-            .setConnection(mongoConnection).setType(Grant::class.java).build()
+            .setConnection(mongoConnection).setType(LemonSpigotGrant::class.java).build()
 
-        rankLayer.fetchAllEntries().whenComplete { entries, _ ->
+        lemonSpigotRankLayer.fetchAllEntries().whenComplete { entries, _ ->
             entries.forEach {
                 ranks[it.value.uuid] = it.value
             }
@@ -69,9 +69,9 @@ object DataStoreHandler {
         }
     }
 
-    fun loadRankOfNow(uuid: UUID): Rank
+    fun loadRankOfNow(uuid: UUID): LemonSpigotRank
     {
-        val grants = grantLayer.fetchAllEntriesWithFilterSync(
+        val grants = lemonSpigotGrantLayer.fetchAllEntriesWithFilterSync(
             Filters.eq("target", uuid.toString())
         ) ?: return getDefaultRank()
 
@@ -86,29 +86,29 @@ object DataStoreHandler {
         }
     }
 
-    fun findRank(uuid: UUID?): Rank? {
+    fun findRank(uuid: UUID?): LemonSpigotRank? {
         return ranks.values.firstOrNull {
             it.uuid == uuid
         }
     }
 
     @JvmStatic
-    fun getProminentGrant(grants: Collection<Grant>): Grant? {
-        return grants
+    fun getProminentGrant(lemonSpigotGrants: Collection<LemonSpigotGrant>): LemonSpigotGrant? {
+        return lemonSpigotGrants
             .sortedByDescending { it.addedAt }
             .sortedByDescending { it.getRank()?.weight ?: 0 }
             .firstOrNull { !it.isRemoved && !it.hasExpired && it.getRank()?.visible ?: false && it.scopes.contains("global") }
     }
 
-    fun findRank(name: String): Rank? {
+    fun findRank(name: String): LemonSpigotRank? {
         return ranks.values.firstOrNull {
             it.name.equals(name, true)
         }
     }
 
-    private fun fetchGrants(filter: Bson, test: (Grant) -> Boolean): CompletableFuture<List<Grant>> {
-        return grantLayer.fetchAllEntriesWithFilter(filter).thenApply {
-            val mutableList = mutableListOf<Grant>()
+    private fun fetchGrants(filter: Bson, test: (LemonSpigotGrant) -> Boolean): CompletableFuture<List<LemonSpigotGrant>> {
+        return lemonSpigotGrantLayer.fetchAllEntriesWithFilter(filter).thenApply {
+            val mutableList = mutableListOf<LemonSpigotGrant>()
 
             it.forEach { entry ->
                 if (test.invoke(entry.value)) {
@@ -120,13 +120,13 @@ object DataStoreHandler {
         }
     }
 
-    fun fetchGrantsFor(uuid: UUID?): CompletableFuture<List<Grant>> {
+    fun fetchGrantsFor(uuid: UUID?): CompletableFuture<List<LemonSpigotGrant>> {
         return fetchGrants(
             Filters.eq("target", uuid.toString())
         ) { true }
     }
 
-    fun getDefaultRank(): Rank {
+    fun getDefaultRank(): LemonSpigotRank {
         return findRank("Default")!!
     }
 }

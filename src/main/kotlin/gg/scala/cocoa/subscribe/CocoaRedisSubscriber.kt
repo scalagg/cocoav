@@ -1,4 +1,4 @@
-package gg.scala.cocoa.handler
+package gg.scala.cocoa.subscribe
 
 import com.velocitypowered.api.proxy.Player
 import gg.scala.banana.annotate.Subscribe
@@ -12,7 +12,7 @@ import java.util.*
  * @author GrowlyX
  * @since 9/12/2021
  */
-object CocoaRedisHandler : BananaHandler
+object CocoaRedisSubscriber : BananaHandler
 {
     private val plugin = CocoaVelocityPlugin.INSTANCE
 

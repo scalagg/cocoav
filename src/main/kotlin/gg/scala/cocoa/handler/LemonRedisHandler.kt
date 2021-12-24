@@ -9,10 +9,12 @@ import java.util.*
  * @author GrowlyX
  * @since 9/21/2021
  */
-object LemonRedisHandler : BananaHandler {
+object LemonRedisHandler : BananaHandler
+{
 
     @Subscribe("rank-delete")
-    fun onRankDelete(message: Message) {
+    fun onRankDelete(message: Message)
+    {
         val rankUuid = UUID.fromString(
             message["uniqueId"]
         )
@@ -21,8 +23,9 @@ object LemonRedisHandler : BananaHandler {
     }
 
     @Subscribe("rank-update")
-    fun onRankUpdate(message: Message) {
-        val completableFuture = DataStoreHandler.rankLayer
+    fun onRankUpdate(message: Message)
+    {
+        val completableFuture = DataStoreHandler.lemonSpigotRankLayer
             .fetchEntryByKey(message["uniqueId"])
 
         completableFuture.thenAccept {

@@ -10,7 +10,7 @@ import com.velocitypowered.api.event.player.ServerConnectedEvent
 import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.handler.CocoaRedisHandler
+import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.permission.CocoaPlayerPermissions
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
@@ -71,7 +71,7 @@ object PlayerListener
 
                 if (isStaffMember)
                 {
-                    CocoaRedisHandler.sendStaffNotification(
+                    CocoaRedisSubscriber.sendStaffNotification(
                         event.player,
                         "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
                     )
@@ -117,14 +117,14 @@ object PlayerListener
 
             if (previousServer != null)
             {
-                CocoaRedisHandler.sendStaffNotification(
+                CocoaRedisSubscriber.sendStaffNotification(
                     event.player,
                     "§b${color(event.player.uniqueId) + event.player.username}§3 joined §b$serverName§3 from §b${previousServer.serverInfo.name}§3."
                 )
             } else
             {
                 plugin.server.scheduler.buildTask(plugin) {
-                    CocoaRedisHandler.sendStaffNotification(
+                    CocoaRedisSubscriber.sendStaffNotification(
                         event.player,
                         "§b${color(event.player.uniqueId) + event.player.username}§3 connected to §b$serverName§3."
                     )
@@ -159,11 +159,11 @@ object PlayerListener
                 .DisconnectPlayer.create(newComponent)
         }
     }
-}
 
-fun color(uuid: UUID): String
-{
-    return DataStoreHandler.findRank(
-        DataStoreHandler.rankOf[uuid] ?: DataStoreHandler.getDefaultRank().uuid
-    )?.color ?: ""
+    fun color(uuid: UUID): String
+    {
+        return DataStoreHandler.findRank(
+            DataStoreHandler.rankOf[uuid] ?: DataStoreHandler.getDefaultRank().uuid
+        )?.color ?: ""
+    }
 }

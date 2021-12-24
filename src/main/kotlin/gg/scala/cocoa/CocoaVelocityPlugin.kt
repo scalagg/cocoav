@@ -23,12 +23,13 @@ import gg.scala.cocoa.command.administration.CocoaCommand
 import gg.scala.cocoa.command.administration.CountdownCommand
 import gg.scala.cocoa.command.administration.SendCommand
 import gg.scala.cocoa.command.administration.XServerCommand
+import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
-import gg.scala.cocoa.handler.CocoaRedisHandler
+import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
-import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.lemon.rank.LemonSpigotRank
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.permission.CocoaPlayerPermissionsAdapter
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
@@ -109,6 +110,8 @@ constructor(
         CocoaServerPresenceHandler.trackPresence(WhitelistedPresenceOverride)
         CocoaServerPresenceHandler.trackPresence(CocoaCountdownPresence)
 
+        CocoaCountdown.initialLoad()
+
         startRedisFunctionality()
     }
 
@@ -122,14 +125,14 @@ constructor(
 
         enable()
 
-        commandManager.registerContextResolver(Rank::class.java) {
+        commandManager.registerContextResolver(LemonSpigotRank::class.java) {
             val firstArg = it.input().removeFirst()
 
             return@registerContextResolver DataStoreHandler.findRank(firstArg)
                 ?: throw CommandErrorException("Sorry, that rank does not exist.")
         }
 
-        commandManager.autoCompleter.registerParameterSuggestions(Rank::class.java) { _, _, _ ->
+        commandManager.autoCompleter.registerParameterSuggestions(LemonSpigotRank::class.java) { _, _, _ ->
             return@registerParameterSuggestions DataStoreHandler.ranks.values.map { it.name }
         }
 
@@ -175,7 +178,7 @@ constructor(
             )
             .build()
 
-        proxyBanana.registerClass(CocoaRedisHandler)
+        proxyBanana.registerClass(CocoaRedisSubscriber)
         spigotBanana.registerClass(LemonRedisHandler)
 
         proxyBanana.subscribe()
@@ -261,22 +264,22 @@ constructor(
         return (info.name.contains("hub") || info.name.contains("lobby")) && info.name.contains("restricted")
     }
 
-    fun updateMaintenanceRank(rank: Rank)
+    fun updateMaintenanceRank(lemonSpigotRank: LemonSpigotRank)
     {
         settingsLayer.runCommand {
-            it.hset("cocoa:metadata", "maintenance-rank", rank.uuid.toString())
+            it.hset("cocoa:metadata", "maintenance-rank", lemonSpigotRank.uuid.toString())
         }
     }
 
-    fun updateMaintenanceMode(rank: Rank?): CompletableFuture<Void>
+    fun updateMaintenanceMode(lemonSpigotRank: LemonSpigotRank?): CompletableFuture<Void>
     {
         val newValue = !maintenance
         proxySettings["maintenance"] = newValue
 
-        if (rank != null)
+        if (lemonSpigotRank != null)
         {
             settingsLayer.runCommand {
-                it.hset("cocoa:metadata", "maintenance-rank", rank.uuid.toString())
+                it.hset("cocoa:metadata", "maintenance-rank", lemonSpigotRank.uuid.toString())
             }
         }
 
@@ -294,7 +297,7 @@ constructor(
         return rankOfPlayer.weight >= maintenanceRank.weight
     }
 
-    fun maintenanceRank(): Rank
+    fun maintenanceRank(): LemonSpigotRank
     {
         maintenanceRank ?: return DataStoreHandler.getDefaultRank()
 

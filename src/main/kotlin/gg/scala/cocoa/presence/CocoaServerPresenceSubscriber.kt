@@ -14,26 +14,23 @@ object CocoaServerPresenceSubscriber
 {
     private val plugin = CocoaVelocityPlugin.INSTANCE
 
-    private val whitelisted by lazy {
-        ServerPing.Version(-1, "● Whitelisted")
-    }
+    private val whitelisted = ServerPing.Version(
+        -1, "● Whitelisted"
+    )
 
     @Subscribe
     fun onProxyPing(event: ProxyPingEvent)
     {
         event.ping = ServerPing(
             if (plugin.maintenance)
-            {
-                whitelisted
-            } else
-            {
-                event.ping.version
-            },
+                whitelisted else event.ping.version,
             ServerPing.Players(
-                TrevorService.getAPI().instanceData.playerCount,
+                TrevorService.getAPI()
+                    .instanceData.playerCount,
                 10000, mutableListOf()
             ),
-            CocoaServerPresenceRunnable.cachedPresence(),
+            CocoaServerPresenceRunnable
+                .cachedPresence(),
             event.ping.favicon.orElse(null),
             event.ping.modinfo.orElse(null)
         )

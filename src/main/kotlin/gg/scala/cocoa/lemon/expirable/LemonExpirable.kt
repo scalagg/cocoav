@@ -1,4 +1,4 @@
-package gg.scala.cocoa.expirable
+package gg.scala.cocoa.lemon.expirable
 
 import java.util.*
 
@@ -6,7 +6,7 @@ import java.util.*
  * @author puugz, GrowlyX
  * @since 23/08/2021 18:32
  */
-open class Expirable(
+open class LemonExpirable(
     var addedAt: Long,
     var duration: Long
 ) {

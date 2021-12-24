@@ -3,7 +3,7 @@ package gg.scala.cocoa.lemon.rank
 import gg.scala.cocoa.handler.DataStoreHandler
 import java.util.*
 
-class Rank(
+class LemonSpigotRank(
     val uuid: UUID = UUID.randomUUID(),
     var name: String
 ) {

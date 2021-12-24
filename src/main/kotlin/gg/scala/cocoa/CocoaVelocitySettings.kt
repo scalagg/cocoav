@@ -9,8 +9,14 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  */
 class CocoaVelocitySettings(
     val credentials: BananaCredentials = BananaCredentials(),
-    val mongoUri: String = "mongodb://127.0.0.1:27017"
+    val mongoUri: String = "mongodb://127.0.0.1:27017",
+    val networking: NetworkingSettings = NetworkingSettings()
 ) : CocoaSettingsModel()
 {
     override fun getAbstractType() = CocoaVelocitySettings::class.java
+
+    class NetworkingSettings(
+        val handleNetworkingChecks: Boolean = false,
+        val apiKey: String = ""
+    )
 }

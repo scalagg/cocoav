@@ -14,13 +14,19 @@ object CocoaPlayerPermissions
 
     fun calculatePermissions(uniqueId: UUID)
     {
-        val rank = DataStoreHandler.findRank(
-            DataStoreHandler.rankOf[uniqueId]
-        ) ?: DataStoreHandler.getDefaultRank()
+        try
+        {
+            val rank = DataStoreHandler.findRank(
+                DataStoreHandler.rankOf[uniqueId]
+            ) ?: DataStoreHandler.getDefaultRank()
 
-        permissions[uniqueId] = rank.getCompoundedPermissions()
-            .filter { it.startsWith("%") }
-            .map { it.removePrefix("%") }
+            permissions[uniqueId] = rank.getCompoundedPermissions()
+                .filter { it.startsWith("%") }
+                .map { it.removePrefix("%") }
+        } catch (ignored: Exception)
+        {
+            permissions[uniqueId] = mutableListOf()
+        }
     }
 
     fun Player.hasCocoaPermission(permission: String): Boolean

@@ -13,9 +13,6 @@ import revxrsal.commands.annotation.Dependency
  */
 object GlobalListCommand
 {
-    @Dependency
-    lateinit var plugin: CocoaVelocityPlugin
-
     @Command("glist")
     fun onHub(player: Player)
     {

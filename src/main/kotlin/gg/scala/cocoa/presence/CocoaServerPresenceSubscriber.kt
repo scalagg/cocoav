@@ -10,11 +10,14 @@ import gg.scala.cocoa.CocoaVelocityPlugin
  * @author GrowlyX
  * @since 12/15/2021
  */
+typealias Players = ServerPing.Players
+typealias Version = ServerPing.Version
+
 object CocoaServerPresenceSubscriber
 {
     private val plugin = CocoaVelocityPlugin.INSTANCE
 
-    private val whitelisted = ServerPing.Version(
+    private val whitelisted = Version(
         -1, "● Whitelisted"
     )
 
@@ -24,7 +27,7 @@ object CocoaServerPresenceSubscriber
         event.ping = ServerPing(
             if (plugin.maintenance)
                 whitelisted else event.ping.version,
-            ServerPing.Players(
+            Players(
                 TrevorService.getAPI()
                     .instanceData.playerCount,
                 10000, mutableListOf()

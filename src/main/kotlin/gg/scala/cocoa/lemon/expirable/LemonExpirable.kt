@@ -1,7 +1,5 @@
 package gg.scala.cocoa.lemon.expirable
 
-import java.util.*
-
 /**
  * @author puugz, GrowlyX
  * @since 23/08/2021 18:32
@@ -10,8 +8,6 @@ open class LemonExpirable(
     var addedAt: Long,
     var duration: Long
 ) {
-    var expireDate: Date = Date(addedAt + duration)
-
     val isPermanent: Boolean
         get() = duration == Long.MAX_VALUE
 

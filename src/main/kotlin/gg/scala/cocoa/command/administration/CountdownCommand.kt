@@ -3,6 +3,7 @@ package gg.scala.cocoa.command.administration
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.formatIntoAbbreviatedString
+import gg.scala.cocoa.formatIntoDetailedString
 import gg.scala.cocoa.parseDuration
 import gg.scala.cocoa.permission.annotation.CocoaPermission
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
@@ -119,5 +120,50 @@ object CountdownCommand
                     )
                 }")
         }
+    }
+
+    @Subcommand("info")
+    @CocoaPermission("cocoa.command.countdown")
+    fun onInfo(actor: VelocityCommandActor)
+    {
+        val duration = CocoaCountdown.INSTANCE.duration
+
+        val message = """
+            &a&lCocoa Countdown:
+            
+             &aPresence:
+              &7● &fStaging:
+               ${CocoaCountdown.INSTANCE.presenceFormat}
+              &7● &fCommenced:
+               ${CocoaCountdown.INSTANCE.commencedFormat}
+               
+             &fSettings:
+              &7● &fActive: ${
+                  if (CocoaCountdown.INSTANCE.activated)
+                    "&aYes" else "&cNo"
+              }
+              &7● &fDuration: 
+              ${
+                  if (duration == 0L)
+                  {
+                      " &cNot set"
+                  } else
+                  {
+                      """
+                           &6- &fDetailed: &7${
+                               formatIntoDetailedString(
+                                   TimeUnit.MILLISECONDS.toSeconds(duration).toInt()
+                               )
+                           }
+                           &6- &fAbbreviated: &7${
+                               formatIntoDetailedString(
+                                   TimeUnit.MILLISECONDS.toSeconds(duration).toInt()
+                               )
+                           }
+                      """.trimIndent()
+                  }
+              }
+            
+        """.trimIndent()
     }
 }

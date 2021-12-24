@@ -9,7 +9,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
 class CocoaServerPresenceSettings(
     val normalPresence: String = "Hey",
     val whitelistedPresence: String = "cocoaV Lol",
-    val shouldCenterPresence: Boolean = false
+    var shouldCenterPresence: Boolean = false
 ) : CocoaSettingsModel()
 {
     override fun getAbstractType() =

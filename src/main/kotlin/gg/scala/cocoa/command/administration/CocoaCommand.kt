@@ -22,6 +22,24 @@ import revxrsal.commands.velocity.annotation.CommandPermission
  */
 object CocoaCommand
 {
+    @Command("center-presence")
+    @CocoaPermission("cocoa.command.reload")
+    fun onCenter(actor: VelocityCommandActor)
+    {
+        CocoaSettingsProcessor.locate<CocoaServerPresenceSettings>()?.let {
+            it.shouldCenterPresence = !it.shouldCenterPresence
+
+            actor.reply {
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize("&aYou've toggled presence centering. &7(${it.shouldCenterPresence})")
+            }
+        }
+
+        CocoaSettingsProcessor.saveSettingsToFile(
+            CocoaServerPresenceSettings::class, "presence"
+        )
+    }
+
     @Command("cocoa-reload")
     @CocoaPermission("cocoa.command.reload")
     fun onReload(actor: VelocityCommandActor)

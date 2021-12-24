@@ -33,7 +33,6 @@ object CocoaCommand
                 .deserialize("&7Attempting reload of configs...")
         }
 
-        // temporary !!!
         CocoaSettingsProcessor.loadSettings<CocoaVelocitySettings>("settings")
 
         actor.reply {

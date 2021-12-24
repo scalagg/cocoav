@@ -6,6 +6,12 @@ import gg.scala.banana.message.Message
 import gg.scala.banana.subscribe.marker.BananaHandler
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
+import gg.scala.cocoa.CocoaVelocitySettings
+import gg.scala.cocoa.countdown.CocoaCountdownPresence
+import gg.scala.cocoa.countdown.CocoaCountdownSettings
+import gg.scala.cocoa.settings.CocoaSettingsModel
+import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import net.evilblock.cubed.serializers.Serializers
 import java.util.*
 
 /**
@@ -24,6 +30,39 @@ object CocoaRedisSubscriber : BananaHandler
             .forEach {
                 it.disconnect(CocoaVelocityConstants.MAINTENANCE)
             }
+    }
+
+    // temporary !!!
+    val settings = mutableMapOf(
+        "countdown" to CocoaCountdownSettings::class,
+        "settings" to CocoaVelocitySettings::class,
+        "presence" to CocoaCountdownPresence::class
+    )
+
+    @Subscribe("cloud-sync")
+    fun onCloudSync(message: Message)
+    {
+        println("[Cocoa] Started cloud sync request!")
+
+        settings.forEach {
+            CocoaVelocityPlugin.INSTANCE.cloudLayer
+                .fetchEntryByKey(it.key).thenAccept { serialized ->
+                    val settings = Serializers.gson.fromJson(
+                        serialized, it.value.java
+                    )
+
+                    CocoaSettingsProcessor.settings[it.value] =
+                        settings as CocoaSettingsModel
+
+                    CocoaSettingsProcessor.saveSettingsToFile(
+                        it.value, it.key
+                    )
+                }
+
+            println("[Cocoa] Processing cloud sync for: ${it.value.java.simpleName}")
+        }
+
+        println("[Cocoa] Completed cloud sync request!")
     }
 
     fun sendStaffNotification(

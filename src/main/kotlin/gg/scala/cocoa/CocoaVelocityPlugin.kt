@@ -81,8 +81,9 @@ constructor(
     var proxyBanana by Delegates.notNull<Banana>()
     var spigotBanana by Delegates.notNull<Banana>()
 
-    private var maintenanceLayer by Delegates.notNull<RedisStorageLayer<UUID>>()
-    private var settingsLayer by Delegates.notNull<RedisStorageLayer<Boolean>>()
+    var maintenanceLayer by Delegates.notNull<RedisStorageLayer<UUID>>()
+    var settingsLayer by Delegates.notNull<RedisStorageLayer<Boolean>>()
+    var cloudLayer by Delegates.notNull<RedisStorageLayer<String>>()
 
     private val proxySettings = mutableMapOf<String, Boolean>()
 
@@ -209,6 +210,12 @@ constructor(
             .setConnection(connection)
             .setType(Boolean::class.java)
             .setSection("cocoa:settings")
+            .build()
+
+        cloudLayer = RedisStorageBuilder<String>()
+            .setConnection(connection)
+            .setType(String::class.java)
+            .setSection("cocoa:cloud")
             .build()
 
         val executor = Executors.newScheduledThreadPool(1)

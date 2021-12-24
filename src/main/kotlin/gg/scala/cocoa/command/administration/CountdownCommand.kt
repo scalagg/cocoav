@@ -123,7 +123,7 @@ object CountdownCommand
     }
 
     @Subcommand("info")
-//    @CocoaPermission("cocoa.command.countdown")
+    @CocoaPermission("cocoa.command.countdown")
     fun onInfo(actor: VelocityCommandActor)
     {
         val duration = CocoaCountdown.INSTANCE.duration

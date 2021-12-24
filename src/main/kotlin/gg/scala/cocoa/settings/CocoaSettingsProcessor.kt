@@ -2,6 +2,8 @@ package gg.scala.cocoa.settings
 
 import com.google.common.io.Files
 import gg.scala.cocoa.CocoaVelocityPlugin
+import gg.scala.cocoa.handler.DataStoreHandler
+import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import net.evilblock.cubed.serializers.Serializers
 import net.evilblock.cubed.serializers.impl.AbstractTypeSerializer
 import java.io.File
@@ -72,6 +74,16 @@ object CocoaSettingsProcessor
                 ),
                 file, Charsets.UTF_8
             )
+
+            CocoaVelocityPlugin.INSTANCE.cloudLayer
+                .saveEntry(id, Serializers.gson.toJson(settings[kClass]))
+                .thenRun {
+                    CocoaRedisSubscriber.buildMessage(
+                        "cloud-sync", mutableMapOf()
+                    ).dispatch(
+                        CocoaVelocityPlugin.INSTANCE.proxyBanana
+                    )
+                }
         }
     }
 }

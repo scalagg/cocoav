@@ -1,7 +1,11 @@
 package gg.scala.cocoa.presence
 
+import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.presence.override.PresenceOverride
 import gg.scala.cocoa.presence.override.impl.DefaultPresenceOverride
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.properties.Delegates
 
 /**
@@ -13,10 +17,14 @@ object CocoaServerPresenceHandler
     val presences = mutableListOf<PresenceOverride>()
     var current by Delegates.notNull<PresenceOverride>()
 
+    private val scheduler: ScheduledExecutorService =
+        Executors.newScheduledThreadPool(1)
+
     fun initialLoad()
     {
-        CocoaServerPresenceThread.isDaemon = true
-        CocoaServerPresenceThread.start()
+        scheduler.scheduleAtFixedRate(
+            CocoaServerPresenceThread, 0L, 1L, TimeUnit.SECONDS
+        )
 
         presences.add(DefaultPresenceOverride)
     }

@@ -6,6 +6,7 @@ import com.solexgames.datastore.commons.connection.impl.redis.AuthRedisConnectio
 import com.solexgames.datastore.commons.connection.impl.redis.NoAuthRedisConnection
 import com.solexgames.datastore.commons.layer.impl.RedisStorageLayer
 import com.solexgames.datastore.commons.storage.impl.RedisStorageBuilder
+import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.plugin.annotation.DataDirectory
@@ -22,6 +23,7 @@ import gg.scala.cocoa.command.administration.CocoaCommand
 import gg.scala.cocoa.command.administration.CountdownCommand
 import gg.scala.cocoa.command.administration.SendCommand
 import gg.scala.cocoa.command.administration.XServerCommand
+import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.handler.CocoaRedisHandler
 import gg.scala.cocoa.handler.DataStoreHandler
@@ -105,11 +107,14 @@ constructor(
 
         CocoaServerPresenceHandler.initialLoad()
         CocoaServerPresenceHandler.trackPresence(WhitelistedPresenceOverride)
+        CocoaServerPresenceHandler.trackPresence(CocoaCountdownPresence)
 
         startRedisFunctionality()
     }
 
-    @Subscribe
+    @Subscribe(
+        order = PostOrder.LAST
+    )
     fun onInitialize(event: ProxyInitializeEvent)
     {
         val commandManager = VelocityCommandHandler

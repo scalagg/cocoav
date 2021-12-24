@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
  * @author GrowlyX
  * @since 12/23/2021
  */
-object CocoaServerPresenceThread : Thread()
+object CocoaServerPresenceThread : Runnable
 {
     private val cachedPresences = mutableMapOf<String, TextComponent>()
 
@@ -20,37 +20,23 @@ object CocoaServerPresenceThread : Thread()
 
     override fun run()
     {
-        try
-        {
-            val computed = CocoaServerPresenceHandler
-                .presences.sortedByDescending {
-                    it.getWeight()
-                }
-                .firstOrNull {
-                    it.shouldOverride()
-                }
-
-            if (computed != null)
-            {
-                CocoaServerPresenceHandler
-                    .current = computed
+        val computed = CocoaServerPresenceHandler
+            .presences.sortedByDescending {
+                it.getWeight()
+            }
+            .firstOrNull {
+                it.shouldOverride()
             }
 
-            CocoaServerPresenceHandler
-                .presences.forEach {
-                    cachedPresences[it.getUniqueId()] = it.updatePresence()
-                }
-        } catch (exception: Exception)
+        if (computed != null)
         {
-            exception.printStackTrace()
+            CocoaServerPresenceHandler
+                .current = computed
         }
 
-        try
-        {
-            TimeUnit.SECONDS.sleep(1L)
-        } catch (ignored: Exception)
-        {
-            println("Failed to sleep presence thread!")
-        }
+        CocoaServerPresenceHandler
+            .presences.forEach {
+                cachedPresences[it.getUniqueId()] = it.updatePresence()
+            }
     }
 }

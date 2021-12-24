@@ -11,6 +11,7 @@ object CocoaCountdown : Expirable(
 )
 {
     var activated = false
+
     var presenceFormat = "Something happens in [detailed]"
     var commencedFormat = "Something just happened"
 }

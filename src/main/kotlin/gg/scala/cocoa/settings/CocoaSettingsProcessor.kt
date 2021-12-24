@@ -49,7 +49,7 @@ object CocoaSettingsProcessor
     }
 
     fun saveSettingsToFile(
-        kClass: KClass<*>, id: String
+        kClass: KClass<*>, id: String, commit: Boolean = true
     )
     {
         val file = File(
@@ -66,7 +66,7 @@ object CocoaSettingsProcessor
             )
         }
 
-        if (settings[kClass] != null)
+        if (settings[kClass] != null && commit)
         {
             Files.write(
                 Serializers.gson.toJson(

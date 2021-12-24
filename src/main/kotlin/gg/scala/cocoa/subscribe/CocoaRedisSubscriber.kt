@@ -51,12 +51,18 @@ object CocoaRedisSubscriber : BananaHandler
                         serialized, it.value.java
                     )
 
-                    CocoaSettingsProcessor.settings[it.value] =
-                        settings as CocoaSettingsModel
+                    if (settings != null)
+                    {
+                        CocoaSettingsProcessor.settings[it.value] =
+                            settings as CocoaSettingsModel
 
-                    CocoaSettingsProcessor.saveSettingsToFile(
-                        it.value, it.key
-                    )
+                        CocoaSettingsProcessor.saveSettingsToFile(
+                            it.value, it.key, commit = false
+                        )
+                    } else
+                    {
+                        println("[Cocoa] Skipped cloud sync for: ${it.value.java.simpleName}...")
+                    }
                 }
 
             println("[Cocoa] Processing cloud sync for: ${it.value.java.simpleName}")

@@ -23,9 +23,9 @@ object GlobalListCommand
 
         player.sendMessage(
             LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&eThere ${
+                .deserialize("&aThere ${
                     if (playerCount == 1) "is" else "are"
-                } &l$playerCount&e player${
+                } &l$playerCount&a player${
                     if (playerCount == 1) "" else "s"
                 } connected.")
         )

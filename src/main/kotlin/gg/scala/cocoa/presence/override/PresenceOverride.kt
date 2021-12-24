@@ -1,6 +1,10 @@
 package gg.scala.cocoa.presence.override
 
+import gg.scala.cocoa.centered
+import gg.scala.cocoa.presence.CocoaServerPresenceSettings
+import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
 /**
  * @author GrowlyX
@@ -15,4 +19,32 @@ interface PresenceOverride
     fun shouldOverride(): Boolean
 
     fun updatePresence(): TextComponent
+
+    fun updatedPresence(): TextComponent
+    {
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaServerPresenceSettings>()!!
+
+        if (settings.shouldCenterPresence)
+        {
+            val deserialized = LegacyComponentSerializer
+                .legacyAmpersand()
+                .serialize(updatePresence())
+
+            val parts = mutableListOf<String>()
+
+            for (part in deserialized.split("\n"))
+            {
+                parts += part.centered(132.2)
+            }
+
+            return LegacyComponentSerializer.legacyAmpersand()
+                .deserialize(
+                    parts.joinToString(separator = "\n")
+                )
+        } else
+        {
+            return updatePresence()
+        }
+    }
 }

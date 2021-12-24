@@ -35,7 +35,8 @@ object CocoaServerPresenceRunnable : Runnable
 
         CocoaServerPresenceHandler
             .presences.forEach {
-                cachedPresences[it.getUniqueId()] = it.updatePresence()
+                cachedPresences[it.getUniqueId()] =
+                    it.updatedPresence()
             }
     }
 }

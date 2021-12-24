@@ -1,6 +1,5 @@
 package gg.scala.cocoa.presence
 
-import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.presence.override.PresenceOverride
 import gg.scala.cocoa.presence.override.impl.DefaultPresenceOverride
 import java.util.concurrent.Executors
@@ -23,7 +22,8 @@ object CocoaServerPresenceHandler
     fun initialLoad()
     {
         scheduler.scheduleAtFixedRate(
-            CocoaServerPresenceThread, 0L, 1L, TimeUnit.SECONDS
+            CocoaServerPresenceRunnable,
+            0L, 1L, TimeUnit.SECONDS
         )
 
         presences.add(DefaultPresenceOverride)

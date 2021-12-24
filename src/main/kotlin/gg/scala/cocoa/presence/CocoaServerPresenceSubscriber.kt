@@ -5,8 +5,6 @@ import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyPingEvent
 import com.velocitypowered.api.proxy.server.ServerPing
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
 /**
  * @author GrowlyX
@@ -35,7 +33,7 @@ object CocoaServerPresenceSubscriber
                 TrevorService.getAPI().instanceData.playerCount,
                 10000, mutableListOf()
             ),
-            CocoaServerPresenceThread.cachedPresence(),
+            CocoaServerPresenceRunnable.cachedPresence(),
             event.ping.favicon.orElse(null),
             event.ping.modinfo.orElse(null)
         )

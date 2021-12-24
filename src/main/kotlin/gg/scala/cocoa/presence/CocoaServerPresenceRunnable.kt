@@ -1,13 +1,12 @@
 package gg.scala.cocoa.presence
 
 import net.kyori.adventure.text.TextComponent
-import java.util.concurrent.TimeUnit
 
 /**
  * @author GrowlyX
  * @since 12/23/2021
  */
-object CocoaServerPresenceThread : Runnable
+object CocoaServerPresenceRunnable : Runnable
 {
     private val cachedPresences = mutableMapOf<String, TextComponent>()
 

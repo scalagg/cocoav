@@ -23,26 +23,13 @@ import java.util.concurrent.TimeUnit
 object CocoaNetworkAddressHandler
 {
     @JvmStatic
-    private val API_KEY by lazy {
+    val API_KEY by lazy {
         CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
             .networking.apiKey
     }
 
     @JvmStatic
     val REQUEST_URL = "https://api.vpnblocker.net/v2/json/%s/$API_KEY"
-
-    @JvmStatic
-    val TIMEOUT = TimeUnit.SECONDS
-        .toMillis(2L).toInt()
-
-    @JvmStatic
-    val REQUEST_CONFIG = RequestConfig.custom()
-        .setConnectTimeout(TIMEOUT)
-        .setSocketTimeout(TIMEOUT)
-        .build()!!
-
-    @JvmStatic
-    val HTTP_CLIENT = HttpClients.createDefault()!!
 
     /**
      * Requests host data for the target ip address.
@@ -52,16 +39,13 @@ object CocoaNetworkAddressHandler
      */
     fun requestHostData(ipAddress: String): CocoaNetworkAddressModel?
     {
-        val httpGet = HttpGet(
+        val url = URL(
             String.format(REQUEST_URL, ipAddress)
-        ).apply {
-            config = REQUEST_CONFIG
-        }
+        )
 
         return Serializers.gson.fromJson(
             InputStreamReader(
-                HTTP_CLIENT.execute(httpGet)
-                    .entity.content
+                url.openStream()
             ),
             CocoaNetworkAddressModel::class.java
         )

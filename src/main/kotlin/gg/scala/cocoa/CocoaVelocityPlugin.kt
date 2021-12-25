@@ -19,10 +19,7 @@ import gg.scala.banana.options.BananaOptions
 import gg.scala.cocoa.command.GlobalListCommand
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MaintenanceCommand
-import gg.scala.cocoa.command.administration.CocoaCommand
-import gg.scala.cocoa.command.administration.CountdownCommand
-import gg.scala.cocoa.command.administration.SendCommand
-import gg.scala.cocoa.command.administration.XServerCommand
+import gg.scala.cocoa.command.administration.*
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
@@ -144,7 +141,8 @@ constructor(
         commandManager.register(
             LobbyCommand, GlobalListCommand,
             MaintenanceCommand, XServerCommand,
-            CocoaCommand, SendCommand, CountdownCommand
+            CocoaCommand, SendCommand, CountdownCommand,
+            IpInfoCommand
         )
 
         server.eventManager.register(this, PlayerListener)

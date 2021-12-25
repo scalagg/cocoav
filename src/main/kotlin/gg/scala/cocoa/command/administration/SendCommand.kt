@@ -70,7 +70,7 @@ object SendCommand
                 .deserialize(
                     """
                         &eWe've connected &l$successful&e players to &f$server&e!
-                        &7We were unable to connect &l$declined&7 player, though.
+                        &7We were unable to connect &l$declined&7 player though.
                     """.trimIndent()
                 )
         }

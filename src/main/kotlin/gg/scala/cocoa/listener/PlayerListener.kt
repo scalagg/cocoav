@@ -1,7 +1,6 @@
 package gg.scala.cocoa.listener
 
 import com.velocitypowered.api.event.PostOrder
-import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
@@ -11,13 +10,12 @@ import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.permission.CocoaPlayerPermissions
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
-import net.kyori.adventure.text.format.NamedTextColor
+import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
@@ -44,9 +42,8 @@ object PlayerListener
         {
             if (!plugin.shouldAllowOrStay(uniqueId))
             {
-                event.result = ResultedEvent.ComponentResult.denied(
-                    CocoaVelocityConstants.MAINTENANCE
-                )
+                event.result = CocoaVelocityConstants
+                    .DENIED_MAINTENANCE
 
                 DataStoreHandler.rankOf.remove(uniqueId)
                 return
@@ -90,6 +87,11 @@ object PlayerListener
                 event.result = CocoaVelocityConstants
                     .DENIED_NETWORKING_ERROR
             }
+        }
+
+        if (!event.result.isAllowed)
+        {
+            DataStoreHandler.rankOf.remove(uniqueId)
         }
     }
 

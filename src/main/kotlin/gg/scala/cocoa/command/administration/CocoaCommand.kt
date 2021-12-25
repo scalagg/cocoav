@@ -11,6 +11,7 @@ import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.Dependency
+import revxrsal.commands.annotation.Single
 import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.exception.NoPermissionException
 import revxrsal.commands.velocity.VelocityCommandActor

@@ -81,8 +81,9 @@ constructor(
     var proxyBanana by Delegates.notNull<Banana>()
     var spigotBanana by Delegates.notNull<Banana>()
 
-    var maintenanceLayer by Delegates.notNull<RedisStorageLayer<UUID>>()
-    var settingsLayer by Delegates.notNull<RedisStorageLayer<Boolean>>()
+    private var maintenanceLayer by Delegates.notNull<RedisStorageLayer<UUID>>()
+    private var settingsLayer by Delegates.notNull<RedisStorageLayer<Boolean>>()
+
     var cloudLayer by Delegates.notNull<RedisStorageLayer<String>>()
 
     private val proxySettings = mutableMapOf<String, Boolean>()

@@ -7,6 +7,7 @@ import gg.scala.cocoa.permission.annotation.CocoaPermission
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
+import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.velocity.VelocityCommandActor
 import java.util.concurrent.CompletableFuture
 
@@ -17,7 +18,7 @@ import java.util.concurrent.CompletableFuture
 object IpInfoCommand
 {
     @Command("inet-settings")
-//    @CocoaPermission("cocoa.command.inet-settings")
+    @CocoaPermission("cocoa.command.inet-settings")
     fun onInetSettings(
         actor: VelocityCommandActor
     )
@@ -53,6 +54,13 @@ object IpInfoCommand
         actor.reply {
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize("&aFinding ip info for this player...")
+        }
+
+        val settings = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
+
+        if (!settings.networking.handleNetworkingChecks)
+        {
+            throw CommandErrorException("Cocoa networking is currently disabled.")
         }
 
         CompletableFuture.supplyAsync {

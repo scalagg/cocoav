@@ -3,15 +3,8 @@ package gg.scala.cocoa.network
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.serializers.Serializers
-import org.apache.http.client.config.RequestConfig
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.DefaultHttpClient
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.params.BasicHttpParams
-import org.apache.http.params.HttpConnectionParams
 import java.io.InputStreamReader
 import java.net.URL
-import java.util.concurrent.TimeUnit
 
 /**
  * Handles everything in relation

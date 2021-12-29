@@ -14,9 +14,10 @@ import revxrsal.commands.annotation.Dependency
 object GlobalListCommand
 {
     @Command("glist")
-    fun onHub(player: Player)
+    fun onGlobalList(player: Player)
     {
-        val playerCount = TrevorService.getAPI().instanceData.playerCount
+        val playerCount = TrevorService.getAPI()
+            .instanceData.playerCount
 
         player.sendMessage(
             LegacyComponentSerializer.legacyAmpersand()

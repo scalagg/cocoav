@@ -16,6 +16,7 @@ import gg.scala.cocoa.permission.CocoaPlayerPermissions
 import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
@@ -178,6 +179,9 @@ object PlayerListener
         }
     }
 
+    @JvmStatic
+    val NOTHING = Component.text("N/A")
+
     @Subscribe
     fun onKick(event: KickedFromServerEvent)
     {
@@ -187,12 +191,8 @@ object PlayerListener
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
         val newComponent = LegacyComponentSerializer.legacyAmpersand()
-            .deserialize("&cYou've been kicked from ${kickedServer.name}:&r")
-
-        event.serverKickReason.ifPresent {
-            newComponent.append(CocoaVelocityConstants.NEW_LINE)
-            newComponent.append(it)
-        }
+            .deserialize("&cYou've been kicked from ${kickedServer.name}:&r\n")
+            .append(event.serverKickReason.orElse(NOTHING))
 
         if (newServer != null)
         {

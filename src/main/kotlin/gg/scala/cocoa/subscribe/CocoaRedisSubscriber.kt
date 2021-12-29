@@ -1,6 +1,7 @@
 package gg.scala.cocoa.subscribe
 
 import com.velocitypowered.api.proxy.Player
+import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.banana.annotate.Subscribe
 import gg.scala.banana.message.Message
 import gg.scala.banana.subscribe.marker.BananaHandler
@@ -13,6 +14,8 @@ import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.serializers.Serializers
+import revxrsal.commands.exception.CommandErrorException
+import java.net.InetSocketAddress
 import java.util.*
 
 /**
@@ -31,6 +34,24 @@ object CocoaRedisSubscriber : BananaHandler
             .forEach {
                 it.disconnect(CocoaVelocityConstants.MAINTENANCE)
             }
+    }
+
+    @Subscribe("add-server")
+    fun onAddServer(message: Message)
+    {
+        plugin.server.registerServer(
+            ServerInfo(message["id"]!!, InetSocketAddress(message["address"]!!, message["port"]!!.toInt()))
+        )
+    }
+
+    @Subscribe("remove-server")
+    fun onRemoveServer(message: Message)
+    {
+        val server = plugin.server.allServers.firstOrNull {
+            it.serverInfo.name.equals(message["id"]!!, true)
+        } ?: throw RuntimeException("That server does not exist.")
+
+        plugin.server.unregisterServer(server.serverInfo)
     }
 
     // temporary !!!

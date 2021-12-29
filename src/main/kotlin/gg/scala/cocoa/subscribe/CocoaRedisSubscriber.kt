@@ -39,6 +39,13 @@ object CocoaRedisSubscriber : BananaHandler
     @Subscribe("add-server")
     fun onAddServer(message: Message)
     {
+        val server = plugin.server.allServers.firstOrNull {
+            it.serverInfo.name.equals(message["id"]!!, true)
+        }
+
+        if (server != null)
+            return
+
         plugin.server.registerServer(
             ServerInfo(message["id"]!!, InetSocketAddress(message["address"]!!, message["port"]!!.toInt()))
         )

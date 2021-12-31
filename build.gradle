@@ -58,7 +58,6 @@ allprojects {
         implementation 'com.github.Revxrsal.Lamp:common:1.9'
 
         implementation 'com.google.inject:guice:5.0.1'
-        implementation "com.github.GrowlyX:data-store:0249e4d2a5"
     }
 
     compileKotlin {

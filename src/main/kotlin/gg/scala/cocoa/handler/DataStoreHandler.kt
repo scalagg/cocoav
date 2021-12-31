@@ -24,6 +24,14 @@ object DataStoreHandler {
     {
         DataStoreObjectControllerCache.create<Rank>(Serializers.gson)
         DataStoreObjectControllerCache.create<Grant>(Serializers.gson)
+
+        DataStoreObjectControllerCache.findNotNull<Rank>()
+            .loadAll(DataStoreStorageType.MONGO)
+            .thenAccept { entries ->
+                entries.forEach {
+                    ranks[it.value.uuid] = it.value
+                }
+            }
     }
 
     fun updateRank(uuid: UUID)

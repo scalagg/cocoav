@@ -218,7 +218,7 @@ constructor(
                 }
             } catch (e: Exception)
             {
-                logger.warning("Failed to update online players! Is Trevor not enabled?")
+//                logger.warning("Failed to update online players! Is Trevor not enabled?")
             }
         }, 0L, 1L, TimeUnit.SECONDS)
     }

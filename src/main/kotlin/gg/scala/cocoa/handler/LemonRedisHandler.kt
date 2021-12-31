@@ -3,6 +3,9 @@ package gg.scala.cocoa.handler
 import gg.scala.banana.annotate.Subscribe
 import gg.scala.banana.message.Message
 import gg.scala.banana.subscribe.marker.BananaHandler
+import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.store.controller.DataStoreObjectControllerCache
+import gg.scala.store.storage.type.DataStoreStorageType
 import java.util.*
 
 /**
@@ -25,11 +28,16 @@ object LemonRedisHandler : BananaHandler
     @Subscribe("rank-update")
     fun onRankUpdate(message: Message)
     {
-        val completableFuture = DataStoreHandler.lemonSpigotRankLayer
-            .fetchEntryByKey(message["uniqueId"])
+        val completableFuture = DataStoreObjectControllerCache.findNotNull<Rank>()
+            .load(
+                UUID.fromString(message["uniqueId"]),
+                DataStoreStorageType.MONGO
+            )
 
         completableFuture.thenAccept {
-            DataStoreHandler.ranks[it.uuid] = it
+            it?.let { rank ->
+                DataStoreHandler.ranks[rank.uuid] = rank
+            }
         }
     }
 }

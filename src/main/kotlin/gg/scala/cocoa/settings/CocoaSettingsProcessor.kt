@@ -4,6 +4,7 @@ import com.google.common.io.Files
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
+import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
 import net.evilblock.cubed.serializers.impl.AbstractTypeSerializer
 import java.io.File
@@ -80,7 +81,7 @@ object CocoaSettingsProcessor
                 try
                 {
                     CocoaVelocityPlugin.INSTANCE.cloudLayer
-                        .saveEntry(id, Serializers.gson.toJson(settings[kClass]))
+                        .save(settings[kClass]!!, DataStoreStorageType.REDIS)
                         .thenRun {
                             CocoaRedisSubscriber.buildMessage(
                                 "cloud-sync", mutableMapOf()

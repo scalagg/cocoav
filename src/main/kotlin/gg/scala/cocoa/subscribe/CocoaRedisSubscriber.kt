@@ -13,6 +13,7 @@ import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
 import revxrsal.commands.exception.CommandErrorException
 import java.net.InetSocketAddress
@@ -75,22 +76,15 @@ object CocoaRedisSubscriber : BananaHandler
 
         settings.forEach {
             CocoaVelocityPlugin.INSTANCE.cloudLayer
-                .fetchEntryByKey(it.key).thenAccept { serialized ->
-                    val settings = Serializers.gson.fromJson(
-                        serialized, it.value.java
-                    )
-
-                    if (settings != null)
-                    {
+                .loadAll(DataStoreStorageType.REDIS)
+                .thenAccept { models ->
+                    models.forEach { serialized ->
                         CocoaSettingsProcessor.settings[it.value] =
-                            settings as CocoaSettingsModel
+                            serialized.value
 
                         CocoaSettingsProcessor.saveSettingsToFile(
                             it.value, it.key, commit = false
                         )
-                    } else
-                    {
-                        println("[Cocoa] Skipped cloud sync for: ${it.value.java.simpleName}...")
                     }
                 }
 

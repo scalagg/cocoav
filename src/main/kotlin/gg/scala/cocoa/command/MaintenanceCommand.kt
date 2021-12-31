@@ -2,7 +2,7 @@ package gg.scala.cocoa.command
 
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
-import gg.scala.cocoa.lemon.rank.LemonSpigotRank
+import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.permission.annotation.CocoaPermission
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
@@ -25,7 +25,7 @@ object MaintenanceCommand
     @Subcommand("update")
     @Description("Update maintenance mode's rank.")
     @CocoaPermission("cocoa.command.xserver")
-    fun onUpdateRank(sender: VelocityCommandActor, lemonSpigotRank: LemonSpigotRank)
+    fun onUpdateRank(sender: VelocityCommandActor, lemonSpigotRank: Rank)
     {
         val currentStatus = plugin.maintenance
 
@@ -45,7 +45,7 @@ object MaintenanceCommand
     @Subcommand("toggle")
     @Description("Toggle maintenance mode.")
     @CocoaPermission("cocoa.command.xserver")
-    fun onToggle(sender: VelocityCommandActor, lemonSpigotRank: LemonSpigotRank?)
+    fun onToggle(sender: VelocityCommandActor, lemonSpigotRank: Rank?)
     {
         val currentStatus = plugin.maintenance
 

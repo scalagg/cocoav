@@ -1,11 +1,12 @@
 package gg.scala.cocoa.lemon
 
 import gg.scala.cocoa.handler.DataStoreHandler
-import gg.scala.cocoa.lemon.rank.LemonSpigotRank
+import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.lemon.expirable.LemonExpirable
+import gg.scala.store.storage.storable.IDataStoreObject
 import java.util.*
 
-class LemonSpigotGrant(
+class Grant(
     val uuid: UUID,
     var target: UUID,
     var rankId: UUID,
@@ -14,7 +15,10 @@ class LemonSpigotGrant(
     var addedOn: String,
     var addedReason: String,
     duration: Long
-): LemonExpirable(addedAt, duration) {
+): LemonExpirable(addedAt, duration), IDataStoreObject
+{
+    override val identifier: UUID
+        get() = uuid
 
     var scopes: MutableList<String> = mutableListOf("global")
 
@@ -27,7 +31,7 @@ class LemonSpigotGrant(
     val isActive: Boolean
         get() = !isRemoved && !hasExpired
 
-    fun getRank(): LemonSpigotRank? {
+    fun getRank(): Rank? {
         return DataStoreHandler.findRank(rankId)
     }
 }

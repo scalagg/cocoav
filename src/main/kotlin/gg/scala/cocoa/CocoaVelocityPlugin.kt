@@ -2,10 +2,6 @@ package gg.scala.cocoa
 
 import co.schemati.trevor.api.TrevorService
 import com.google.inject.Inject
-import com.solexgames.datastore.commons.connection.impl.redis.AuthRedisConnection
-import com.solexgames.datastore.commons.connection.impl.redis.NoAuthRedisConnection
-import com.solexgames.datastore.commons.layer.impl.RedisStorageLayer
-import com.solexgames.datastore.commons.storage.impl.RedisStorageBuilder
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
@@ -26,14 +22,20 @@ import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
-import gg.scala.cocoa.lemon.rank.LemonSpigotRank
+import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.permission.CocoaPlayerPermissionsAdapter
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
 import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.presence.override.impl.WhitelistedPresenceOverride
+import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.store.controller.DataStoreObjectController
+import gg.scala.store.controller.DataStoreObjectControllerCache
+import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
+import gg.scala.store.storage.type.DataStoreStorageType
+import net.evilblock.cubed.serializers.Serializers
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
 import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.velocity.VelocityCommandHandler
@@ -78,10 +80,8 @@ constructor(
     var proxyBanana by Delegates.notNull<Banana>()
     var spigotBanana by Delegates.notNull<Banana>()
 
-    private var maintenanceLayer by Delegates.notNull<RedisStorageLayer<UUID>>()
-    private var settingsLayer by Delegates.notNull<RedisStorageLayer<Boolean>>()
-
-    var cloudLayer by Delegates.notNull<RedisStorageLayer<String>>()
+    var settingsLayer by Delegates.notNull<DataStoreObjectController<CocoaVelocitySettingsEntry>>()
+    var cloudLayer by Delegates.notNull<DataStoreObjectController<CocoaSettingsModel>>()
 
     private val proxySettings = mutableMapOf<String, Boolean>()
 
@@ -124,14 +124,14 @@ constructor(
 
         enable()
 
-        commandManager.registerContextResolver(LemonSpigotRank::class.java) {
+        commandManager.registerContextResolver(Rank::class.java) {
             val firstArg = it.input().removeFirst()
 
             return@registerContextResolver DataStoreHandler.findRank(firstArg)
                 ?: throw CommandErrorException("Sorry, that rank does not exist.")
         }
 
-        commandManager.autoCompleter.registerParameterSuggestions(LemonSpigotRank::class.java) { _, _, _ ->
+        commandManager.autoCompleter.registerParameterSuggestions(Rank::class.java) { _, _, _ ->
             return@registerParameterSuggestions DataStoreHandler.ranks.values.map { it.name }
         }
 
@@ -184,38 +184,8 @@ constructor(
         proxyBanana.subscribe()
         spigotBanana.subscribe()
 
-        val connection = if (!settings.credentials.authenticate)
-        {
-            NoAuthRedisConnection(
-                settings.credentials.address,
-                settings.credentials.port
-            )
-        } else
-        {
-            AuthRedisConnection(
-                settings.credentials.address,
-                settings.credentials.port,
-                settings.credentials.password
-            )
-        }
-
-        maintenanceLayer = RedisStorageBuilder<UUID>()
-            .setConnection(connection)
-            .setType(UUID::class.java)
-            .setSection("cocoa:maintenance")
-            .build()
-
-        settingsLayer = RedisStorageBuilder<Boolean>()
-            .setConnection(connection)
-            .setType(Boolean::class.java)
-            .setSection("cocoa:settings")
-            .build()
-
-        cloudLayer = RedisStorageBuilder<String>()
-            .setConnection(connection)
-            .setType(String::class.java)
-            .setSection("cocoa:cloud")
-            .build()
+        settingsLayer = DataStoreObjectControllerCache.create(Serializers.gson)
+        cloudLayer = DataStoreObjectControllerCache.create(Serializers.gson)
 
         val executor = Executors.newScheduledThreadPool(1)
 
@@ -226,21 +196,28 @@ constructor(
         }, 0L, 2L, TimeUnit.SECONDS)
 
         executor.scheduleAtFixedRate({
-            settingsLayer.fetchAllEntries().thenAccept {
-                proxySettings.clear()
+            settingsLayer
+                .loadAll(DataStoreStorageType.REDIS)
+                .thenAccept {
+                    proxySettings.clear()
 
-                it.forEach { entry ->
-                    proxySettings[entry.key] = entry.value
+                    it.forEach { entry ->
+                        proxySettings[entry.value.id] = entry.value.value
+                    }
                 }
-            }
 
-            try {
-                settingsLayer.runCommand {
-                    it.hset("cocoa:players", "global", TrevorService.getAPI().instanceData.playerCount.toString())
+            try
+            {
+                settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
+                {
+                    this.connection.useResource {
+                        hset("cocoa:players", "global", TrevorService.getAPI().instanceData.playerCount.toString())
 
-                    maintenanceRank = it.hget("cocoa:metadata", "maintenance-rank")
+                        maintenanceRank = hget("cocoa:metadata", "maintenance-rank")
+                    }
                 }
-            } catch (e: Exception) {
+            } catch (e: Exception)
+            {
                 logger.warning("Failed to update online players! Is Trevor not enabled?")
             }
         }, 0L, 1L, TimeUnit.SECONDS)
@@ -270,26 +247,35 @@ constructor(
         return (info.name.contains("hub") || info.name.contains("lobby")) && info.name.contains("restricted")
     }
 
-    fun updateMaintenanceRank(lemonSpigotRank: LemonSpigotRank)
+    fun updateMaintenanceRank(lemonSpigotRank: Rank)
     {
-        settingsLayer.runCommand {
-            it.hset("cocoa:metadata", "maintenance-rank", lemonSpigotRank.uuid.toString())
+        settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
+        {
+            this.connection.useResource {
+                hset("cocoa:metadata", "maintenance-rank", lemonSpigotRank.uuid.toString())
+            }
         }
     }
 
-    fun updateMaintenanceMode(lemonSpigotRank: LemonSpigotRank?): CompletableFuture<Void>
+    fun updateMaintenanceMode(lemonSpigotRank: Rank?): CompletableFuture<Void>
     {
         val newValue = !maintenance
         proxySettings["maintenance"] = newValue
 
         if (lemonSpigotRank != null)
         {
-            settingsLayer.runCommand {
-                it.hset("cocoa:metadata", "maintenance-rank", lemonSpigotRank.uuid.toString())
+            settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
+            {
+                this.connection.useResource {
+                    hset("cocoa:metadata", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                }
             }
         }
 
-        return settingsLayer.saveEntry("maintenance", newValue)
+        return settingsLayer.save(
+            CocoaVelocitySettingsEntry("maintenance", newValue),
+            DataStoreStorageType.REDIS
+        )
     }
 
     fun shouldAllowOrStay(uuid: UUID): Boolean
@@ -303,7 +289,7 @@ constructor(
         return rankOfPlayer.weight >= maintenanceRank.weight
     }
 
-    fun maintenanceRank(): LemonSpigotRank
+    fun maintenanceRank(): Rank
     {
         maintenanceRank ?: return DataStoreHandler.getDefaultRank()
 

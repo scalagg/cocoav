@@ -1,12 +1,16 @@
 package gg.scala.cocoa.lemon.rank
 
 import gg.scala.cocoa.handler.DataStoreHandler
+import gg.scala.store.storage.storable.IDataStoreObject
 import java.util.*
 
-class LemonSpigotRank(
+class Rank(
     val uuid: UUID = UUID.randomUUID(),
     var name: String
-) {
+) : IDataStoreObject {
+    override val identifier: UUID
+        get() = uuid
+
     var weight: Int = 0
 
     var prefix: String = ""

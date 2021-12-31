@@ -1,13 +1,12 @@
 package gg.scala.cocoa.handler
 
 import com.mongodb.client.model.Filters
-import com.solexgames.datastore.commons.connection.impl.mongo.UriMongoConnection
-import com.solexgames.datastore.commons.layer.impl.MongoStorageLayer
-import com.solexgames.datastore.commons.storage.impl.MongoStorageBuilder
-import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.lemon.LemonSpigotGrant
-import gg.scala.cocoa.lemon.rank.LemonSpigotRank
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.cocoa.lemon.Grant
+import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.store.controller.DataStoreObjectControllerCache
+import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
+import gg.scala.store.storage.type.DataStoreStorageType
+import net.evilblock.cubed.serializers.Serializers
 import org.bson.conversions.Bson
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -18,34 +17,13 @@ import java.util.concurrent.CompletableFuture
  */
 object DataStoreHandler {
 
-    val ranks = mutableMapOf<UUID, LemonSpigotRank>()
-
-    lateinit var lemonSpigotRankLayer: MongoStorageLayer<LemonSpigotRank>
-    lateinit var lemonSpigotGrantLayer: MongoStorageLayer<LemonSpigotGrant>
-
+    val ranks = mutableMapOf<UUID, Rank>()
     val rankOf = mutableMapOf<UUID, UUID>()
 
     fun initialLoad()
     {
-        val settings = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
-        val mongoConnection = UriMongoConnection(
-            settings.mongoUri
-        )
-        val database = "SolexGames"
-
-        this.lemonSpigotRankLayer = MongoStorageBuilder<LemonSpigotRank>()
-            .setDatabase(database).setCollection("lemon_ranks")
-            .setConnection(mongoConnection).setType(LemonSpigotRank::class.java).build()
-
-        this.lemonSpigotGrantLayer = MongoStorageBuilder<LemonSpigotGrant>()
-            .setDatabase(database).setCollection("lemon_grants")
-            .setConnection(mongoConnection).setType(LemonSpigotGrant::class.java).build()
-
-        lemonSpigotRankLayer.fetchAllEntries().whenComplete { entries, _ ->
-            entries.forEach {
-                ranks[it.value.uuid] = it.value
-            }
-        }
+        DataStoreObjectControllerCache.create<Rank>(Serializers.gson)
+        DataStoreObjectControllerCache.create<Grant>(Serializers.gson)
     }
 
     fun updateRank(uuid: UUID)
@@ -69,64 +47,74 @@ object DataStoreHandler {
         }
     }
 
-    fun loadRankOfNow(uuid: UUID): LemonSpigotRank
+    fun loadRankOfNow(uuid: UUID): Rank
     {
-        val grants = lemonSpigotGrantLayer.fetchAllEntriesWithFilterSync(
-            Filters.eq("target", uuid.toString())
-        ) ?: return getDefaultRank()
+        return DataStoreObjectControllerCache.findNotNull<Grant>()
+            .useLayerWithReturn<MongoDataStoreStorageLayer<Grant>, Rank>(
+                DataStoreStorageType.MONGO
+            ) {
+                val grants = loadAllWithFilterSync(
+                    Filters.eq("target", uuid.toString())
+                )
+                val prominent = getProminentGrant(grants.values)
 
-        val prominent = getProminentGrant(grants.values)
-
-        return if (prominent == null)
-        {
-            getDefaultRank()
-        } else
-        {
-            prominent.getRank() ?: getDefaultRank()
-        }
+                return@useLayerWithReturn if (prominent == null)
+                {
+                    getDefaultRank()
+                } else
+                {
+                    prominent.getRank() ?: getDefaultRank()
+                }
+            }
     }
 
-    fun findRank(uuid: UUID?): LemonSpigotRank? {
+    fun findRank(uuid: UUID?): Rank? {
         return ranks.values.firstOrNull {
             it.uuid == uuid
         }
     }
 
     @JvmStatic
-    fun getProminentGrant(lemonSpigotGrants: Collection<LemonSpigotGrant>): LemonSpigotGrant? {
+    fun getProminentGrant(lemonSpigotGrants: Collection<Grant>): Grant? {
         return lemonSpigotGrants
             .sortedByDescending { it.addedAt }
             .sortedByDescending { it.getRank()?.weight ?: 0 }
             .firstOrNull { !it.isRemoved && !it.hasExpired && it.getRank()?.visible ?: false && it.scopes.contains("global") }
     }
 
-    fun findRank(name: String): LemonSpigotRank? {
+    fun findRank(name: String): Rank? {
         return ranks.values.firstOrNull {
             it.name.equals(name, true)
         }
     }
 
-    private fun fetchGrants(filter: Bson, test: (LemonSpigotGrant) -> Boolean): CompletableFuture<List<LemonSpigotGrant>> {
-        return lemonSpigotGrantLayer.fetchAllEntriesWithFilter(filter).thenApply {
-            val mutableList = mutableListOf<LemonSpigotGrant>()
+    private fun fetchGrants(filter: Bson, test: (Grant) -> Boolean): CompletableFuture<List<Grant>> {
+        val controller = DataStoreObjectControllerCache.findNotNull<Grant>()
 
-            it.forEach { entry ->
-                if (test.invoke(entry.value)) {
-                    mutableList.add(entry.value)
+        return controller.useLayerWithReturn<MongoDataStoreStorageLayer<Grant>, CompletableFuture<List<Grant>>>(
+            DataStoreStorageType.MONGO
+        ) {
+            return@useLayerWithReturn this.loadAllWithFilter(filter).thenApply {
+                val mutableList = mutableListOf<Grant>()
+
+                it.forEach { entry ->
+                    if (test.invoke(entry.value)) {
+                        mutableList.add(entry.value)
+                    }
                 }
-            }
 
-            return@thenApply mutableList
+                return@thenApply mutableList
+            }
         }
     }
 
-    fun fetchGrantsFor(uuid: UUID?): CompletableFuture<List<LemonSpigotGrant>> {
+    fun fetchGrantsFor(uuid: UUID?): CompletableFuture<List<Grant>> {
         return fetchGrants(
             Filters.eq("target", uuid.toString())
         ) { true }
     }
 
-    fun getDefaultRank(): LemonSpigotRank {
+    fun getDefaultRank(): Rank {
         return findRank("Default")!!
     }
 }

@@ -72,7 +72,7 @@ allprojects {
         exclude "**/*.kotlin_builtins"
         exclude "META-INF/"
 
-        archiveFileName = "cocoav.jar"
+        archiveFileName = "cocoa-velocity.jar"
     }
 
     publishing {

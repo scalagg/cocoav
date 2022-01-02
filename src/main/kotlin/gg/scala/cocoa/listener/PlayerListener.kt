@@ -97,35 +97,29 @@ object PlayerListener
     }
 
     @JvmStatic
-    val TWO_MILLI: Duration = Duration.ofMillis(2L)
+    val HUNDRED_MILLI: Duration = Duration.ofMillis(100L)
 
     @JvmStatic
-    val HUNDRED_MILLI: Duration = Duration.ofMillis(100L)
+    val TWO_HUNDRED_MILLI: Duration = Duration.ofMillis(200L)
 
     @Subscribe
     fun onDisconnect(event: DisconnectEvent)
     {
-        val isStaffMember = event.player.hasCocoaPermission("cocoa.staff")
+        val isStaffMember = event.player
+            .hasCocoaPermission("cocoa.staff")
 
-        plugin.server.scheduler.buildTask(plugin) {
-            val player = plugin.server
-                .getPlayer(event.player.uniqueId)
+        val serverName = event.player.currentServer
+            .orElse(null)?.serverInfo?.name ?: "unknown"
 
-            if (player == null)
-            {
-                val serverName = event.player.currentServer.orElse(null)?.serverInfo?.name ?: "unknown"
+        if (isStaffMember)
+        {
+            CocoaRedisSubscriber.sendStaffNotification(
+                event.player,
+                "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
+            )
+        }
 
-                if (isStaffMember)
-                {
-                    CocoaRedisSubscriber.sendStaffNotification(
-                        event.player,
-                        "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
-                    )
-                }
-
-                DataStoreHandler.rankOf.remove(event.player.uniqueId)
-            }
-        }.delay(TWO_MILLI).schedule()
+        DataStoreHandler.rankOf.remove(event.player.uniqueId)
     }
 
     @Subscribe(

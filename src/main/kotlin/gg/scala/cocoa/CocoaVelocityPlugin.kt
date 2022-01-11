@@ -125,7 +125,7 @@ constructor(
         enable()
 
         commandManager.registerContextResolver(Rank::class.java) {
-            val firstArg = it.input().removeFirst()
+            val firstArg = it.input().toMutableList()[0]
 
             return@registerContextResolver DataStoreHandler.findRank(firstArg)
                 ?: throw CommandErrorException("Sorry, that rank does not exist.")
@@ -220,7 +220,7 @@ constructor(
             {
 //                logger.warning("Failed to update online players! Is Trevor not enabled?")
             }
-        }, 0L, 1L, TimeUnit.SECONDS)
+        }, 0L, 250L, TimeUnit.MILLISECONDS)
     }
 
     fun fetchBestLobby(): RegisteredServer?

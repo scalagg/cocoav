@@ -2,6 +2,8 @@ package gg.scala.cocoa.handler
 
 import com.mongodb.client.model.Filters
 import gg.scala.cocoa.lemon.Grant
+import gg.scala.cocoa.lemon.Punishment
+import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
@@ -15,15 +17,19 @@ import java.util.concurrent.CompletableFuture
  * @author GrowlyX
  * @since 9/21/2021
  */
-object DataStoreHandler {
+object DataStoreHandler
+{
 
     val ranks = mutableMapOf<UUID, Rank>()
     val rankOf = mutableMapOf<UUID, UUID>()
+
+    val punishments = mutableMapOf<UUID, Map<PunishmentCategory, Punishment?>>()
 
     fun initialLoad()
     {
         DataStoreObjectControllerCache.create<Rank>(Serializers.gson)
         DataStoreObjectControllerCache.create<Grant>(Serializers.gson)
+        DataStoreObjectControllerCache.create<Punishment>(Serializers.gson)
 
         DataStoreObjectControllerCache.findNotNull<Rank>()
             .loadAll(DataStoreStorageType.MONGO)
@@ -32,6 +38,62 @@ object DataStoreHandler {
                     ranks[it.value.uuid] = it.value
                 }
             }
+    }
+
+    private fun fetchPunishments(filter: Bson, test: (Punishment) -> Boolean): CompletableFuture<List<Punishment>>
+    {
+        val controller = DataStoreObjectControllerCache.findNotNull<Punishment>()
+
+        return controller.useLayerWithReturn<MongoDataStoreStorageLayer<Punishment>, CompletableFuture<List<Punishment>>>(
+            DataStoreStorageType.MONGO
+        ) {
+            return@useLayerWithReturn this.loadAllWithFilter(filter).thenApply {
+                val mutableList = mutableListOf<Punishment>()
+
+                it.forEach { entry ->
+                    if (test.invoke(entry.value))
+                    {
+                        mutableList.add(entry.value)
+                    }
+                }
+
+                return@thenApply mutableList
+            }
+        }
+    }
+
+    fun fetchAllPunishmentsForTarget(uuid: UUID): CompletableFuture<List<Punishment>>
+    {
+        return fetchPunishments(
+            Filters.eq("target", uuid.toString())
+        ) { !it.hasExpired }
+    }
+
+    fun recalculatePunishments(uniqueId: UUID): CompletableFuture<Void>
+    {
+        return fetchAllPunishmentsForTarget(uniqueId).thenAcceptAsync { list ->
+            val punishments = mutableMapOf<PunishmentCategory, Punishment?>()
+
+            for (value in PunishmentCategory.VALUES)
+            {
+                punishments[value] = null
+            }
+
+            for (value in PunishmentCategory.VALUES)
+            {
+                val newList = list.filter {
+                    it.category == value && it.isActive
+                }
+
+                if (newList.isEmpty())
+                {
+                    punishments[value] = null
+                    continue
+                }
+
+                punishments[value] = newList[0]
+            }
+        }
     }
 
     fun updateRank(uuid: UUID)
@@ -76,27 +138,31 @@ object DataStoreHandler {
             }
     }
 
-    fun findRank(uuid: UUID?): Rank? {
+    fun findRank(uuid: UUID?): Rank?
+    {
         return ranks.values.firstOrNull {
             it.uuid == uuid
         }
     }
 
     @JvmStatic
-    fun getProminentGrant(lemonSpigotGrants: Collection<Grant>): Grant? {
+    fun getProminentGrant(lemonSpigotGrants: Collection<Grant>): Grant?
+    {
         return lemonSpigotGrants
             .sortedByDescending { it.addedAt }
             .sortedByDescending { it.getRank()?.weight ?: 0 }
             .firstOrNull { !it.isRemoved && !it.hasExpired && it.getRank()?.visible ?: false && it.scopes.contains("global") }
     }
 
-    fun findRank(name: String): Rank? {
+    fun findRank(name: String): Rank?
+    {
         return ranks.values.firstOrNull {
             it.name.equals(name, true)
         }
     }
 
-    private fun fetchGrants(filter: Bson, test: (Grant) -> Boolean): CompletableFuture<List<Grant>> {
+    private fun fetchGrants(filter: Bson, test: (Grant) -> Boolean): CompletableFuture<List<Grant>>
+    {
         val controller = DataStoreObjectControllerCache.findNotNull<Grant>()
 
         return controller.useLayerWithReturn<MongoDataStoreStorageLayer<Grant>, CompletableFuture<List<Grant>>>(
@@ -106,7 +172,8 @@ object DataStoreHandler {
                 val mutableList = mutableListOf<Grant>()
 
                 it.forEach { entry ->
-                    if (test.invoke(entry.value)) {
+                    if (test.invoke(entry.value))
+                    {
                         mutableList.add(entry.value)
                     }
                 }
@@ -116,13 +183,15 @@ object DataStoreHandler {
         }
     }
 
-    fun fetchGrantsFor(uuid: UUID?): CompletableFuture<List<Grant>> {
+    fun fetchGrantsFor(uuid: UUID?): CompletableFuture<List<Grant>>
+    {
         return fetchGrants(
             Filters.eq("target", uuid.toString())
         ) { true }
     }
 
-    fun getDefaultRank(): Rank {
+    fun getDefaultRank(): Rank
+    {
         return findRank("Default")!!
     }
 }

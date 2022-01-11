@@ -109,9 +109,9 @@ object PlayerListener
             .hasCocoaPermission("cocoa.staff")
 
         val serverName = event.player.currentServer
-            .orElse(null)?.serverInfo?.name ?: "unknown"
+            .orElse(null)?.serverInfo?.name
 
-        if (isStaffMember)
+        if (isStaffMember && serverName != null)
         {
             CocoaRedisSubscriber.sendStaffNotification(
                 event.player,
@@ -188,15 +188,8 @@ object PlayerListener
             .deserialize("&cYou've been kicked from ${kickedServer.name}:&r\n")
             .append(event.serverKickReason.orElse(NOTHING))
 
-        if (newServer != null)
-        {
-            event.result = KickedFromServerEvent
-                .RedirectPlayer.create(newServer, newComponent)
-        } else
-        {
-            event.result = KickedFromServerEvent
-                .DisconnectPlayer.create(newComponent)
-        }
+        event.result = KickedFromServerEvent
+            .RedirectPlayer.create(newServer, newComponent)
     }
 
     private fun color(uuid: UUID): String

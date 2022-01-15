@@ -124,14 +124,6 @@ object PlayerListener
         DataStoreHandler.rankOf.remove(event.player.uniqueId)
     }
 
-    @Subscribe(
-        order = PostOrder.FIRST
-    )
-    fun onPermissionSetup(event: ServerPreConnectEvent)
-    {
-        CocoaPlayerPermissions.calculatePermissions(event.player.uniqueId)
-    }
-
     @Subscribe
     fun onServerPreConnect(event: ServerPreConnectEvent)
     {
@@ -152,6 +144,8 @@ object PlayerListener
     {
         val previousServer = event.previousServer
             .orElse(null)
+
+        CocoaPlayerPermissions.calculatePermissions(event.player.uniqueId)
 
         if (event.player.hasCocoaPermission("cocoa.staff"))
         {

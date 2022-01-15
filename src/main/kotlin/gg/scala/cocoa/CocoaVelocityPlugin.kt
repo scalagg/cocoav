@@ -19,18 +19,18 @@ import gg.scala.cocoa.command.administration.*
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
-import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.permission.CocoaPlayerPermissionsAdapter
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
-import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
+import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
 import gg.scala.cocoa.presence.override.impl.WhitelistedPresenceOverride
 import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
@@ -45,6 +45,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.properties.Delegates
 
@@ -121,6 +122,14 @@ constructor(
     {
         val commandManager = VelocityCommandHandler
             .create(this, server)
+
+        listOf(
+            "org.mongodb.driver.cluster",
+            "org.mongodb.driver.connection"
+        ).forEach {
+            val mongoLogger = Logger.getLogger(it)
+            mongoLogger.level = Level.WARNING
+        }
 
         enable()
 

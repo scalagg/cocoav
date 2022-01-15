@@ -1,7 +1,7 @@
 package gg.scala.cocoa.permission
 
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
+import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermissionRaw
 import gg.scala.cocoa.permission.annotation.CocoaPermission
 import revxrsal.commands.command.CommandPermission
 import revxrsal.commands.command.ExecutableCommand
@@ -23,7 +23,7 @@ object CocoaPlayerPermissionsAdapter : PermissionReader
         return CommandPermission {
             try
             {
-                it.uniqueId.hasCocoaPermission(permission.value)
+                it.uniqueId.hasCocoaPermissionRaw(permission.value)
             } catch (ignored: Exception)
             {
                 return@CommandPermission !CocoaVelocityPlugin.INSTANCE

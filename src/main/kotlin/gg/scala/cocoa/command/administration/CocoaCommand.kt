@@ -49,7 +49,7 @@ object CocoaCommand
     }
 
     @Command("center-presence")
-    @CocoaPermission("cocoa.command.reload")
+    @CocoaPermission("cocoa.command.center-presence")
     fun onCenter(actor: VelocityCommandActor)
     {
         CocoaSettingsProcessor.locate<CocoaServerPresenceSettings>()?.let {

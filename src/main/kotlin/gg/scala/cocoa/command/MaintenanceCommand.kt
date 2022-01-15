@@ -21,7 +21,7 @@ object MaintenanceCommand
 
     @Subcommand("update")
     @Description("Update maintenance mode's rank.")
-    @CocoaPermission("cocoa.command.xserver")
+    @CocoaPermission("cocoa.command.maintenance")
     fun onUpdateRank(sender: VelocityCommandActor, lemonSpigotRank: Rank)
     {
         val currentStatus = plugin.maintenance
@@ -41,7 +41,7 @@ object MaintenanceCommand
 
     @Subcommand("toggle")
     @Description("Toggle maintenance mode.")
-    @CocoaPermission("cocoa.command.xserver")
+    @CocoaPermission("cocoa.command.maintenance")
     fun onToggle(sender: VelocityCommandActor, @Optional lemonSpigotRank: Rank?)
     {
         val currentStatus = plugin.maintenance
@@ -75,7 +75,7 @@ object MaintenanceCommand
     }
 
     @Subcommand("info")
-    @CocoaPermission("cocoa.command.xserver")
+    @CocoaPermission("cocoa.command.maintenance")
     @Description("View maintenance information.")
     fun onList(sender: VelocityCommandActor)
     {

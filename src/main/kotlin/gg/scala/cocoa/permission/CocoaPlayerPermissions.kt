@@ -23,8 +23,9 @@ object CocoaPlayerPermissions
             permissions[uniqueId] = rank.getCompoundedPermissions()
                 .filter { it.startsWith("%") }
                 .map { it.removePrefix("%") }
-        } catch (ignored: Exception)
+        } catch (e: Exception)
         {
+            e.printStackTrace()
             permissions[uniqueId] = mutableListOf()
         }
     }
@@ -37,5 +38,10 @@ object CocoaPlayerPermissions
     fun UUID.hasCocoaPermission(permission: String): Boolean
     {
         return permissions[this]?.contains(permission) == true
+    }
+
+    fun UUID.hasCocoaPermissionRaw(permission: String): Boolean
+    {
+        return permissions[this]!!.contains(permission)
     }
 }

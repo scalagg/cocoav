@@ -36,7 +36,9 @@ object PlayerListener
     {
         val uniqueId = event.player.uniqueId
 
-        val loadedRank = DataStoreHandler.loadRankOfNow(event.player.uniqueId)
+        val loadedRank = DataStoreHandler
+            .loadRankOfNow(event.player.uniqueId)
+
         DataStoreHandler.rankOf[uniqueId] = loadedRank.uuid
 
         if (plugin.maintenance)

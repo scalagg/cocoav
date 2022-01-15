@@ -31,11 +31,11 @@ object CocoaPlayerPermissions
 
     fun Player.hasCocoaPermission(permission: String): Boolean
     {
-        return permissions[uniqueId]!!.contains(permission)
+        return permissions[uniqueId]?.contains(permission) == true
     }
 
     fun UUID.hasCocoaPermission(permission: String): Boolean
     {
-        return permissions[this]!!.contains(permission)
+        return permissions[this]?.contains(permission) == true
     }
 }

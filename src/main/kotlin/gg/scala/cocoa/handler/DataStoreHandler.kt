@@ -140,9 +140,8 @@ object DataStoreHandler
 
     fun findRank(uuid: UUID?): Rank?
     {
-        return ranks.values.firstOrNull {
-            it.uuid == uuid
-        }
+        return ranks.values
+            .firstOrNull { it.uuid == uuid }
     }
 
     @JvmStatic

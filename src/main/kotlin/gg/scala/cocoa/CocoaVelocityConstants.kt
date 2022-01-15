@@ -14,8 +14,8 @@ object CocoaVelocityConstants
         LegacyComponentSerializer.legacyAmpersand()
             .deserialize(
                 """
-                    &cThe network is currently whitelisted.
-                    &cAdditional info may be found at &ldiscord.gg/minequest&c.
+                    &cSorry, we're currently whitelisted.
+                    &cAdditional info may be found on discord.
                 """.trimIndent()
             )
     }
@@ -24,7 +24,6 @@ object CocoaVelocityConstants
     val NETWORKING_ERROR = LegacyComponentSerializer
         .legacyAmpersand()
         .deserialize("&cWe were unable to contact the API.\n&cPlease contact a system administrator!")
-
 
     @JvmStatic
     val NETWORKING_INVALID = LegacyComponentSerializer

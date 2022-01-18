@@ -36,69 +36,77 @@ object PlayerListener
     @Subscribe(
         order = PostOrder.FIRST
     )
-    fun onLogin(event: LoginEvent)
+    fun onLogin(
+        event: LoginEvent,
+        continuation: Continuation
+    )
     {
         val uniqueId = event.player.uniqueId
 
-        val loadedRank = DataStoreHandler
-            .loadRankOfNow(event.player.uniqueId)
+        ForkJoinPool.commonPool().execute {
+            val loadedRank = DataStoreHandler
+                .loadRankOfNow(event.player.uniqueId)
 
-        DataStoreHandler.rankOf[uniqueId] = loadedRank.uuid
+            DataStoreHandler.rankOf[uniqueId] = loadedRank.uuid
 
-        if (plugin.maintenance)
-        {
-            if (!plugin.shouldAllowOrStay(uniqueId))
+            if (plugin.maintenance)
             {
-                event.result = CocoaVelocityConstants
-                    .DENIED_MAINTENANCE
+                if (!plugin.shouldAllowOrStay(uniqueId))
+                {
+                    event.result = CocoaVelocityConstants
+                        .DENIED_MAINTENANCE
 
-                DataStoreHandler.rankOf.remove(uniqueId)
-                return
+                    DataStoreHandler.rankOf.remove(uniqueId)
+                    continuation.resume()
+                    return@execute
+                }
             }
-        }
 
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
+            val settings = CocoaSettingsProcessor
+                .locate<CocoaVelocitySettings>()!!
 
-        if (settings.networking.handleNetworkingChecks)
-        {
-            try
+            if (settings.networking.handleNetworkingChecks)
             {
-                val networkModel = CocoaNetworkAddressHandler
-                    .requestHostData(
-                        event.player.remoteAddress
-                            .address.hostAddress
-                    )
+                try
+                {
+                    val networkModel = CocoaNetworkAddressHandler
+                        .requestHostData(
+                            event.player.remoteAddress
+                                .address.hostAddress
+                        )
 
-                if (networkModel == null)
+                    if (networkModel == null)
+                    {
+                        event.result = CocoaVelocityConstants
+                            .DENIED_NETWORKING_ERROR
+                    } else
+                    {
+                        if (networkModel.shouldBlock)
+                        {
+                            event.result = CocoaVelocityConstants
+                                .DENIED_NETWORKING_INVALID
+
+                            CocoaRedisSubscriber.sendStaffNotification(
+                                null, "§4§o${
+                                    event.player.username
+                                }§c tried logging on with a VPN.",
+                                "lemon.networking"
+                            )
+                        }
+                    }
+                } catch (ignored: Exception)
                 {
                     event.result = CocoaVelocityConstants
                         .DENIED_NETWORKING_ERROR
-                } else
-                {
-                    if (networkModel.shouldBlock)
-                    {
-                        event.result = CocoaVelocityConstants
-                            .DENIED_NETWORKING_INVALID
-
-                        CocoaRedisSubscriber.sendStaffNotification(
-                            null, "§4§o${
-                                event.player.username
-                            }§c tried logging on with a VPN.",
-                            "lemon.networking"
-                        )
-                    }
                 }
-            } catch (ignored: Exception)
-            {
-                event.result = CocoaVelocityConstants
-                    .DENIED_NETWORKING_ERROR
             }
-        }
 
-        if (!event.result.isAllowed)
-        {
-            DataStoreHandler.rankOf.remove(uniqueId)
+            if (!event.result.isAllowed)
+            {
+                DataStoreHandler.rankOf.remove(uniqueId)
+            }
+
+            continuation.resume()
         }
     }
 

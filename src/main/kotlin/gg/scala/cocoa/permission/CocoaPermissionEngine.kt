@@ -10,7 +10,7 @@ import java.util.*
  */
 object CocoaPermissionEngine
 {
-    private val permissions = mutableMapOf<UUID, List<String>>()
+    val permissions = mutableMapOf<UUID, List<String>>()
 
     fun calculatePermissions(uniqueId: UUID)
     {

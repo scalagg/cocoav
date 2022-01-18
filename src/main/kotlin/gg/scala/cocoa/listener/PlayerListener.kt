@@ -1,5 +1,6 @@
 package gg.scala.cocoa.listener
 
+import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
@@ -15,7 +16,6 @@ import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.permission.CocoaPermissionEngine
-import gg.scala.cocoa.permission.CocoaPermissionFunction
 import gg.scala.cocoa.permission.CocoaPermissionProvider
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
@@ -23,6 +23,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.ForkJoinPool
 
 /**
  * @author GrowlyX
@@ -140,19 +141,34 @@ object PlayerListener
     }
 
     @Subscribe
-    fun onPermissionSetup(event: PermissionsSetupEvent)
+    fun onPermissionSetup(
+        event: PermissionsSetupEvent,
+        continuation: Continuation
+    )
     {
         val subject = event.subject
 
-        if (subject is Player)
+        if (subject !is Player)
         {
+            continuation.resume()
+            return
+        }
+
+        ForkJoinPool.commonPool().execute {
             CocoaPermissionEngine
                 .calculatePermissions(
                     subject.uniqueId
                 )
 
+            println(
+                "Permissions: " + CocoaPermissionEngine
+                    .permissions[subject.uniqueId]
+            )
+
             event.provider =
                 CocoaPermissionProvider
+
+            continuation.resume()
         }
     }
 

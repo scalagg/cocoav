@@ -110,15 +110,15 @@ object PlayerListener
                 DataStoreHandler.rankOf.remove(uniqueId)
             }
 
-            DataStoreObjectControllerCache.findNotNull<LemonPlayer>()
+            val lemonPlayer = DataStoreObjectControllerCache.findNotNull<LemonPlayer>()
                 .loadAndCache(
                     uniqueId,
                     { LemonPlayer(uniqueId, event.player.username) },
                     DataStoreStorageType.MONGO)
-                .thenAcceptAsync {
-                    it.recalculatePunishments().join()
-                    it.checkForIpRelative().join()
-                }
+                .join()
+
+            lemonPlayer.recalculatePunishments().join()
+            lemonPlayer.checkForIpRelative().join()
 
             continuation.resume()
         }

@@ -176,9 +176,9 @@ object PlayerListener
                     .punishments[category]
                     ?: continue
 
-                val serverName = event.player
-                    .currentServer.get()
-                    .serverInfo?.name ?: "N/A"
+                val serverName = event
+                    .originalServer
+                    .serverInfo.name
 
                 val extension = if (category == PunishmentCategory.IP_RELATIVE)
                 {

@@ -14,9 +14,9 @@ import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
-import gg.scala.cocoa.permission.CommandPermissionProvider
-import gg.scala.cocoa.permission.CommandPermissionEngine
-import gg.scala.cocoa.permission.CommandPermissionEngine.hasPermission
+import gg.scala.cocoa.permission.CocoaPermissionEngine
+import gg.scala.cocoa.permission.CocoaPermissionFunction
+import gg.scala.cocoa.permission.CocoaPermissionProvider
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import net.kyori.adventure.text.Component
@@ -146,13 +146,13 @@ object PlayerListener
 
         if (subject is Player)
         {
-            CommandPermissionEngine
+            CocoaPermissionEngine
                 .calculatePermissions(
                     subject.uniqueId
                 )
 
             event.provider =
-                CommandPermissionProvider(subject)
+                CocoaPermissionProvider
         }
     }
 

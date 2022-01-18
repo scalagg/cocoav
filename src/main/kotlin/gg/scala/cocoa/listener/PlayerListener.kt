@@ -15,6 +15,7 @@ import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.lemon.LemonPlayer
+import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.permission.CocoaPermissionEngine
 import gg.scala.cocoa.permission.CocoaPermissionProvider
@@ -110,7 +111,14 @@ object PlayerListener
             }
 
             DataStoreObjectControllerCache.findNotNull<LemonPlayer>()
-                .loadAndCache(uniqueId, { LemonPlayer(uniqueId, event.player.username) }, DataStoreStorageType.MONGO)
+                .loadAndCache(
+                    uniqueId,
+                    { LemonPlayer(uniqueId, event.player.username) },
+                    DataStoreStorageType.MONGO)
+                .thenAcceptAsync {
+                    it.recalculatePunishments().join()
+                    it.checkForIpRelative().join()
+                }
 
             continuation.resume()
         }
@@ -136,7 +144,12 @@ object PlayerListener
             )
         }
 
-        DataStoreHandler.rankOf.remove(event.player.uniqueId)
+        DataStoreHandler.rankOf
+            .remove(event.player.uniqueId)
+
+        DataStoreObjectControllerCache
+            .findNotNull<LemonPlayer>()
+            .remove(event.player.uniqueId)
     }
 
     @Subscribe
@@ -151,6 +164,45 @@ object PlayerListener
                     if (isStaffMember)
                         plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
                 )
+        }
+
+        val lemonPlayer = DataStoreHandler
+            .findPlayerNullable(event.player.uniqueId)
+            ?: return
+
+        for (
+            category in PunishmentCategory.WEIGHTED_DENIED
+        )
+        {
+            val punishment = lemonPlayer
+                .punishments[category]
+                ?: continue
+
+            val serverName = event.player
+                .currentServer
+
+            val extension = if (category == PunishmentCategory.IP_RELATIVE)
+            {
+                "in relation to a ${
+                    punishment.category.previous
+                }"
+            } else
+            {
+                punishment.category.previous
+            }
+
+            event.player.sendMessage(
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize(
+                        String.format(
+                            CocoaVelocityConstants.DENIED_SERVER_ENTRY,
+                            serverName, extension
+                        )
+                    )
+            )
+
+            event.result = ServerPreConnectEvent
+                .ServerResult.denied()
         }
     }
 

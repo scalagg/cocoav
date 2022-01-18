@@ -45,4 +45,6 @@ object CocoaVelocityConstants
     @JvmStatic
     val NEW_LINE = LegacyComponentSerializer
         .legacyAmpersand().deserialize("&r\n")
+
+    const val DENIED_SERVER_ENTRY = "&4Your connection to server &4&l%s&4 has been prevented due to you being %s."
 }

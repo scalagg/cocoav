@@ -153,6 +153,12 @@ object DataStoreHandler
             .findNotNull<LemonPlayer>().localCache[uuid]!!
     }
 
+    fun findPlayerNullable(uuid: UUID): LemonPlayer?
+    {
+        return DataStoreObjectControllerCache
+            .findNotNull<LemonPlayer>().localCache[uuid]
+    }
+
     fun findRank(uuid: UUID?): Rank?
     {
         return ranks.values

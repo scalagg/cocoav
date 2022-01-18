@@ -32,8 +32,10 @@ object LemonRedisHandler : BananaHandler
             message["uniqueId"]
         )
 
-        DataStoreHandler.findPlayer(targetUuid)
-            .recalculatePunishments()
+        DataStoreHandler.findPlayer(targetUuid).let {
+            it.checkForIpRelative()
+            it.recalculatePunishments()
+        }
     }
 
     @Subscribe("rank-delete")

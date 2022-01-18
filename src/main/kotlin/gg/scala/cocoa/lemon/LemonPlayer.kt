@@ -56,7 +56,7 @@ class LemonPlayer(
         }
     }
 
-    private fun checkForIpRelative(): CompletableFuture<Void>
+    fun checkForIpRelative(): CompletableFuture<Void>
     {
         return DataStoreHandler.fetchAlternateAccountsFor(uniqueId).thenAcceptAsync { lemonPlayers ->
             lemonPlayers.forEach {

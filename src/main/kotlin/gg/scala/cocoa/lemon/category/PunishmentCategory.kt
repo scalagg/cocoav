@@ -1,11 +1,11 @@
 package gg.scala.cocoa.lemon.category
 
-enum class PunishmentCategory(val intensity: PunishmentCategoryIntensity) {
+enum class PunishmentCategory(val intensity: PunishmentCategoryIntensity, val previous: String = "") {
 
     KICK(PunishmentCategoryIntensity.MEDIUM),
     MUTE(PunishmentCategoryIntensity.LIGHT),
-    BAN(PunishmentCategoryIntensity.MEDIUM),
-    BLACKLIST(PunishmentCategoryIntensity.MEDIUM),
+    BAN(PunishmentCategoryIntensity.MEDIUM, "banned"),
+    BLACKLIST(PunishmentCategoryIntensity.MEDIUM, "blacklisted"),
     IP_RELATIVE(PunishmentCategoryIntensity.MEDIUM);
 
     companion object {
@@ -20,5 +20,8 @@ enum class PunishmentCategory(val intensity: PunishmentCategoryIntensity) {
 
         @JvmStatic
         val IP_REL = listOf(BLACKLIST, BAN)
+
+        @JvmStatic
+        val WEIGHTED_DENIED = listOf(IP_RELATIVE, BLACKLIST, BAN)
     }
 }

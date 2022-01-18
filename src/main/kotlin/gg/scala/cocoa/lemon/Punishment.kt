@@ -13,11 +13,7 @@ import java.util.concurrent.CompletableFuture
 class Punishment(
     val uuid: UUID,
     val target: UUID,
-    val targetCurrentIp: String?,
-    val addedBy: UUID?,
     addedAt: Long,
-    val addedOn: String,
-    val addedReason: String,
     duration: Long,
     val category: PunishmentCategory
 ): LemonExpirable(addedAt, duration), Savable, IDataStoreObject
@@ -25,11 +21,7 @@ class Punishment(
     override val identifier: UUID
         get() = uuid
 
-    var removedReason: String? = null
-    var removedOn: String? = null
-    var removedBy: UUID? = null
-    var removedAt: Long = -1
-    var isRemoved: Boolean = false
+    private var isRemoved: Boolean = false
 
     val isActive: Boolean
         get() = !isRemoved && !hasExpired
@@ -37,9 +29,5 @@ class Punishment(
     override fun save(): CompletableFuture<Void> {
         return DataStoreObjectControllerCache.findNotNull<Punishment>()
             .save(this, DataStoreStorageType.MONGO)
-    }
-
-    fun isIntensity(intensity: PunishmentCategoryIntensity): Boolean {
-        return category.intensity == intensity
     }
 }

@@ -14,6 +14,27 @@ import java.util.*
  */
 object LemonRedisHandler : BananaHandler
 {
+    @Subscribe("recalculate-grants")
+    fun onGrantHanding(message: Message)
+    {
+        val targetUuid = UUID.fromString(
+            message["uniqueId"]
+        )
+
+        DataStoreHandler.rankOf[targetUuid] =
+            DataStoreHandler.loadRankOfNow(targetUuid).uuid
+    }
+
+    @Subscribe("recalculate-punishments")
+    fun onPunishmentHandling(message: Message)
+    {
+        val targetUuid = UUID.fromString(
+            message["uniqueId"]
+        )
+
+        DataStoreHandler.findPlayer(targetUuid)
+            .recalculatePunishments()
+    }
 
     @Subscribe("rank-delete")
     fun onRankDelete(message: Message)

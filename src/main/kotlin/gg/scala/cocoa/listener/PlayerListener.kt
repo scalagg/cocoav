@@ -14,11 +14,14 @@ import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.handler.DataStoreHandler
+import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.permission.CocoaPermissionEngine
 import gg.scala.cocoa.permission.CocoaPermissionProvider
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
+import gg.scala.store.controller.DataStoreObjectControllerCache
+import gg.scala.store.storage.type.DataStoreStorageType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
@@ -105,6 +108,9 @@ object PlayerListener
             {
                 DataStoreHandler.rankOf.remove(uniqueId)
             }
+
+            DataStoreObjectControllerCache.findNotNull<LemonPlayer>()
+                .loadAndCache(uniqueId, { LemonPlayer(uniqueId, event.player.username) }, DataStoreStorageType.MONGO)
 
             continuation.resume()
         }

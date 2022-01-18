@@ -2,6 +2,7 @@ package gg.scala.cocoa.handler
 
 import com.mongodb.client.model.Filters
 import gg.scala.cocoa.lemon.Grant
+import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.lemon.Punishment
 import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.lemon.rank.Rank
@@ -19,17 +20,15 @@ import java.util.concurrent.CompletableFuture
  */
 object DataStoreHandler
 {
-
     val ranks = mutableMapOf<UUID, Rank>()
     val rankOf = mutableMapOf<UUID, UUID>()
-
-    val punishments = mutableMapOf<UUID, Map<PunishmentCategory, Punishment?>>()
 
     fun initialLoad()
     {
         DataStoreObjectControllerCache.create<Rank>(Serializers.gson)
         DataStoreObjectControllerCache.create<Grant>(Serializers.gson)
         DataStoreObjectControllerCache.create<Punishment>(Serializers.gson)
+        DataStoreObjectControllerCache.create<LemonPlayer>(Serializers.gson)
 
         DataStoreObjectControllerCache.findNotNull<Rank>()
             .loadAll(DataStoreStorageType.MONGO)
@@ -67,33 +66,6 @@ object DataStoreHandler
         return fetchPunishments(
             Filters.eq("target", uuid.toString())
         ) { !it.hasExpired }
-    }
-
-    fun recalculatePunishments(uniqueId: UUID): CompletableFuture<Void>
-    {
-        return fetchAllPunishmentsForTarget(uniqueId).thenAcceptAsync { list ->
-            val punishments = mutableMapOf<PunishmentCategory, Punishment?>()
-
-            for (value in PunishmentCategory.VALUES)
-            {
-                punishments[value] = null
-            }
-
-            for (value in PunishmentCategory.VALUES)
-            {
-                val newList = list.filter {
-                    it.category == value && it.isActive
-                }
-
-                if (newList.isEmpty())
-                {
-                    punishments[value] = null
-                    continue
-                }
-
-                punishments[value] = newList[0]
-            }
-        }
     }
 
     fun updateRank(uuid: UUID)
@@ -136,6 +108,49 @@ object DataStoreHandler
                     prominent.getRank() ?: getDefaultRank()
                 }
             }
+    }
+
+    fun fetchPunishmentsForTargetOfCategoryAndActive(
+        uuid: UUID,
+        category: PunishmentCategory
+    ): CompletableFuture<List<Punishment>>
+    {
+        return fetchPunishments(
+            Filters.eq("target", uuid.toString())
+        ) {
+            it.category == category && it.isActive
+        }
+    }
+
+    fun fetchAlternateAccountsFor(uuid: UUID): CompletableFuture<List<LemonPlayer>>
+    {
+        return DataStoreObjectControllerCache.findNotNull<LemonPlayer>()
+            .loadAll(DataStoreStorageType.MONGO)
+            .thenApply {
+                val accounts = mutableListOf<LemonPlayer>()
+                val lemonPlayer = findPlayer(uuid)
+
+                for (entry in it)
+                {
+                    if (entry.value.uniqueId == uuid) continue
+
+                    lemonPlayer.pastIpAddresses.keys.forEachIndexed { _, address ->
+                        if (entry.value.pastIpAddresses.containsKey(address))
+                        {
+                            accounts.add(entry.value)
+                            return@forEachIndexed
+                        }
+                    }
+                }
+
+                return@thenApply accounts
+            }
+    }
+
+    fun findPlayer(uuid: UUID): LemonPlayer
+    {
+        return DataStoreObjectControllerCache
+            .findNotNull<LemonPlayer>().localCache[uuid]!!
     }
 
     fun findRank(uuid: UUID?): Rank?

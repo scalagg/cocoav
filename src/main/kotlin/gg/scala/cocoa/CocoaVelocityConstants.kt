@@ -46,5 +46,5 @@ object CocoaVelocityConstants
     val NEW_LINE = LegacyComponentSerializer
         .legacyAmpersand().deserialize("&r\n")
 
-    const val DENIED_SERVER_ENTRY = "&4Your connection to server &4&l%s&4 has been prevented due to you being %s."
+    const val DENIED_SERVER_ENTRY = "&cYour connection to server &c&l%s&c has been prevented due to you being %s."
 }

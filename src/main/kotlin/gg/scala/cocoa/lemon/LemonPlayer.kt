@@ -19,20 +19,20 @@ class LemonPlayer(
         get() = uniqueId
 
     var pastIpAddresses = mutableMapOf<String, Long>()
-    val punishments = mutableMapOf<PunishmentCategory, Punishment?>()
+
+    lateinit var punishments: MutableMap<PunishmentCategory, Punishment?>
 
     var metadata = mutableMapOf<String, Metadata>()
 
-    init
+    fun recalculatePunishments(): CompletableFuture<Void>
     {
+        punishments = mutableMapOf()
+
         for (value in PunishmentCategory.VALUES)
         {
             punishments[value] = null
         }
-    }
 
-    fun recalculatePunishments(): CompletableFuture<Void>
-    {
         return DataStoreHandler.fetchAllPunishmentsForTarget(uniqueId).thenAcceptAsync { list ->
             for (value in PunishmentCategory.VALUES)
             {

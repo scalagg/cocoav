@@ -157,52 +157,51 @@ object PlayerListener
     {
         val isStaffMember = event.player.hasPermission("cocoa.staff")
 
-        if (event.originalServer == null)
+        if (!event.player.currentServer.isPresent)
         {
             event.result = ServerPreConnectEvent
                 .ServerResult.allowed(
                     if (isStaffMember)
                         plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
                 )
-        }
-
-        val lemonPlayer = DataStoreHandler
-            .findPlayerNullable(event.player.uniqueId)
-            ?: return
-
-        for (
-            category in PunishmentCategory.WEIGHTED_DENIED
-        )
+        } else
         {
-            val punishment = lemonPlayer
-                .punishments[category]
-                ?: continue
+            val lemonPlayer = DataStoreHandler
+                .findPlayerNullable(event.player.uniqueId)
+                ?: return
 
-            val serverName = event.player
-                .currentServer
-
-            val extension = if (category == PunishmentCategory.IP_RELATIVE)
+            for (category in PunishmentCategory.WEIGHTED_DENIED)
             {
-                "in relation to a ${
+                val punishment = lemonPlayer
+                    .punishments[category]
+                    ?: continue
+
+                val serverName = event.player
+                    .currentServer.get()
+                    .serverInfo?.name ?: "N/A"
+
+                val extension = if (category == PunishmentCategory.IP_RELATIVE)
+                {
+                    "in relation to a ${
+                        punishment.category.previous
+                    }"
+                } else
+                {
                     punishment.category.previous
-                }"
-            } else
-            {
-                punishment.category.previous
-            }
+                }
 
-            event.player.sendMessage(
-                LegacyComponentSerializer.legacyAmpersand()
-                    .deserialize(
-                        String.format(
-                            CocoaVelocityConstants.DENIED_SERVER_ENTRY,
-                            serverName, extension
+                event.player.sendMessage(
+                    LegacyComponentSerializer.legacyAmpersand()
+                        .deserialize(
+                            String.format(
+                                CocoaVelocityConstants.DENIED_SERVER_ENTRY, serverName, extension
+                            )
                         )
-                    )
-            )
+                )
 
-            event.result = ServerPreConnectEvent
-                .ServerResult.denied()
+                event.result = ServerPreConnectEvent
+                    .ServerResult.denied()
+            }
         }
     }
 
@@ -261,23 +260,14 @@ object PlayerListener
         }
     }
 
-    @JvmStatic
-    val NOTHING = Component.text("N/A")
-
     @Subscribe
     fun onKick(event: KickedFromServerEvent)
     {
-        val kickedServer = event.server.serverInfo
-
         val newServer = if (event.player.hasPermission("cocoa.staff"))
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
-        val newComponent = LegacyComponentSerializer.legacyAmpersand()
-            .deserialize("&cYou've been kicked from ${kickedServer.name}:&r\n")
-            .append(event.serverKickReason.orElse(NOTHING))
-
         event.result = KickedFromServerEvent
-            .RedirectPlayer.create(newServer, newComponent)
+            .RedirectPlayer.create(newServer)
     }
 
     private fun color(uuid: UUID): String

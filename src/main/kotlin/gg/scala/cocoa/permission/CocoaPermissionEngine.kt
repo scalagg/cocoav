@@ -3,6 +3,7 @@ package gg.scala.cocoa.permission
 import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.handler.DataStoreHandler
 import java.util.*
+import javax.xml.crypto.Data
 
 /**
  * @author GrowlyX
@@ -16,9 +17,16 @@ object CocoaPermissionEngine
     {
         try
         {
-            val rank = DataStoreHandler.findRank(
-                DataStoreHandler.rankOf[uniqueId]
-            ) ?: DataStoreHandler.getDefaultRank()
+            var playerRank = DataStoreHandler.rankOf[uniqueId]
+
+            if (playerRank == null)
+            {
+                playerRank = DataStoreHandler.loadRankOfNow(uniqueId).uuid
+            }
+
+            val rank = DataStoreHandler
+                .findRank(playerRank) ?:
+                DataStoreHandler.getDefaultRank()
 
             permissions[uniqueId] = rank.getCompoundedPermissions()
                 .filter { it.startsWith("%") }

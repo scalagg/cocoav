@@ -168,11 +168,6 @@ object PlayerListener
                     subject.uniqueId
                 )
 
-            println(
-                "Permissions: " + CocoaPermissionEngine
-                    .permissions[subject.uniqueId]
-            )
-
             event.provider =
                 CocoaPermissionProvider
 

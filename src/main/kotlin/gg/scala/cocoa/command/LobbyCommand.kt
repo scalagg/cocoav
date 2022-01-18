@@ -2,9 +2,7 @@ package gg.scala.cocoa.command
 
 import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.permission.CocoaPlayerPermissions
-import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import gg.scala.cocoa.permission.CommandPermissionEngine.hasPermission
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.Dependency
 import revxrsal.commands.exception.CommandErrorException
@@ -30,7 +28,7 @@ object LobbyCommand
         }
 
         val isStaffMember = player
-            .hasCocoaPermission("cocoa.staff")
+            .hasPermission("cocoa.staff")
 
         val bestHubServer = if (isStaffMember)
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()

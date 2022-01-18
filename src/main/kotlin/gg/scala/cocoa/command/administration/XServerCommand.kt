@@ -1,8 +1,6 @@
 package gg.scala.cocoa.command.administration
 
 import com.velocitypowered.api.proxy.server.ServerInfo
-import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
-import gg.scala.cocoa.permission.annotation.CocoaPermission
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.Single
@@ -17,10 +15,10 @@ import java.net.InetSocketAddress
  * @since 12/16/2021
  */
 @Command("xserver")
+@CommandPermission("cocoa.command.xserver")
 object XServerCommand
 {
     @Subcommand("register")
-    @CocoaPermission("cocoa.command.xserver")
     fun onServerRegister(
         actor: VelocityCommandActor,
         @Single id: String,
@@ -39,7 +37,6 @@ object XServerCommand
     }
 
     @Subcommand("unregister")
-    @CocoaPermission("cocoa.command.xserver")
     fun onServerUnregister(
         actor: VelocityCommandActor, @Single id: String
     )

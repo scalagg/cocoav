@@ -8,7 +8,7 @@ import java.util.*
  * @author GrowlyX
  * @since 12/15/2021
  */
-object CocoaPlayerPermissions
+object CommandPermissionEngine
 {
     private val permissions = mutableMapOf<UUID, List<String>>()
 
@@ -30,17 +30,17 @@ object CocoaPlayerPermissions
         }
     }
 
-    fun Player.hasCocoaPermission(permission: String): Boolean
+    fun Player.hasPermission(permission: String): Boolean
     {
         return permissions[uniqueId]?.contains(permission) == true
     }
 
-    fun UUID.hasCocoaPermission(permission: String): Boolean
+    fun UUID.hasPermission(permission: String): Boolean
     {
         return permissions[this]?.contains(permission) == true
     }
 
-    fun UUID.hasCocoaPermissionRaw(permission: String): Boolean
+    fun UUID.hasPermissionRaw(permission: String): Boolean
     {
         return permissions[this]!!.contains(permission)
     }

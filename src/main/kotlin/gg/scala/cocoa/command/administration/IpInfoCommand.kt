@@ -3,12 +3,12 @@ package gg.scala.cocoa.command.administration
 import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
-import gg.scala.cocoa.permission.annotation.CocoaPermission
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.velocity.VelocityCommandActor
+import revxrsal.commands.velocity.annotation.CommandPermission
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture
 object IpInfoCommand
 {
     @Command("inet-settings")
-    @CocoaPermission("cocoa.command.inet-settings")
+    @CommandPermission("cocoa.command.inet-settings")
     fun onInetSettings(
         actor: VelocityCommandActor
     )
@@ -43,7 +43,7 @@ object IpInfoCommand
     }
 
     @Command("inet-info")
-    @CocoaPermission("cocoa.command.inet-info")
+    @CommandPermission("cocoa.command.inet-info")
     fun onIpInfo(
         actor: VelocityCommandActor,
         player: Player

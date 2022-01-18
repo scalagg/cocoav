@@ -1,19 +1,12 @@
 package gg.scala.cocoa.command.administration
 
-import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
-import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
-import gg.scala.cocoa.permission.annotation.CocoaPermission
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
-import revxrsal.commands.annotation.Dependency
-import revxrsal.commands.annotation.Single
-import revxrsal.commands.exception.CommandErrorException
-import revxrsal.commands.exception.NoPermissionException
 import revxrsal.commands.velocity.VelocityCommandActor
 import revxrsal.commands.velocity.annotation.CommandPermission
 
@@ -23,33 +16,8 @@ import revxrsal.commands.velocity.annotation.CommandPermission
  */
 object CocoaCommand
 {
-    @Command("plv")
-    fun onPluginsVelocity(
-        actor: VelocityCommandActor
-    )
-    {
-        val plugins = CocoaVelocityPlugin.INSTANCE
-            .server.pluginManager.plugins
-
-        if (plugins.isEmpty())
-        {
-            throw CommandErrorException("There are no plugins on this velocity instance.")
-        }
-
-        actor.reply {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("Plugins (${plugins.size}): &3${
-                    plugins.joinToString(
-                        "&f, &3"
-                    ) {
-                        it.description.name.orElse(it.description.id) 
-                    }
-                }")
-        }
-    }
-
     @Command("center-presence")
-    @CocoaPermission("cocoa.command.center-presence")
+    @CommandPermission("cocoa.command.center-presence")
     fun onCenter(actor: VelocityCommandActor)
     {
         CocoaSettingsProcessor.locate<CocoaServerPresenceSettings>()?.let {
@@ -67,7 +35,7 @@ object CocoaCommand
     }
 
     @Command("cocoa-reload")
-    @CocoaPermission("cocoa.command.reload")
+    @CommandPermission("cocoa.command.reload")
     fun onReload(actor: VelocityCommandActor)
     {
         val start = System.currentTimeMillis()

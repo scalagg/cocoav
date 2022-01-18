@@ -1,6 +1,5 @@
 package gg.scala.cocoa
 
-import co.schemati.trevor.api.TrevorService
 import com.google.inject.Inject
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
@@ -23,7 +22,6 @@ import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.listener.PlayerListener
-import gg.scala.cocoa.permission.CocoaPlayerPermissionsAdapter
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
@@ -48,7 +46,6 @@ import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.properties.Delegates
-
 
 /**
  * @author GrowlyX
@@ -144,7 +141,6 @@ constructor(
             return@registerParameterSuggestions DataStoreHandler.ranks.values.map { it.name }
         }
 
-        commandManager.registerPermissionReader(CocoaPlayerPermissionsAdapter)
         commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
 
         commandManager.register(
@@ -214,21 +210,6 @@ constructor(
                         proxySettings[entry.value.id] = entry.value.value
                     }
                 }
-
-            try
-            {
-                settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
-                {
-                    this.connection.useResource {
-                        hset("cocoa:players", "global", TrevorService.getAPI().instanceData.playerCount.toString())
-
-                        maintenanceRank = hget("cocoa:metadata", "maintenance-rank")
-                    }
-                }
-            } catch (e: Exception)
-            {
-//                logger.warning("Failed to update online players! Is Trevor not enabled?")
-            }
         }, 0L, 250L, TimeUnit.MILLISECONDS)
     }
 

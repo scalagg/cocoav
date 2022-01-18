@@ -1,19 +1,20 @@
 package gg.scala.cocoa.command
 
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.cocoa.lemon.rank.Rank
-import gg.scala.cocoa.permission.annotation.CocoaPermission
+import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.*
 import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.velocity.VelocityCommandActor
+import revxrsal.commands.velocity.annotation.CommandPermission
 
 /**
  * @author GrowlyX
  * @since 12/16/2021
  */
 @Command("maintenance")
+@CommandPermission("cocoa.command.maintenance")
 object MaintenanceCommand
 {
     @Dependency
@@ -21,7 +22,6 @@ object MaintenanceCommand
 
     @Subcommand("update")
     @Description("Update maintenance mode's rank.")
-    @CocoaPermission("cocoa.command.maintenance")
     fun onUpdateRank(sender: VelocityCommandActor, lemonSpigotRank: Rank)
     {
         val currentStatus = plugin.maintenance
@@ -41,7 +41,6 @@ object MaintenanceCommand
 
     @Subcommand("toggle")
     @Description("Toggle maintenance mode.")
-    @CocoaPermission("cocoa.command.maintenance")
     fun onToggle(sender: VelocityCommandActor, @Optional lemonSpigotRank: Rank?)
     {
         val currentStatus = plugin.maintenance
@@ -75,7 +74,6 @@ object MaintenanceCommand
     }
 
     @Subcommand("info")
-    @CocoaPermission("cocoa.command.maintenance")
     @Description("View maintenance information.")
     fun onList(sender: VelocityCommandActor)
     {

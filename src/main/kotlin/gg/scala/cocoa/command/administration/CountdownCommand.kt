@@ -5,7 +5,6 @@ import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.formatIntoAbbreviatedString
 import gg.scala.cocoa.formatIntoDetailedString
 import gg.scala.cocoa.parseDuration
-import gg.scala.cocoa.permission.annotation.CocoaPermission
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
@@ -13,6 +12,7 @@ import revxrsal.commands.annotation.Single
 import revxrsal.commands.annotation.Subcommand
 import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.velocity.VelocityCommandActor
+import revxrsal.commands.velocity.annotation.CommandPermission
 import java.util.concurrent.TimeUnit
 
 /**
@@ -20,10 +20,10 @@ import java.util.concurrent.TimeUnit
  * @since 12/23/2021
  */
 @Command("countdown")
+@CommandPermission("cocoa.command.countdown")
 object CountdownCommand
 {
     @Subcommand("staging")
-    @CocoaPermission("cocoa.command.countdown")
     fun onTopic(
         actor: VelocityCommandActor,
         presence: String
@@ -42,7 +42,6 @@ object CountdownCommand
     }
 
     @Subcommand("commenced")
-    @CocoaPermission("cocoa.command.countdown")
     fun onEnded(
         actor: VelocityCommandActor,
         presence: String
@@ -61,7 +60,6 @@ object CountdownCommand
     }
 
     @Subcommand("start-now")
-    @CocoaPermission("cocoa.command.countdown")
     fun onStartNow(actor: VelocityCommandActor)
     {
         CocoaCountdown.INSTANCE.addedAt = System.currentTimeMillis()
@@ -78,7 +76,6 @@ object CountdownCommand
     }
 
     @Subcommand("stop")
-    @CocoaPermission("cocoa.command.countdown")
     fun onStop(actor: VelocityCommandActor)
     {
         CocoaCountdown.INSTANCE.activated = false
@@ -94,7 +91,6 @@ object CountdownCommand
     }
 
     @Subcommand("duration")
-    @CocoaPermission("cocoa.command.countdown")
     fun onDuration(
         actor: VelocityCommandActor,
         @Single duration: String
@@ -123,7 +119,6 @@ object CountdownCommand
     }
 
     @Subcommand("info")
-    @CocoaPermission("cocoa.command.countdown")
     fun onInfo(actor: VelocityCommandActor)
     {
         val duration = CocoaCountdown.INSTANCE.duration

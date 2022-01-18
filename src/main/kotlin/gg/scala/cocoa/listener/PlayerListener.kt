@@ -4,16 +4,19 @@ import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
+import com.velocitypowered.api.event.permission.PermissionsSetupEvent
 import com.velocitypowered.api.event.player.KickedFromServerEvent
 import com.velocitypowered.api.event.player.ServerConnectedEvent
 import com.velocitypowered.api.event.player.ServerPreConnectEvent
+import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
-import gg.scala.cocoa.permission.CocoaPlayerPermissions
-import gg.scala.cocoa.permission.CocoaPlayerPermissions.hasCocoaPermission
+import gg.scala.cocoa.permission.CommandPermissionProvider
+import gg.scala.cocoa.permission.CommandPermissionEngine
+import gg.scala.cocoa.permission.CommandPermissionEngine.hasPermission
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import net.kyori.adventure.text.Component
@@ -101,14 +104,11 @@ object PlayerListener
     @JvmStatic
     val HUNDRED_MILLI: Duration = Duration.ofMillis(100L)
 
-    @JvmStatic
-    val TWO_HUNDRED_MILLI: Duration = Duration.ofMillis(200L)
-
     @Subscribe
     fun onDisconnect(event: DisconnectEvent)
     {
         val isStaffMember = event.player
-            .hasCocoaPermission("cocoa.staff")
+            .hasPermission("cocoa.staff")
 
         val serverName = event.player.currentServer
             .orElse(null)?.serverInfo?.name
@@ -127,7 +127,7 @@ object PlayerListener
     @Subscribe
     fun onServerPreConnect(event: ServerPreConnectEvent)
     {
-        val isStaffMember = event.player.hasCocoaPermission("cocoa.staff")
+        val isStaffMember = event.player.hasPermission("cocoa.staff")
 
         if (event.originalServer == null)
         {
@@ -140,14 +140,29 @@ object PlayerListener
     }
 
     @Subscribe
+    fun onPermissionSetup(event: PermissionsSetupEvent)
+    {
+        val subject = event.subject
+
+        if (subject is Player)
+        {
+            CommandPermissionEngine
+                .calculatePermissions(
+                    subject.uniqueId
+                )
+
+            event.provider =
+                CommandPermissionProvider(subject)
+        }
+    }
+
+    @Subscribe
     fun onServerConnected(event: ServerConnectedEvent)
     {
         val previousServer = event.previousServer
             .orElse(null)
 
-        CocoaPlayerPermissions.calculatePermissions(event.player.uniqueId)
-
-        if (event.player.hasCocoaPermission("cocoa.staff"))
+        if (event.player.hasPermission("cocoa.staff"))
         {
             val serverName = event.server.serverInfo.name
 
@@ -177,7 +192,7 @@ object PlayerListener
     {
         val kickedServer = event.server.serverInfo
 
-        val newServer = if (event.player.hasCocoaPermission("cocoa.staff"))
+        val newServer = if (event.player.hasPermission("cocoa.staff"))
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
         val newComponent = LegacyComponentSerializer.legacyAmpersand()

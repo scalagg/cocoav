@@ -13,12 +13,6 @@ enum class PunishmentCategory(val intensity: PunishmentCategoryIntensity, val pr
         val VALUES = values()
 
         @JvmStatic
-        val PERSISTENT = listOf(MUTE, BAN, BLACKLIST)
-
-        @JvmStatic
-        val VALUES_2 = listOf(KICK, MUTE, BAN, BLACKLIST)
-
-        @JvmStatic
         val IP_REL = listOf(BLACKLIST, BAN)
 
         @JvmStatic

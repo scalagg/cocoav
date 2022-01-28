@@ -23,7 +23,7 @@ object DataStoreHandler
     val ranks = mutableMapOf<UUID, Rank>()
     val rankOf = mutableMapOf<UUID, UUID>()
 
-    fun initialLoad()
+    fun configure()
     {
         DataStoreObjectControllerCache.create<Rank>(Serializers.gson)
         DataStoreObjectControllerCache.create<Grant>(Serializers.gson)

@@ -4,6 +4,8 @@ import com.google.inject.Inject
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
+import com.velocitypowered.api.plugin.Dependency
+import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.RegisteredServer
@@ -35,15 +37,16 @@ import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
+import net.kyori.adventure.text.format.NamedTextColor
 import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.velocity.VelocityCommandHandler
 import java.io.File
 import java.nio.file.Path
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.properties.Delegates
 
@@ -51,6 +54,16 @@ import kotlin.properties.Delegates
  * @author GrowlyX
  * @since 12/15/2021
  */
+@Plugin(
+    id = "cocoa",
+    name = "cocoa",
+    version = "1.1.0",
+    url = "https://scala.gg/",
+    authors = ["Scala"],
+    dependencies = [
+        Dependency(id = "store-velocity")
+    ]
+)
 class CocoaVelocityPlugin
 @Inject
 constructor(
@@ -101,7 +114,7 @@ constructor(
         CocoaSettingsProcessor.loadSettings<CocoaServerPresenceSettings>("presence")
         CocoaSettingsProcessor.loadSettings<CocoaCountdownSettings>("countdown")
 
-        DataStoreHandler.initialLoad()
+        DataStoreHandler.configure()
 
         CocoaServerPresenceHandler.initialLoad()
         CocoaServerPresenceHandler.trackPresence(WhitelistedPresenceOverride)
@@ -112,6 +125,11 @@ constructor(
         startRedisFunctionality()
     }
 
+    var allowConnections = false
+
+    private var allowThread: ScheduledExecutorService = Executors
+        .newSingleThreadScheduledExecutor()
+
     @Subscribe(
         order = PostOrder.LAST
     )
@@ -120,21 +138,18 @@ constructor(
         val commandManager = VelocityCommandHandler
             .create(this, server)
 
-        listOf(
-            "org.mongodb.driver.cluster",
-            "org.mongodb.driver.connection"
-        ).forEach {
-            val mongoLogger = Logger.getLogger(it)
-            mongoLogger.level = Level.WARNING
-        }
-
         enable()
+
+        allowThread.schedule({
+            allowConnections = true
+            logger.info("Now accepting connections!")
+        }, 1L, TimeUnit.SECONDS)
 
         commandManager.registerContextResolver(Rank::class.java) {
             val firstArg = it.input().toMutableList()[0]
 
             return@registerContextResolver DataStoreHandler.findRank(firstArg)
-                ?: throw CommandErrorException("Sorry, that rank does not exist.")
+                ?: throw CommandErrorException("There is no rank with the name: ${NamedTextColor.YELLOW}$firstArg${NamedTextColor.RED}.")
         }
 
         commandManager.autoCompleter.registerParameterSuggestions(Rank::class.java) { _, _, _ ->
@@ -201,16 +216,22 @@ constructor(
         }, 0L, 2L, TimeUnit.SECONDS)
 
         executor.scheduleAtFixedRate({
-            settingsLayer
-                .loadAll(DataStoreStorageType.REDIS)
-                .thenAccept {
-                    proxySettings.clear()
+            settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
+            {
+                this.connection.useResource {
+                    for (entry in hgetAll("cocoa:metadata").entries)
+                    {
+                        proxySettings[entry.key] =
+                            entry.value.toBoolean()
+                    }
 
-                    it.forEach { entry ->
-                        proxySettings[entry.value.id] = entry.value.value
+                    for (entry in hgetAll("cocoa:unique-ids").entries)
+                    {
+                        maintenanceRank = entry.value
                     }
                 }
-        }, 0L, 250L, TimeUnit.MILLISECONDS)
+            }
+        }, 0L, 500L, TimeUnit.MILLISECONDS)
     }
 
     fun fetchBestLobby(): RegisteredServer?
@@ -242,12 +263,12 @@ constructor(
         settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
         {
             this.connection.useResource {
-                hset("cocoa:metadata", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                hset("cocoa:unique-ids", "maintenance-rank", lemonSpigotRank.uuid.toString())
             }
         }
     }
 
-    fun updateMaintenanceMode(lemonSpigotRank: Rank?): CompletableFuture<Void>
+    fun updateMaintenanceMode(lemonSpigotRank: Rank?)
     {
         val newValue = !maintenance
         proxySettings["maintenance"] = newValue
@@ -257,15 +278,17 @@ constructor(
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
             {
                 this.connection.useResource {
-                    hset("cocoa:metadata", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                    hset("cocoa:unique-ids", "maintenance-rank", lemonSpigotRank.uuid.toString())
                 }
             }
         }
 
-        return settingsLayer.save(
-            CocoaVelocitySettingsEntry("maintenance", newValue),
-            DataStoreStorageType.REDIS
-        )
+        settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
+        {
+            this.connection.useResource {
+                hset("cocoa:metadata", "maintenance", newValue.toString())
+            }
+        }
     }
 
     fun shouldAllowOrStay(uuid: UUID): Boolean

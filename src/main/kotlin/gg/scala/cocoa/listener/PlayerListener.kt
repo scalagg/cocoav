@@ -2,6 +2,7 @@ package gg.scala.cocoa.listener
 
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
+import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
@@ -23,7 +24,6 @@ import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.type.DataStoreStorageType
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
@@ -45,6 +45,15 @@ object PlayerListener
         continuation: Continuation
     )
     {
+        if (!plugin.allowConnections)
+        {
+            event.result = ResultedEvent.ComponentResult
+                .denied(CocoaVelocityConstants.PROXY_BOOT)
+
+            continuation.resume()
+            return
+        }
+
         val uniqueId = event.player.uniqueId
 
         ForkJoinPool.commonPool().execute {

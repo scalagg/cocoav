@@ -50,26 +50,26 @@ object MaintenanceCommand
             throw CommandErrorException("You must define a rank to toggle maintenance mode")
         }
 
-        plugin.updateMaintenanceMode(lemonSpigotRank).thenRun {
-            sender.reply {
-                LegacyComponentSerializer.legacyAmpersand()
-                    .deserialize(
-                        if (!currentStatus)
-                        {
-                            CocoaRedisSubscriber.buildMessage(
-                                "maintenance-kick",
-                                mapOf()
-                            ).dispatch(
-                                CocoaVelocityPlugin.INSTANCE.proxyBanana,
-                            )
+        plugin.updateMaintenanceMode(lemonSpigotRank)
 
-                            "&aMaintenance mode has been enabled."
-                        } else
-                        {
-                            "&cMaintenance mode has been disabled."
-                        }
-                    )
-            }
+        sender.reply {
+            LegacyComponentSerializer.legacyAmpersand()
+                .deserialize(
+                    if (!currentStatus)
+                    {
+                        CocoaRedisSubscriber.buildMessage(
+                            "maintenance-kick",
+                            mapOf()
+                        ).dispatch(
+                            CocoaVelocityPlugin.INSTANCE.proxyBanana,
+                        )
+
+                        "&aMaintenance mode has been enabled."
+                    } else
+                    {
+                        "&cMaintenance mode has been disabled."
+                    }
+                )
         }
     }
 

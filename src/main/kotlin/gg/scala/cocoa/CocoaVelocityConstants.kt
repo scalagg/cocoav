@@ -31,6 +31,11 @@ object CocoaVelocityConstants
         .deserialize("&cYou cannot join with a VPN!")
 
     @JvmStatic
+    val PROXY_BOOT = LegacyComponentSerializer
+        .legacyAmpersand()
+        .deserialize("&c[Velocity] The proxy is currently booting.")
+
+    @JvmStatic
     val DENIED_MAINTENANCE = ResultedEvent
         .ComponentResult.denied(MAINTENANCE)!!
 

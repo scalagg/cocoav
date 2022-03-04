@@ -158,7 +158,10 @@ object PlayerListener
 
         DataStoreObjectControllerCache
             .findNotNull<LemonPlayer>()
-            .remove(event.player.uniqueId)
+            .delete(
+                event.player.uniqueId,
+                DataStoreStorageType.CACHE
+            )
     }
 
     @Subscribe

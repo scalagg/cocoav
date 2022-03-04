@@ -7,6 +7,7 @@ import gg.scala.cocoa.lemon.Punishment
 import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.store.controller.DataStoreObjectControllerCache
+import gg.scala.store.storage.impl.CachedDataStoreStorageLayer
 import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
@@ -25,10 +26,10 @@ object DataStoreHandler
 
     fun configure()
     {
-        DataStoreObjectControllerCache.create<Rank>(Serializers.gson)
-        DataStoreObjectControllerCache.create<Grant>(Serializers.gson)
-        DataStoreObjectControllerCache.create<Punishment>(Serializers.gson)
-        DataStoreObjectControllerCache.create<LemonPlayer>(Serializers.gson)
+        DataStoreObjectControllerCache.create<Rank>()
+        DataStoreObjectControllerCache.create<Grant>()
+        DataStoreObjectControllerCache.create<Punishment>()
+        DataStoreObjectControllerCache.create<LemonPlayer>()
 
         DataStoreObjectControllerCache.findNotNull<Rank>()
             .loadAll(DataStoreStorageType.MONGO)
@@ -150,13 +151,23 @@ object DataStoreHandler
     fun findPlayer(uuid: UUID): LemonPlayer
     {
         return DataStoreObjectControllerCache
-            .findNotNull<LemonPlayer>().localCache[uuid]!!
+            .findNotNull<LemonPlayer>()
+            .useLayerWithReturn<CachedDataStoreStorageLayer<LemonPlayer>, LemonPlayer>(
+                DataStoreStorageType.CACHE
+            ) {
+                connection.getConnection()[uuid]!!
+            }
     }
 
     fun findPlayerNullable(uuid: UUID): LemonPlayer?
     {
         return DataStoreObjectControllerCache
-            .findNotNull<LemonPlayer>().localCache[uuid]
+            .findNotNull<LemonPlayer>()
+            .useLayerWithReturn<CachedDataStoreStorageLayer<LemonPlayer>, LemonPlayer?>(
+                DataStoreStorageType.CACHE
+            ) {
+                connection.getConnection()[uuid]
+            }
     }
 
     fun findRank(uuid: UUID?): Rank?

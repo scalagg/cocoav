@@ -33,6 +33,7 @@ import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
+import gg.scala.store.serializer.serializers.GsonSerializer
 import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
@@ -138,6 +139,10 @@ constructor(
         val commandManager = VelocityCommandHandler
             .create(this, server)
 
+        GsonSerializer.provideCustomGson {
+            Serializers.gson
+        }
+
         enable()
 
         allowThread.schedule({
@@ -204,8 +209,8 @@ constructor(
         proxyBanana.subscribe()
         spigotBanana.subscribe()
 
-        settingsLayer = DataStoreObjectControllerCache.create(Serializers.gson)
-        cloudLayer = DataStoreObjectControllerCache.create(Serializers.gson)
+        settingsLayer = DataStoreObjectControllerCache.create()
+        cloudLayer = DataStoreObjectControllerCache.create()
 
         val executor = Executors.newScheduledThreadPool(1)
 

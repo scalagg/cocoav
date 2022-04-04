@@ -39,6 +39,8 @@ allprojects {
 
         implementation "net.evilblock.cubed:velocity:1.3.5"
 
+        compileOnly fileTree("lib")
+
         implementation "com.github.Revxrsal.Lamp:velocity:3.0.2"
         implementation "com.github.Revxrsal.Lamp:common:3.0.2"
     }

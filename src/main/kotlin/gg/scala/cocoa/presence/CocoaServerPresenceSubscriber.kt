@@ -18,7 +18,7 @@ object CocoaServerPresenceSubscriber
     private val plugin = CocoaVelocityPlugin.INSTANCE
 
     private val whitelisted = Version(
-        -1, "● Whitelisted"
+        -1, "Whitelisted"
     )
 
     @Subscribe

@@ -8,14 +8,10 @@ import gg.scala.banana.subscribe.marker.BananaHandler
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
-import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.store.storage.type.DataStoreStorageType
-import net.evilblock.cubed.serializers.Serializers
-import revxrsal.commands.exception.CommandErrorException
 import java.net.InetSocketAddress
 import java.util.*
 
@@ -112,7 +108,7 @@ object CocoaRedisSubscriber : BananaHandler
                 it["with-server"] = "false"
             }
         ).dispatch(
-            plugin.spigotBanana
+            plugin.spigotChannel
         )
     }
 

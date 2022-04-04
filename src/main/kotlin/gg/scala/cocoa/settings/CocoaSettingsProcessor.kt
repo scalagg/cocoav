@@ -2,7 +2,6 @@ package gg.scala.cocoa.settings
 
 import com.google.common.io.Files
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
@@ -86,7 +85,7 @@ object CocoaSettingsProcessor
                             CocoaRedisSubscriber.buildMessage(
                                 "cloud-sync", mutableMapOf()
                             ).dispatch(
-                                CocoaVelocityPlugin.INSTANCE.proxyBanana
+                                CocoaVelocityPlugin.INSTANCE.proxyChannel
                             )
                         }
                 } catch (exception: Exception)

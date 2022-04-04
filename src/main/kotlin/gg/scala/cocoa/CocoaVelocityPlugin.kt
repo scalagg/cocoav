@@ -10,9 +10,11 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import com.velocitypowered.api.proxy.server.ServerInfo
-import gg.scala.banana.Banana
-import gg.scala.banana.BananaBuilder
-import gg.scala.banana.options.BananaOptions
+import gg.scala.aware.Aware
+import gg.scala.aware.AwareBuilder
+import gg.scala.aware.AwareHub
+import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
+import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.command.GlobalListCommand
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MaintenanceCommand
@@ -35,7 +37,7 @@ import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
-import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
+import net.evilblock.cubed.serializers.Serializers
 import net.kyori.adventure.text.format.NamedTextColor
 import revxrsal.commands.exception.CommandErrorException
 import revxrsal.commands.velocity.VelocityCommandHandler
@@ -84,10 +86,8 @@ constructor(
         }
     }
 
-    var uuidCache by Delegates.notNull<RedisUUIDCache>()
-
-    var proxyBanana by Delegates.notNull<Banana>()
-    var spigotBanana by Delegates.notNull<Banana>()
+    var proxyChannel by Delegates.notNull<Aware<AwareMessage>>()
+    var spigotChannel by Delegates.notNull<Aware<AwareMessage>>()
 
     var settingsLayer by Delegates.notNull<DataStoreObjectController<CocoaVelocitySettingsEntry>>()
     var cloudLayer by Delegates.notNull<DataStoreObjectController<CocoaSettingsModel>>()
@@ -125,7 +125,7 @@ constructor(
 
     var allowConnections = false
 
-    private var allowThread: ScheduledExecutorService = Executors
+    private var allowThread = Executors
         .newSingleThreadScheduledExecutor()
 
     @Subscribe(
@@ -169,43 +169,43 @@ constructor(
 
     private fun startRedisFunctionality()
     {
-        val settings = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
 
-        proxyBanana = BananaBuilder()
-            .options(
-                BananaOptions(
-                    channel = "cocoa",
-                    async = true
-                )
-            )
-            .credentials(
-                settings.credentials
-            )
+        AwareHub.configure(settings.credentials) {
+            Serializers.gson
+        }
+
+        proxyChannel = AwareBuilder
+            .of<AwareMessage>("cocoa")
+            .logger(logger)
+            .codec(AwareMessageCodec)
             .build()
 
-        spigotBanana = BananaBuilder()
-            .options(
-                BananaOptions(
-                    channel = "lemon:spigot",
-                    async = true,
-                    ignoreNonExistentHandlers = true
-                )
-            )
-            .credentials(
-                settings.credentials
-            )
+        spigotChannel = AwareBuilder
+            .of<AwareMessage>("lemon:spigot")
+            .logger(logger)
+            .codec(AwareMessageCodec)
             .build()
 
-        proxyBanana.registerClass(CocoaRedisSubscriber)
-        spigotBanana.registerClass(LemonRedisHandler)
+        proxyChannel.listen(CocoaRedisSubscriber)
+        spigotChannel.listen(LemonRedisHandler)
 
-        proxyBanana.subscribe()
-        spigotBanana.subscribe()
+        proxyChannel.connect()
+        spigotChannel.connect()
 
         settingsLayer = DataStoreObjectControllerCache.create()
         cloudLayer = DataStoreObjectControllerCache.create()
 
-        val executor = Executors.newScheduledThreadPool(1)
+        val executor = Executors
+            .newScheduledThreadPool(1)
+
+        Runtime.getRuntime().addShutdownHook(Thread {
+            executor.shutdown()
+
+            proxyChannel.shutdown()
+            spigotChannel.shutdown()
+        })
 
         executor.scheduleAtFixedRate({
             server.allPlayers.forEach {

@@ -61,7 +61,7 @@ object MaintenanceCommand
                             "maintenance-kick",
                             mapOf()
                         ).dispatch(
-                            CocoaVelocityPlugin.INSTANCE.proxyBanana,
+                            CocoaVelocityPlugin.INSTANCE.proxyChannel,
                         )
 
                         "&aMaintenance mode has been enabled."

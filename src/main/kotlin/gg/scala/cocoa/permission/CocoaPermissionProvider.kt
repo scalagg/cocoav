@@ -15,7 +15,7 @@ object CocoaPermissionProvider : PermissionProvider
     {
         if (subject !is Player)
         {
-            throw Throwable("CocoaPermissionFunction only accept players.")
+            throw Throwable("CocoaPermissionFunction only accepts players.")
         }
 
         return CocoaPermissionFunction(subject)

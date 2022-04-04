@@ -11,7 +11,7 @@ import javax.xml.crypto.Data
  */
 object CocoaPermissionEngine
 {
-    val permissions = mutableMapOf<UUID, List<String>>()
+    private val permissions = mutableMapOf<UUID, List<String>>()
 
     fun calculatePermissions(uniqueId: UUID)
     {
@@ -41,15 +41,5 @@ object CocoaPermissionEngine
     fun Player.hasCocoaPermission(permission: String): Boolean
     {
         return permissions[uniqueId]?.contains(permission) == true
-    }
-
-    fun UUID.hasPermission(permission: String): Boolean
-    {
-        return permissions[this]?.contains(permission) == true
-    }
-
-    fun UUID.hasPermissionRaw(permission: String): Boolean
-    {
-        return permissions[this]!!.contains(permission)
     }
 }

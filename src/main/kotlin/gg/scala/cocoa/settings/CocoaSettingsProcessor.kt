@@ -84,8 +84,8 @@ object CocoaSettingsProcessor
                         .thenRun {
                             CocoaRedisSubscriber.buildMessage(
                                 "cloud-sync", mutableMapOf()
-                            ).dispatch(
-                                CocoaVelocityPlugin.INSTANCE.proxyChannel
+                            ).publish(
+                                channel = "cocoa"
                             )
                         }
                 } catch (exception: Exception)

@@ -60,8 +60,8 @@ object MaintenanceCommand
                         CocoaRedisSubscriber.buildMessage(
                             "maintenance-kick",
                             mapOf()
-                        ).dispatch(
-                            CocoaVelocityPlugin.INSTANCE.proxyChannel,
+                        ).publish(
+                            channel = "cocoa"
                         )
 
                         "&aMaintenance mode has been enabled."

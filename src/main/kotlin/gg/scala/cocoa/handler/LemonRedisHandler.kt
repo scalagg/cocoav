@@ -1,8 +1,7 @@
 package gg.scala.cocoa.handler
 
-import gg.scala.banana.annotate.Subscribe
-import gg.scala.banana.message.Message
-import gg.scala.banana.subscribe.marker.BananaHandler
+import gg.scala.aware.annotation.Subscribe
+import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.type.DataStoreStorageType
@@ -12,25 +11,23 @@ import java.util.*
  * @author GrowlyX
  * @since 9/21/2021
  */
-object LemonRedisHandler : BananaHandler
+object LemonRedisHandler
 {
     @Subscribe("recalculate-grants")
-    fun onGrantHanding(message: Message)
+    fun onGrantHanding(message: AwareMessage)
     {
-        val targetUuid = UUID.fromString(
-            message["uniqueId"]
-        )
+        val targetUuid = message
+            .retrieve<UUID>("uniqueId")
 
         DataStoreHandler.rankOf[targetUuid] =
             DataStoreHandler.loadRankOfNow(targetUuid).uuid
     }
 
     @Subscribe("recalculate-punishments")
-    fun onPunishmentHandling(message: Message)
+    fun onPunishmentHandling(message: AwareMessage)
     {
-        val targetUuid = UUID.fromString(
-            message["uniqueId"]
-        )
+        val targetUuid = message
+            .retrieve<UUID>("uniqueId")
 
         DataStoreHandler.findPlayer(targetUuid).let {
             it.checkForIpRelative()
@@ -39,21 +36,20 @@ object LemonRedisHandler : BananaHandler
     }
 
     @Subscribe("rank-delete")
-    fun onRankDelete(message: Message)
+    fun onRankDelete(message: AwareMessage)
     {
-        val rankUuid = UUID.fromString(
-            message["uniqueId"]
-        )
+        val rankUuid = message
+            .retrieve<UUID>("uniqueId")
 
         DataStoreHandler.ranks.remove(rankUuid)
     }
 
     @Subscribe("rank-update")
-    fun onRankUpdate(message: Message)
+    fun onRankUpdate(message: AwareMessage)
     {
         val completableFuture = DataStoreObjectControllerCache.findNotNull<Rank>()
             .load(
-                UUID.fromString(message["uniqueId"]),
+                message.retrieve("uniqueId"),
                 DataStoreStorageType.MONGO
             )
 

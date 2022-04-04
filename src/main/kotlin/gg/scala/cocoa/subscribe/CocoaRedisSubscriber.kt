@@ -2,9 +2,8 @@ package gg.scala.cocoa.subscribe
 
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.ServerInfo
-import gg.scala.banana.annotate.Subscribe
-import gg.scala.banana.message.Message
-import gg.scala.banana.subscribe.marker.BananaHandler
+import gg.scala.aware.annotation.Subscribe
+import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
@@ -19,12 +18,12 @@ import java.util.*
  * @author GrowlyX
  * @since 9/12/2021
  */
-object CocoaRedisSubscriber : BananaHandler
+object CocoaRedisSubscriber
 {
     private val plugin = CocoaVelocityPlugin.INSTANCE
 
     @Subscribe("maintenance-kick")
-    fun onMaintenanceKick(message: Message)
+    fun onMaintenanceKick(message: AwareMessage)
     {
         plugin.server.allPlayers
             .filter { !plugin.shouldAllowOrStay(it.uniqueId) }
@@ -34,25 +33,30 @@ object CocoaRedisSubscriber : BananaHandler
     }
 
     @Subscribe("add-server")
-    fun onAddServer(message: Message)
+    fun onAddServer(message: AwareMessage)
     {
+        val id = message.retrieve<String>("id")
+
         val server = plugin.server.allServers.firstOrNull {
-            it.serverInfo.name.equals(message["id"]!!, true)
+            it.serverInfo.name.equals(id, true)
         }
 
         if (server != null)
             return
 
         plugin.server.registerServer(
-            ServerInfo(message["id"]!!, InetSocketAddress(message["address"]!!, message["port"]!!.toInt()))
+            ServerInfo(id, InetSocketAddress(
+                message.retrieve<String>("address"),
+                message.retrieve("port")
+            ))
         )
     }
 
     @Subscribe("remove-server")
-    fun onRemoveServer(message: Message)
+    fun onRemoveServer(message: AwareMessage)
     {
         val server = plugin.server.allServers.firstOrNull {
-            it.serverInfo.name.equals(message["id"]!!, true)
+            it.serverInfo.name.equals(message.retrieve("id"), true)
         } ?: throw RuntimeException("That server does not exist.")
 
         plugin.server.unregisterServer(server.serverInfo)
@@ -66,7 +70,7 @@ object CocoaRedisSubscriber : BananaHandler
     )
 
     @Subscribe("cloud-sync")
-    fun onCloudSync(message: Message)
+    fun onCloudSync(message: AwareMessage)
     {
         println("[Cocoa] Started cloud sync request!")
 
@@ -107,16 +111,20 @@ object CocoaRedisSubscriber : BananaHandler
                 it["server"] = "proxy"
                 it["with-server"] = "false"
             }
-        ).dispatch(
-            plugin.spigotChannel
-        )
+        ).publish()
     }
 
-    fun buildMessage(packet: String, message: Map<String, String>): Message
+    fun buildMessage(
+        packet: String,
+        message: Map<String, String>
+    ): AwareMessage
     {
-        return Message(packet).also {
-            message.forEach { (key, value) ->
-                it[key] = value
+        return AwareMessage.of(
+            packet, plugin.spigotChannel
+        ).apply {
+            for (entry in message)
+            {
+                this.assign(entry.key, entry.value)
             }
         }
     }

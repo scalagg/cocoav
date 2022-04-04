@@ -33,10 +33,8 @@ import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
-import gg.scala.store.serializer.serializers.GsonSerializer
 import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
-import net.evilblock.cubed.serializers.Serializers
 import net.evilblock.cubed.store.uuidcache.impl.RedisUUIDCache
 import net.kyori.adventure.text.format.NamedTextColor
 import revxrsal.commands.exception.CommandErrorException
@@ -45,7 +43,6 @@ import java.io.File
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.Executors
-import java.util.concurrent.ForkJoinPool
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
@@ -138,10 +135,6 @@ constructor(
     {
         val commandManager = VelocityCommandHandler
             .create(this, server)
-
-        GsonSerializer.provideCustomGson {
-            Serializers.gson
-        }
 
         enable()
 

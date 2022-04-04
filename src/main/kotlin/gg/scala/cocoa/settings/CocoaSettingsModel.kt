@@ -10,6 +10,5 @@ import java.util.*
  */
 abstract class CocoaSettingsModel : AbstractTypeSerializable, IDataStoreObject
 {
-    override val identifier: UUID
-        get() = UUID.randomUUID()
+    override val identifier: UUID = UUID.randomUUID()
 }

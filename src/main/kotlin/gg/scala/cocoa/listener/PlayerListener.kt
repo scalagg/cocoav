@@ -1,5 +1,6 @@
 package gg.scala.cocoa.listener
 
+import com.google.common.cache.CacheBuilder
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.ResultedEvent
@@ -30,6 +31,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.TimeUnit
 
 /**
  * @author GrowlyX
@@ -38,6 +40,11 @@ import java.util.concurrent.ForkJoinPool
 object PlayerListener
 {
     private val plugin = CocoaVelocityPlugin.INSTANCE
+
+    private val kickCounter = CacheBuilder
+        .newBuilder()
+        .expireAfterAccess(2L, TimeUnit.SECONDS)
+        .build<UUID, Int>()
 
     @Subscribe(
         order = PostOrder.FIRST
@@ -287,6 +294,20 @@ object PlayerListener
         val newServer = if (event.player.hasPermission("cocoa.staff"))
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
+        val kicked = kickCounter
+            .get(event.player.uniqueId) { 0 }
+
+        if (newServer != null && kicked >= 3)
+        {
+            event.result = KickedFromServerEvent
+                .DisconnectPlayer.create(
+                    Component.text("Something went terribly wrong while trying to connect you to a server.")
+                        .color(NamedTextColor.RED)
+                )
+
+            return
+        }
+
         if (newServer != null)
         {
             event.result = KickedFromServerEvent
@@ -299,6 +320,8 @@ object PlayerListener
                         .color(NamedTextColor.RED)
                 )
         }
+
+        kickCounter.put(event.player.uniqueId, kicked + 1)
     }
 
     private fun color(uuid: UUID): String

@@ -182,7 +182,7 @@ constructor(
             .build()
 
         spigotChannel = AwareBuilder
-            .of<AwareMessage>("lemon:spigot")
+            .of<AwareMessage>("lemon")
             .logger(logger)
             .codec(AwareMessageCodec)
             .build()
@@ -216,13 +216,13 @@ constructor(
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
             {
                 this.connection.useResource {
-                    for (entry in hgetAll("cocoa:metadata").entries)
+                    for (entry in sync().hgetall("cocoa:metadata").entries)
                     {
                         proxySettings[entry.key] =
                             entry.value.toBoolean()
                     }
 
-                    for (entry in hgetAll("cocoa:unique-ids").entries)
+                    for (entry in sync().hgetall("cocoa:unique-ids").entries)
                     {
                         maintenanceRank = entry.value
                     }
@@ -260,7 +260,7 @@ constructor(
         settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
         {
             this.connection.useResource {
-                hset("cocoa:unique-ids", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                sync().hset("cocoa:unique-ids", "maintenance-rank", lemonSpigotRank.uuid.toString())
             }
         }
     }
@@ -275,7 +275,7 @@ constructor(
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
             {
                 this.connection.useResource {
-                    hset("cocoa:unique-ids", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                    sync().hset("cocoa:unique-ids", "maintenance-rank", lemonSpigotRank.uuid.toString())
                 }
             }
         }
@@ -283,7 +283,7 @@ constructor(
         settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
         {
             this.connection.useResource {
-                hset("cocoa:metadata", "maintenance", newValue.toString())
+                sync().hset("cocoa:metadata", "maintenance", newValue.toString())
             }
         }
     }

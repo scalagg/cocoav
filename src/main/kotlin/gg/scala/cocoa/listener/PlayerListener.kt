@@ -24,6 +24,8 @@ import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.type.DataStoreStorageType
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
@@ -284,10 +286,19 @@ object PlayerListener
     {
         val newServer = if (event.player.hasPermission("cocoa.staff"))
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
-            ?: return
 
-        event.result = KickedFromServerEvent
-            .RedirectPlayer.create(newServer)
+        if (newServer != null)
+        {
+            event.result = KickedFromServerEvent
+                .RedirectPlayer.create(newServer)
+        } else
+        {
+            event.result = KickedFromServerEvent
+                .DisconnectPlayer.create(
+                    Component.text("Sorry, we weren't able to find an available lobby for you.")
+                        .color(NamedTextColor.RED)
+                )
+        }
     }
 
     private fun color(uuid: UUID): String

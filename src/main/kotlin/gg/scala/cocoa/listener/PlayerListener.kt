@@ -171,11 +171,18 @@ object PlayerListener
 
         if (!event.player.currentServer.isPresent)
         {
-            event.result = ServerPreConnectEvent
-                .ServerResult.allowed(
-                    if (isStaffMember)
-                        plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
-                )
+            val server = if (isStaffMember)
+                plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
+
+            if (server != null)
+            {
+                event.result = ServerPreConnectEvent
+                    .ServerResult.allowed(server)
+            } else
+            {
+                event.result = ServerPreConnectEvent
+                    .ServerResult.denied()
+            }
         } else
         {
             val lemonPlayer = DataStoreHandler

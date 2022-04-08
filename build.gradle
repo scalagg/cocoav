@@ -44,6 +44,9 @@ allprojects {
 
         implementation "com.github.Revxrsal.Lamp:velocity:3.0.2"
         implementation "com.github.Revxrsal.Lamp:common:3.0.2"
+        implementation "com.github.Revxrsal.Lamp:ktx:3.0.2"
+
+        implementation "io.lettuce:lettuce-core:6.1.8.RELEASE"
     }
 
     compileKotlin {

@@ -8,6 +8,7 @@ import gg.scala.cocoa.parseDuration
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
+import revxrsal.commands.annotation.Default
 import revxrsal.commands.annotation.Single
 import revxrsal.commands.annotation.Subcommand
 import revxrsal.commands.exception.CommandErrorException
@@ -118,6 +119,7 @@ object CountdownCommand
         }
     }
 
+    @Default
     @Subcommand("info")
     fun onInfo(actor: VelocityCommandActor)
     {
@@ -142,7 +144,7 @@ object CountdownCommand
 
         message += if (duration == 0L)
         {
-            "  &cNot set"
+            " &cNot set"
         } else
         {
             "\n   &6- &fDetailed: &7${formatIntoDetailedString(TimeUnit.MILLISECONDS.toSeconds(duration).toInt())}\n   &6- &fAbbreviated: &7${formatIntoAbbreviatedString(TimeUnit.MILLISECONDS.toSeconds(duration).toInt())}"

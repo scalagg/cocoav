@@ -73,6 +73,7 @@ object MaintenanceCommand
         }
     }
 
+    @Default
     @Subcommand("info")
     @Description("View maintenance information.")
     fun onList(sender: VelocityCommandActor)
@@ -81,7 +82,7 @@ object MaintenanceCommand
 
         if (!currentStatus)
         {
-            throw CommandErrorException("You must enable maintenance mode to perform this command.")
+            throw CommandErrorException("Maintenance mode is not enabled.")
         }
 
         val maintenanceRank = plugin.maintenanceRank()

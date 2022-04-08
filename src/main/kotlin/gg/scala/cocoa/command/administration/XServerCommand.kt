@@ -3,6 +3,7 @@ package gg.scala.cocoa.command.administration
 import com.velocitypowered.api.proxy.server.ServerInfo
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import revxrsal.commands.annotation.Command
+import revxrsal.commands.annotation.Default
 import revxrsal.commands.annotation.Single
 import revxrsal.commands.annotation.Subcommand
 import revxrsal.commands.exception.CommandErrorException

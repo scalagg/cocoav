@@ -37,7 +37,7 @@ allprojects {
         implementation "gg.scala.lemon:common:1.1.1"
         compileOnly "gg.scala.store:velocity:0.1.3"
 
-        implementation "net.evilblock.cubed:velocity:1.3.5"
+        implementation "net.evilblock.cubed:velocity:1.3.7"
         implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
         compileOnly fileTree("lib")

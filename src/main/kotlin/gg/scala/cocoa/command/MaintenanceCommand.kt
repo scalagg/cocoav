@@ -41,7 +41,10 @@ object MaintenanceCommand
 
     @Subcommand("toggle")
     @Description("Toggle maintenance mode.")
-    fun onToggle(sender: VelocityCommandActor, @Optional lemonSpigotRank: Rank?)
+    fun onToggle(
+        sender: VelocityCommandActor,
+        @Optional lemonSpigotRank: Rank?
+    )
     {
         val currentStatus = plugin.maintenance
 

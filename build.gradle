@@ -34,19 +34,16 @@ allprojects {
         compileOnly "com.velocitypowered:velocity-api:3.0.1"
         kapt "com.velocitypowered:velocity-api:3.0.1"
 
-        implementation "gg.scala.lemon:common:1.1.1"
         compileOnly "gg.scala.store:velocity:0.1.3"
 
-        implementation "net.evilblock.cubed:velocity:1.3.7"
-        implementation "org.jetbrains.kotlin:kotlin-stdlib"
+        implementation "net.evilblock.cubed:serializers:1.3.7"
+        implementation "net.evilblock.cubed:store:1.3.7"
 
         compileOnly fileTree("lib")
 
-        implementation "com.github.Revxrsal.Lamp:velocity:3.0.2"
-        implementation "com.github.Revxrsal.Lamp:common:3.0.2"
-        implementation "com.github.Revxrsal.Lamp:ktx:3.0.2"
-
-        implementation "io.lettuce:lettuce-core:6.1.8.RELEASE"
+        implementation "com.github.Revxrsal.Lamp:velocity:3.0.4"
+        implementation "com.github.Revxrsal.Lamp:common:3.0.4"
+        implementation "com.github.Revxrsal.Lamp:ktx:3.0.4"
     }
 
     compileKotlin {
@@ -60,6 +57,7 @@ allprojects {
         exclude "**/*.kotlin_metadata"
         exclude "**/*.kotlin_builtins"
         exclude "META-INF/"
+        exclude "**/kotlin/"
 
         archiveFileName = "cocoa-velocity.jar"
     }

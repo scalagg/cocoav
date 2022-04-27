@@ -77,7 +77,6 @@ object MaintenanceCommand
     }
 
     @Default
-    @Subcommand("info")
     @Description("View maintenance information.")
     fun onList(sender: VelocityCommandActor)
     {

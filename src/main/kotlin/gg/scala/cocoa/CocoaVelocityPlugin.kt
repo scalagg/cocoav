@@ -122,11 +122,6 @@ constructor(
         startRedisFunctionality()
     }
 
-    var allowConnections = false
-
-    private var allowThread = Executors
-        .newSingleThreadScheduledExecutor()
-
     @Subscribe(
         order = PostOrder.LAST
     )
@@ -136,11 +131,6 @@ constructor(
             .create(this, server)
 
         enable()
-
-        allowThread.schedule({
-            allowConnections = true
-            logger.info("Now accepting connections!")
-        }, 1L, TimeUnit.SECONDS)
 
         commandManager.registerContextResolver(Rank::class.java) {
             val firstArg = it.input().toMutableList()[0]
@@ -190,8 +180,8 @@ constructor(
         proxyChannel.listen(CocoaRedisSubscriber)
         spigotChannel.listen(LemonRedisHandler)
 
-        proxyChannel.connect()
-        spigotChannel.connect()
+        proxyChannel.connect().toCompletableFuture().join()
+        spigotChannel.connect().toCompletableFuture().join()
 
         settingsLayer = DataStoreObjectControllerCache.create()
         cloudLayer = DataStoreObjectControllerCache.create()

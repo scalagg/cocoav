@@ -54,15 +54,6 @@ object PlayerListener
         continuation: Continuation
     )
     {
-        if (!plugin.allowConnections)
-        {
-            event.result = ResultedEvent.ComponentResult
-                .denied(CocoaVelocityConstants.PROXY_BOOT)
-
-            continuation.resume()
-            return
-        }
-
         val uniqueId = event.player.uniqueId
 
         ForkJoinPool.commonPool().execute {

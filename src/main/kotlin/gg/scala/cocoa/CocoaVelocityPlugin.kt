@@ -35,6 +35,7 @@ import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
+import gg.scala.store.serializer.serializers.GsonSerializer
 import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
@@ -162,6 +163,10 @@ constructor(
             .locate<CocoaVelocitySettings>()!!
 
         AwareHub.configure(settings.credentials) {
+            Serializers.gson
+        }
+
+        GsonSerializer.provideCustomGson {
             Serializers.gson
         }
 

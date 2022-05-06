@@ -116,7 +116,11 @@ object PlayerListener
 
             if (!event.result.isAllowed)
             {
-                DataStoreHandler.rankOf.remove(uniqueId)
+                DataStoreHandler
+                    .rankOf.remove(uniqueId)
+
+                continuation.resume()
+                return@execute
             }
 
             val lemonPlayer = DataStoreObjectControllerCache

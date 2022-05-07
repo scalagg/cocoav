@@ -208,7 +208,7 @@ object PlayerListener
                 {
                     "in relation to a ${
                         punishment.category.previous
-                    }"
+                    } player"
                 } else
                 {
                     punishment.category.previous

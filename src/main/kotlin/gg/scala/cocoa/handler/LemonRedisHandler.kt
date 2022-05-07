@@ -47,7 +47,8 @@ object LemonRedisHandler
     @Subscribe("rank-update")
     fun onRankUpdate(message: AwareMessage)
     {
-        val completableFuture = DataStoreObjectControllerCache.findNotNull<Rank>()
+        val completableFuture = DataStoreObjectControllerCache
+            .findNotNull<Rank>()
             .load(
                 message.retrieve("uniqueId"),
                 DataStoreStorageType.MONGO

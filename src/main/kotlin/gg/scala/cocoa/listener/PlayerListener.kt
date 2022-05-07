@@ -80,8 +80,7 @@ object PlayerListener
 
             if (settings.networking.handleNetworkingChecks)
             {
-                try
-                {
+                kotlin.runCatching {
                     val networkModel = CocoaNetworkAddressHandler
                         .requestHostData(
                             event.player.remoteAddress
@@ -92,23 +91,22 @@ object PlayerListener
                     {
                         event.result = CocoaVelocityConstants
                             .DENIED_NETWORKING_ERROR
-                    } else
-                    {
-                        if (networkModel.shouldBlock)
-                        {
-                            event.result = CocoaVelocityConstants
-                                .DENIED_NETWORKING_INVALID
-
-                            CocoaRedisSubscriber.sendStaffNotification(
-                                null, "§4§o${
-                                    event.player.username
-                                }§c tried logging on with a VPN.",
-                                "lemon.networking"
-                            )
-                        }
+                        return@runCatching
                     }
-                } catch (ignored: Exception)
-                {
+
+                    if (networkModel.shouldBlock)
+                    {
+                        event.result = CocoaVelocityConstants
+                            .DENIED_NETWORKING_INVALID
+
+                        CocoaRedisSubscriber.sendStaffNotification(
+                            null, "§4${
+                                event.player.username
+                            }§c tried logging on with a VPN.",
+                            "lemon.vpn.notifications"
+                        )
+                    }
+                }.onFailure {
                     event.result = CocoaVelocityConstants
                         .DENIED_NETWORKING_ERROR
                 }

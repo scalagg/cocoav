@@ -17,12 +17,13 @@ object CocoaNetworkAddressHandler
 {
     @JvmStatic
     val API_KEY by lazy {
-        CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
+        CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
             .networking.apiKey
     }
 
     @JvmStatic
-    val REQUEST_URL = "https://api.vpnblocker.net/v2/json/%s/$API_KEY"
+    val REQUEST_URL = "https://api.vpnblocker.net/v2/json/%s"
 
     /**
      * Requests host data for the target ip address.
@@ -37,9 +38,7 @@ object CocoaNetworkAddressHandler
         )
 
         return Serializers.gson.fromJson(
-            InputStreamReader(
-                url.openStream()
-            ),
+            url.openStream().reader(),
             CocoaNetworkAddressModel::class.java
         )
     }

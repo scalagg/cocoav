@@ -15,7 +15,6 @@ import gg.scala.aware.AwareBuilder
 import gg.scala.aware.AwareHub
 import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
-import gg.scala.cocoa.command.GlobalListCommand
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MaintenanceCommand
 import gg.scala.cocoa.command.administration.*
@@ -147,7 +146,7 @@ constructor(
         commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
 
         commandManager.register(
-            LobbyCommand, GlobalListCommand,
+            LobbyCommand,
             MaintenanceCommand, XServerCommand,
             CocoaCommand, SendCommand, CountdownCommand,
             IpInfoCommand

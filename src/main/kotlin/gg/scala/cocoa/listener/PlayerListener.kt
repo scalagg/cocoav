@@ -3,7 +3,6 @@ package gg.scala.cocoa.listener
 import com.google.common.cache.CacheBuilder
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
-import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
@@ -12,6 +11,7 @@ import com.velocitypowered.api.event.player.KickedFromServerEvent
 import com.velocitypowered.api.event.player.ServerConnectedEvent
 import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import com.velocitypowered.api.proxy.Player
+import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
@@ -45,6 +45,57 @@ object PlayerListener
         .newBuilder()
         .expireAfterAccess(2L, TimeUnit.SECONDS)
         .build<UUID, Int>()
+
+    @Subscribe
+    fun onLogout(event: LoginEvent)
+    {
+        produce(
+            "friend-network-update",
+            "uniqueId" to event.player.uniqueId,
+            "type" to "joined",
+        ).apply {
+            publish(channel = "friends")
+        }
+    }
+
+    @Subscribe
+    fun onLogout(event: DisconnectEvent)
+    {
+        produce(
+            "network-disconnect",
+            "uniqueId" to event.player.uniqueId
+        ).apply {
+            publish(channel = "cougar:backbone")
+            publish(channel = "party:backbone")
+        }
+
+        produce(
+            "friend-network-update",
+            "uniqueId" to event.player.uniqueId,
+            "type" to "left",
+        ).apply {
+            publish(channel = "friends")
+        }
+    }
+
+    @JvmStatic
+    fun produce(
+        packet: String,
+        vararg arguments: Pair<String, Any>
+    ): AwareMessage
+    {
+        val message = AwareMessage
+            .of(packet, CocoaVelocityPlugin.INSTANCE.proxyChannel)
+
+        for (argument in arguments)
+        {
+            message.assign(
+                argument.first, argument.second
+            )
+        }
+
+        return message
+    }
 
     @Subscribe(
         order = PostOrder.FIRST

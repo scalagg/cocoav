@@ -38,6 +38,6 @@ object LobbyCommand
         }
 
         player.createConnectionRequest(bestHubServer)
-            .connect()
+            .connectWithIndication()
     }
 }

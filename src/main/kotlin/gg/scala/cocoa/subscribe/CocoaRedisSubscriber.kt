@@ -35,7 +35,8 @@ object CocoaRedisSubscriber
     @Subscribe("add-server")
     fun onAddServer(message: AwareMessage)
     {
-        val id = message.retrieve<String>("id")
+        val id = message
+            .retrieve("id", String::class)
 
         val server = plugin.server.allServers.firstOrNull {
             it.serverInfo.name.equals(id, true)
@@ -46,8 +47,8 @@ object CocoaRedisSubscriber
 
         plugin.server.registerServer(
             ServerInfo(id, InetSocketAddress(
-                message.retrieve<String>("address"),
-                message.retrieve("port")
+                message.retrieve("address", String::class),
+                message.retrieve("port", Int::class)
             ))
         )
     }

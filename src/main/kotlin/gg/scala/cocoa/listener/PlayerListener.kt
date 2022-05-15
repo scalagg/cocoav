@@ -245,6 +245,15 @@ object PlayerListener
                 .findPlayerNullable(event.player.uniqueId)
                 ?: return
 
+            val server = event.player.currentServer.get()
+
+            if (plugin.isLobbyServer(server.serverInfo))
+            {
+                event.result = ServerPreConnectEvent
+                    .ServerResult.allowed(server.server)
+                return
+            }
+
             for (category in PunishmentCategory.WEIGHTED_DENIED)
             {
                 val punishment = lemonPlayer

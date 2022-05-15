@@ -33,27 +33,29 @@ class LemonPlayer(
             punishments[value] = null
         }
 
-        return DataStoreHandler.fetchAllPunishmentsForTarget(uniqueId).thenAcceptAsync { list ->
-            for (value in PunishmentCategory.VALUES)
-            {
-                punishments[value] = null
-            }
-
-            for (value in PunishmentCategory.VALUES)
-            {
-                val newList = list.filter {
-                    it.category == value && it.isActive
-                }
-
-                if (newList.isEmpty())
+        return DataStoreHandler
+            .fetchAllPunishmentsForTarget(uniqueId)
+            .thenAcceptAsync { list ->
+                for (value in PunishmentCategory.VALUES)
                 {
                     punishments[value] = null
-                    continue
                 }
 
-                punishments[value] = newList[0]
+                for (value in PunishmentCategory.VALUES)
+                {
+                    val newList = list.filter {
+                        it.category == value && it.isActive
+                    }
+
+                    if (newList.isEmpty())
+                    {
+                        punishments[value] = null
+                        continue
+                    }
+
+                    punishments[value] = newList[0]
+                }
             }
-        }
     }
 
     fun checkForIpRelative(): CompletableFuture<Void>

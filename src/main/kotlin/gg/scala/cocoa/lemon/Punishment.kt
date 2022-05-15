@@ -21,7 +21,10 @@ class Punishment(
     override val identifier: UUID
         get() = uuid
 
-    private var isRemoved: Boolean = false
+    var removedAt: Long = -1
+
+    val isRemoved: Boolean
+        get() = removedAt != -1L
 
     val isActive: Boolean
         get() = !isRemoved && !hasExpired

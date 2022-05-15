@@ -350,20 +350,6 @@ object PlayerListener
         val newServer = if (event.player.hasPermission("cocoa.staff"))
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
-        val kicked = kickCounter
-            .get(event.player.uniqueId) { 0 }
-
-        if (newServer != null && kicked >= 2)
-        {
-            event.result = KickedFromServerEvent
-                .DisconnectPlayer.create(
-                    Component.text("Something went terribly wrong while trying to connect you to a server.")
-                        .color(NamedTextColor.RED)
-                )
-
-            return
-        }
-
         if (newServer != null && newServer != event.server)
         {
             event.result = KickedFromServerEvent
@@ -372,12 +358,12 @@ object PlayerListener
         {
             event.result = KickedFromServerEvent
                 .DisconnectPlayer.create(
-                    Component.text("Sorry, we weren't able to find an available lobby for you.")
-                        .color(NamedTextColor.RED)
+                    event.serverKickReason.orElse(
+                        Component.text("Sorry, we weren't able to find an available lobby for you.")
+                            .color(NamedTextColor.RED)
+                    )
                 )
         }
-
-        kickCounter.put(event.player.uniqueId, kicked + 1)
     }
 
     private fun color(uuid: UUID): String

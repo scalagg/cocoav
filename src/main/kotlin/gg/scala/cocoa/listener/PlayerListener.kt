@@ -249,8 +249,6 @@ object PlayerListener
 
             if (plugin.isLobbyServer(server.serverInfo))
             {
-                event.result = ServerPreConnectEvent
-                    .ServerResult.allowed(server.server)
                 return
             }
 

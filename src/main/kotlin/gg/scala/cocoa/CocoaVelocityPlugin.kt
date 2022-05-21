@@ -210,13 +210,17 @@ constructor(
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
             {
                 this.connection.useResource {
-                    for (entry in sync().hgetall("cocoa:metadata").entries)
+                    for (entry in sync().hgetall("cocoa:metadata${
+                        if (settings.externalProxy) settings.externalProxyPrefix else ""
+                    }").entries)
                     {
                         proxySettings[entry.key] =
                             entry.value.toBoolean()
                     }
 
-                    for (entry in sync().hgetall("cocoa:unique-ids").entries)
+                    for (entry in sync().hgetall("cocoa:unique-ids${
+                        if (settings.externalProxy) settings.externalProxyPrefix else ""
+                    }").entries)
                     {
                         maintenanceRank = entry.value
                     }
@@ -251,10 +255,15 @@ constructor(
 
     fun updateMaintenanceRank(lemonSpigotRank: Rank)
     {
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
+
         settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
         {
             this.connection.useResource {
-                sync().hset("cocoa:unique-ids", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                sync().hset("cocoa:unique-ids${
+                    if (settings.externalProxy) settings.externalProxyPrefix else ""
+                }", "maintenance-rank", lemonSpigotRank.uuid.toString())
             }
         }
     }
@@ -264,12 +273,17 @@ constructor(
         val newValue = !maintenance
         proxySettings["maintenance"] = newValue
 
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
+
         if (lemonSpigotRank != null)
         {
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
             {
                 this.connection.useResource {
-                    sync().hset("cocoa:unique-ids", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                    sync().hset("cocoa:unique-ids${
+                        if (settings.externalProxy) settings.externalProxyPrefix else ""
+                    }", "maintenance-rank", lemonSpigotRank.uuid.toString())
                 }
             }
         }
@@ -277,7 +291,9 @@ constructor(
         settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
         {
             this.connection.useResource {
-                sync().hset("cocoa:metadata", "maintenance", newValue.toString())
+                sync().hset("cocoa:metadata${
+                    if (settings.externalProxy) settings.externalProxyPrefix else ""
+                }", "maintenance", newValue.toString())
             }
         }
     }

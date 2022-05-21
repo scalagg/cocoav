@@ -182,7 +182,7 @@ object DataStoreHandler
         return lemonSpigotGrants
             .sortedByDescending { it.addedAt }
             .sortedByDescending { it.getRank()?.weight ?: 0 }
-            .firstOrNull { !it.isRemoved && !it.hasExpired && it.getRank()?.visible ?: false && it.scopes.contains("global") }
+            .firstOrNull { it.isActive && it.getRank()?.visible ?: false && it.scopes.contains("global") }
     }
 
     fun findRank(name: String): Rank?

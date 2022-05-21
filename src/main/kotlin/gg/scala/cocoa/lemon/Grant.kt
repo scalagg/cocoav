@@ -8,12 +8,8 @@ import java.util.*
 
 class Grant(
     val uuid: UUID,
-    var target: UUID,
     var rankId: UUID,
-    var addedBy: UUID?,
     addedAt: Long,
-    var addedOn: String,
-    var addedReason: String,
     duration: Long
 ): LemonExpirable(addedAt, duration), IDataStoreObject
 {
@@ -22,11 +18,10 @@ class Grant(
 
     var scopes: MutableList<String> = mutableListOf("global")
 
-    var removedReason: String? = null
-    var removedOn: String? = null
-    var removedBy: UUID? = null
     var removedAt: Long = -1
-    var isRemoved = false
+
+    val isRemoved: Boolean
+        get() = removedAt != -1L
 
     val isActive: Boolean
         get() = !isRemoved && !hasExpired

@@ -8,6 +8,8 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  * @since 12/15/2021
  */
 class CocoaVelocitySettings(
+    val externalProxy: Boolean = false,
+    val externalProxyPrefix: String = "-ofl",
     val credentials: WrappedAwareUri = WrappedAwareUri(),
     val networking: NetworkingSettings = NetworkingSettings()
 ) : CocoaSettingsModel()

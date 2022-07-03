@@ -32,7 +32,7 @@ object CocoaRedisSubscriber
             }
     }
 
-    @Subscribe("add-server")
+    @Subscribe("add-server-DEPRECATED")
     fun onAddServer(message: AwareMessage)
     {
         val id = message
@@ -53,7 +53,7 @@ object CocoaRedisSubscriber
         )
     }
 
-    @Subscribe("remove-server")
+    @Subscribe("remove-server-DEPRECATED")
     fun onRemoveServer(message: AwareMessage)
     {
         val server = plugin.server.allServers.firstOrNull {

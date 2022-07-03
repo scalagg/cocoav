@@ -10,6 +10,8 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
 class CocoaVelocitySettings(
     val externalProxy: Boolean = false,
     val externalProxyPrefix: String = "-ofl",
+    val datacenter: String = "na-east-1",
+    val consul: ConsulSettings = ConsulSettings(),
     val credentials: WrappedAwareUri = WrappedAwareUri(),
     val networking: NetworkingSettings = NetworkingSettings()
 ) : CocoaSettingsModel()
@@ -19,5 +21,10 @@ class CocoaVelocitySettings(
     class NetworkingSettings(
         val handleNetworkingChecks: Boolean = false,
         val apiKey: String = ""
+    )
+
+    class ConsulSettings(
+        val address: String = "127.0.0.1",
+        val port: Int = 8500
     )
 }

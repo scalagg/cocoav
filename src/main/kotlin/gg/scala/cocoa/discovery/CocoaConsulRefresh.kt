@@ -44,6 +44,12 @@ object CocoaConsulRefresh : Runnable
                         it.serverInfo.name
                     )
             }
+            .filter {
+                !CocoaSettingsProcessor
+                    .locate<CocoaVelocitySettings>()!!
+                    .listeningExemptions
+                    .contains(it.serverInfo.name)
+            }
             .forEach {
                 CocoaVelocityPlugin
                     .INSTANCE.server
@@ -81,7 +87,7 @@ object CocoaConsulRefresh : Runnable
                 CocoaVelocityPlugin
                     .INSTANCE.logger
                     .info(
-                        "[Consul] Registered healthy server: \${it.service.id}"
+                        "[Consul] Registered healthy server: ${it.service.id}"
                     )
             }
     }

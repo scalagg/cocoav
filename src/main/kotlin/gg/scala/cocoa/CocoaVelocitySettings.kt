@@ -25,6 +25,7 @@ class CocoaVelocitySettings(
     )
 
     class ConsulSettings(
+        val enabled: Boolean = true,
         val address: String = "127.0.0.1",
         val port: Int = 8500
     )

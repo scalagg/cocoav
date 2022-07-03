@@ -207,11 +207,14 @@ constructor(
             }
         }, 0L, 2L, TimeUnit.SECONDS)
 
-        executor.scheduleAtFixedRate(
-            CocoaConsulRefresh,
-            0L, 1L,
-            TimeUnit.SECONDS
-        )
+        if (settings.consul.enabled)
+        {
+            executor.scheduleAtFixedRate(
+                CocoaConsulRefresh,
+                0L, 1L,
+                TimeUnit.SECONDS
+            )
+        }
 
         executor.scheduleAtFixedRate({
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)

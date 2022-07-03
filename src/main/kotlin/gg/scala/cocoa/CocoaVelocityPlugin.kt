@@ -21,6 +21,7 @@ import gg.scala.cocoa.command.administration.*
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
+import gg.scala.cocoa.discovery.CocoaConsulRefresh
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
@@ -205,6 +206,12 @@ constructor(
                 DataStoreHandler.updateRank(it.uniqueId)
             }
         }, 0L, 2L, TimeUnit.SECONDS)
+
+        executor.scheduleAtFixedRate(
+            CocoaConsulRefresh,
+            0L, 1L,
+            TimeUnit.SECONDS
+        )
 
         executor.scheduleAtFixedRate({
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)

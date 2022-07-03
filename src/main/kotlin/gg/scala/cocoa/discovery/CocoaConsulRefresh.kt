@@ -6,12 +6,11 @@ import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import java.net.InetSocketAddress
 
-
 /**
  * @author GrowlyX
  * @since 7/2/2022
  */
-class CocoaConsulRefresh : Runnable
+object CocoaConsulRefresh : Runnable
 {
     override fun run()
     {
@@ -19,13 +18,13 @@ class CocoaConsulRefresh : Runnable
             .consul()
             .healthClient()
 
-        val healthy = health
-            .getHealthyServiceInstances(
-                CocoaSettingsProcessor
-                    .locate<CocoaVelocitySettings>()!!
-                    .datacenter
-            )
-            .response
+        val healthy = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
+            .listeningGroups
+            .flatMap {
+                health.getHealthyServiceInstances(it)
+                    .response
+            }
 
         val mapped = healthy
             .map {

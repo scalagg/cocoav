@@ -9,14 +9,28 @@ plugins {
 group "gg.scala.cocoa"
 version "1.1.6"
 
+String environmental(String key)
+{
+    final String environment =
+        System.getenv(key)
+
+    if (environment != null)
+    {
+        return environment
+    }
+
+    return project.property(key)
+}
+
 repositories {
     mavenCentral()
-
     maven {
-        url "${artifactory_contextUrl}/gradle-release"
+        name "Scala"
+        url "${environmental("artifactory_contextUrl")}/gradle-release"
+
         credentials {
-            username "${artifactory_user}"
-            password "${artifactory_password}"
+            username environmental("artifactory_user")
+            password environmental("artifactory_password")
         }
     }
 
@@ -68,24 +82,25 @@ publishing {
 
     repositories {
         maven {
-            name "scala"
-            url "${artifactory_contextUrl}/${artifactory_release}"
+            name "Scala"
+            url "${environmental("artifactory_contextUrl")}/gradle-release"
+
             credentials {
-                username "${artifactory_user}"
-                password "${artifactory_password}"
+                username environmental("artifactory_user")
+                password environmental("artifactory_password")
             }
         }
     }
 }
 
 artifactory {
-    this.contextUrl = "${artifactory_contextUrl}"
+    this.contextUrl = environmental("artifactory_contextUrl")
 
     publish {
         repository {
-            repoKey = "${artifactory_release_local}"
-            username = "${artifactory_user}"
-            password = "${artifactory_password}"
+            repoKey = environmental("artifactory_release_local")
+            username = environmental("artifactory_user")
+            password = environmental("artifactory_password")
             maven = true
         }
     }

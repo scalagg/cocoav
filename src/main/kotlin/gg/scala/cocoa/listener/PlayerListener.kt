@@ -227,6 +227,18 @@ object PlayerListener
 
         if (!event.player.currentServer.isPresent)
         {
+            val settings = CocoaSettingsProcessor
+                .locate<CocoaVelocitySettings>()!!
+
+            if (settings.middleware != null)
+            {
+                event.result = ServerPreConnectEvent.ServerResult
+                    .allowed(
+                        plugin.server.getServer(settings.middleware).get()
+                    )
+                return
+            }
+
             val server = if (isStaffMember)
                 plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 

@@ -2,28 +2,29 @@ package gg.scala.cocoa.command
 
 import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocityPlugin
-import revxrsal.commands.annotation.Command
-import revxrsal.commands.annotation.Dependency
-import revxrsal.commands.exception.CommandErrorException
+import gg.scala.commons.acf.BaseCommand
+import gg.scala.commons.acf.ConditionFailedException
+import gg.scala.commons.acf.annotation.CommandAlias
+import gg.scala.commons.acf.annotation.Dependency
 
 /**
  * @author GrowlyX
  * @since 12/16/2021
  */
-object LobbyCommand
+object LobbyCommand : BaseCommand()
 {
     @Dependency
     lateinit var plugin: CocoaVelocityPlugin
 
-    @Command("hub")
+    @CommandAlias("hub")
     fun onHub(player: Player)
     {
         val currentServer = player.currentServer.orElse(null)
-            ?: throw CommandErrorException("You're not connected to a server.")
+            ?: throw ConditionFailedException("You're not connected to a server.")
 
         if (plugin.isLobbyServer(currentServer.serverInfo))
         {
-            throw CommandErrorException("You're already connected to a hub.")
+            throw ConditionFailedException("You're already connected to a hub.")
         }
 
         val isStaffMember = player
@@ -34,7 +35,7 @@ object LobbyCommand
 
         if (bestHubServer == null)
         {
-            throw CommandErrorException("There are no lobbies available.")
+            throw ConditionFailedException("There are no lobbies available.")
         }
 
         player.createConnectionRequest(bestHubServer)

@@ -33,15 +33,14 @@ import gg.scala.cocoa.presence.override.impl.WhitelistedPresenceOverride
 import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
+import gg.scala.commons.acf.ConditionFailedException
+import gg.scala.commons.acf.VelocityCommandManager
 import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.serializer.serializers.GsonSerializer
 import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
-import net.kyori.adventure.text.format.NamedTextColor
-import revxrsal.commands.exception.CommandErrorException
-import revxrsal.commands.velocity.VelocityCommandHandler
 import java.io.File
 import java.nio.file.Path
 import java.util.*
@@ -104,7 +103,7 @@ constructor(
         INSTANCE = this
     }
 
-    private fun enable()
+    private fun configureVelocityPlugin()
     {
         CocoaSettingsProcessor.initialLoad()
 
@@ -128,30 +127,28 @@ constructor(
     )
     fun onInitialize(event: ProxyInitializeEvent)
     {
-        val commandManager = VelocityCommandHandler
-            .create(this, server)
+        val commandManager = VelocityCommandManager(server, this)
+        configureVelocityPlugin()
 
-        enable()
+        commandManager.commandContexts.registerContext(Rank::class.java) {
+            val firstArg = it.popFirstArg()
 
-        commandManager.registerContextResolver(Rank::class.java) {
-            val firstArg = it.input().toMutableList()[0]
-
-            return@registerContextResolver DataStoreHandler.findRank(firstArg)
-                ?: throw CommandErrorException("There is no rank with the name: ${NamedTextColor.YELLOW}$firstArg${NamedTextColor.RED}.")
+            return@registerContext DataStoreHandler.findRank(firstArg)
+                ?: throw ConditionFailedException("There is no rank with the name §e$firstArg§c.")
         }
 
-        commandManager.autoCompleter.registerParameterSuggestions(Rank::class.java) { _, _, _ ->
-            return@registerParameterSuggestions DataStoreHandler.ranks.values.map { it.name }
+        commandManager.commandCompletions.registerCompletion("ranks") {
+            return@registerCompletion DataStoreHandler.ranks.values.map { it.name }
         }
 
         commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
+        commandManager.enableUnstableAPI("help")
 
-        commandManager.register(
-            LobbyCommand,
-            MaintenanceCommand, XServerCommand,
-            CocoaCommand, SendCommand, CountdownCommand,
-            IpInfoCommand
-        )
+        listOf(
+            LobbyCommand, CocoaCommand, TrafficCommand, CountdownCommand
+        ).forEach {
+            commandManager.registerCommand(it)
+        }
 
         server.eventManager.register(this, PlayerListener)
         server.eventManager.register(this, CocoaServerPresenceSubscriber)
@@ -220,17 +217,21 @@ constructor(
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
             {
                 this.connection.useResource {
-                    for (entry in sync().hgetall("cocoa:metadata${
-                        if (settings.externalProxy) settings.externalProxyPrefix else ""
-                    }").entries)
+                    for (entry in sync().hgetall(
+                        "cocoa:metadata${
+                            if (settings.externalProxy) settings.externalProxyPrefix else ""
+                        }"
+                    ).entries)
                     {
                         proxySettings[entry.key] =
                             entry.value.toBoolean()
                     }
 
-                    for (entry in sync().hgetall("cocoa:unique-ids${
-                        if (settings.externalProxy) settings.externalProxyPrefix else ""
-                    }").entries)
+                    for (entry in sync().hgetall(
+                        "cocoa:unique-ids${
+                            if (settings.externalProxy) settings.externalProxyPrefix else ""
+                        }"
+                    ).entries)
                     {
                         maintenanceRank = entry.value
                     }
@@ -271,9 +272,11 @@ constructor(
         settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
         {
             this.connection.useResource {
-                sync().hset("cocoa:unique-ids${
-                    if (settings.externalProxy) settings.externalProxyPrefix else ""
-                }", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                sync().hset(
+                    "cocoa:unique-ids${
+                        if (settings.externalProxy) settings.externalProxyPrefix else ""
+                    }", "maintenance-rank", lemonSpigotRank.uuid.toString()
+                )
             }
         }
     }
@@ -291,9 +294,11 @@ constructor(
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
             {
                 this.connection.useResource {
-                    sync().hset("cocoa:unique-ids${
-                        if (settings.externalProxy) settings.externalProxyPrefix else ""
-                    }", "maintenance-rank", lemonSpigotRank.uuid.toString())
+                    sync().hset(
+                        "cocoa:unique-ids${
+                            if (settings.externalProxy) settings.externalProxyPrefix else ""
+                        }", "maintenance-rank", lemonSpigotRank.uuid.toString()
+                    )
                 }
             }
         }
@@ -301,9 +306,11 @@ constructor(
         settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
         {
             this.connection.useResource {
-                sync().hset("cocoa:metadata${
-                    if (settings.externalProxy) settings.externalProxyPrefix else ""
-                }", "maintenance", newValue.toString())
+                sync().hset(
+                    "cocoa:metadata${
+                        if (settings.externalProxy) settings.externalProxyPrefix else ""
+                    }", "maintenance", newValue.toString()
+                )
             }
         }
     }

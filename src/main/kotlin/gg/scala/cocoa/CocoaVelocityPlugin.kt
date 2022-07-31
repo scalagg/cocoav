@@ -140,7 +140,6 @@ constructor(
             return@registerCompletion DataStoreHandler.ranks.values.map { it.name }
         }
 
-        commandManager.registerDependency(CocoaVelocityPlugin::class.java, this)
         commandManager.enableUnstableAPI("help")
 
         listOf(

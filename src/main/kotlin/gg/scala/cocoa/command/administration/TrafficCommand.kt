@@ -3,10 +3,13 @@ package gg.scala.cocoa.command.administration
 import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.commons.acf.BaseCommand
+import gg.scala.commons.acf.CommandHelp
 import gg.scala.commons.acf.ConditionFailedException
 import gg.scala.commons.acf.annotation.CommandAlias
 import gg.scala.commons.acf.annotation.CommandPermission
+import gg.scala.commons.acf.annotation.Default
 import gg.scala.commons.acf.annotation.Description
+import gg.scala.commons.acf.annotation.HelpCommand
 import gg.scala.commons.acf.velocity.contexts.OnlinePlayer
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
@@ -18,6 +21,13 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 @CommandPermission("cocoa.command.traffic")
 object TrafficCommand : BaseCommand()
 {
+    @Default
+    @HelpCommand
+    fun onHelp(help: CommandHelp)
+    {
+        help.showHelp()
+    }
+
     @CommandAlias("redirect")
     @Description("Redirect a player to a server.")
     fun onSend(

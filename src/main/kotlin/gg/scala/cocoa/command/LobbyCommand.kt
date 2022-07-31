@@ -16,7 +16,7 @@ object LobbyCommand : BaseCommand()
     @Dependency
     lateinit var plugin: CocoaVelocityPlugin
 
-    @CommandAlias("hub")
+    @CommandAlias("hub|lobby|l")
     fun onHub(player: Player)
     {
         val currentServer = player.currentServer.orElse(null)

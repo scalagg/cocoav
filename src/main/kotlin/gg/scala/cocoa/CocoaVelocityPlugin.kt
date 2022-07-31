@@ -16,7 +16,6 @@ import gg.scala.aware.AwareHub
 import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.command.LobbyCommand
-import gg.scala.cocoa.command.MaintenanceCommand
 import gg.scala.cocoa.command.administration.*
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownPresence

@@ -6,6 +6,7 @@ import gg.scala.commons.acf.BaseCommand
 import gg.scala.commons.acf.CommandHelp
 import gg.scala.commons.acf.ConditionFailedException
 import gg.scala.commons.acf.annotation.CommandAlias
+import gg.scala.commons.acf.annotation.CommandCompletion
 import gg.scala.commons.acf.annotation.CommandPermission
 import gg.scala.commons.acf.annotation.Default
 import gg.scala.commons.acf.annotation.Description
@@ -29,6 +30,7 @@ object TrafficCommand : BaseCommand()
     }
 
     @CommandAlias("redirect")
+    @CommandCompletion("@players @servers")
     @Description("Redirect a player to a server.")
     fun onSend(
         actor: Player, player: OnlinePlayer, server: String
@@ -64,6 +66,7 @@ object TrafficCommand : BaseCommand()
     }
 
     @CommandAlias("redirectall")
+    @CommandCompletion("@servers")
     @Description("Redirect all player to a server.")
     fun onSend(
         actor: Player, server: String

@@ -33,7 +33,7 @@ import java.util.concurrent.CompletableFuture
  * @author GrowlyX
  * @since 12/16/2021
  */
-@CommandAlias("cocoavelocitymanager|cvm")
+@CommandAlias("cpm|cocoaproxymanager")
 @CommandPermission("cocoa.command.cocoa")
 object CocoaCommand : BaseCommand()
 {
@@ -123,6 +123,74 @@ object CocoaCommand : BaseCommand()
                     "&aThe server is currently restricted to players with a rank weight above: &f${maintenanceRank.name}"
                 )
         }
+    }
+
+    enum class PresenceType
+    {
+        Maintenance, Public
+    }
+
+    enum class PresenceLine
+    {
+        Top, Bottom
+    }
+
+    @Subcommand("presence lines update")
+    @Description("Update presence lines.")
+    fun onUpdateLine(
+        actor: Player, type: PresenceType,
+        line: PresenceLine, content: String
+    )
+    {
+        CocoaSettingsProcessor
+            .locate<CocoaServerPresenceSettings>()
+            ?.let {
+                val lineIndex = type.ordinal
+
+                when (type)
+                {
+                    PresenceType.Maintenance ->
+                    {
+                        val split = it
+                            .whitelistedPresence
+                            .split("\n")
+                            .toMutableList()
+
+                        split[lineIndex] = content
+                            .replace("&", "§")
+
+                        actor.sendMessage {
+                            LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize("&aYou've updated the ${type.name} presence ${line.name} line to:\n${split[lineIndex]}")
+                        }
+
+                        it.whitelistedPresence = split
+                            .joinToString("\n")
+                    }
+                    PresenceType.Public ->
+                    {
+                        val split = it
+                            .normalPresence
+                            .split("\n")
+                            .toMutableList()
+
+                        split[lineIndex] = content
+                            .replace("&", "§")
+
+                        actor.sendMessage {
+                            LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize("&aYou've updated the ${type.name} presence ${line.name} line to:\n${split[lineIndex]}")
+                        }
+
+                        it.normalPresence = split
+                            .joinToString("\n")
+                    }
+                }
+            }
+
+        CocoaSettingsProcessor.saveSettingsToFile(
+            CocoaServerPresenceSettings::class, "presence"
+        )
     }
 
     @Subcommand("presence center")

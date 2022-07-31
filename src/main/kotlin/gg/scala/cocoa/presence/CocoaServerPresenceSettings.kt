@@ -7,8 +7,8 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  * @since 12/15/2021
  */
 class CocoaServerPresenceSettings(
-    val normalPresence: String = "Hey",
-    val whitelistedPresence: String = "cocoaV Lol",
+    var normalPresence: String = "Hey",
+    var whitelistedPresence: String = "cocoaV Lol",
     var shouldCenterPresence: Boolean = false
 ) : CocoaSettingsModel()
 {

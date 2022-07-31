@@ -16,7 +16,9 @@ import gg.scala.aware.AwareHub
 import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.command.LobbyCommand
-import gg.scala.cocoa.command.administration.*
+import gg.scala.cocoa.command.administration.CocoaCommand
+import gg.scala.cocoa.command.administration.CountdownCommand
+import gg.scala.cocoa.command.administration.TrafficCommand
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
@@ -33,6 +35,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.commons.acf.ConditionFailedException
+import gg.scala.commons.acf.MessageType
 import gg.scala.commons.acf.VelocityCommandManager
 import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
@@ -40,6 +43,7 @@ import gg.scala.store.serializer.serializers.GsonSerializer
 import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.evilblock.cubed.serializers.Serializers
+import net.kyori.adventure.text.format.NamedTextColor
 import java.io.File
 import java.nio.file.Path
 import java.util.*
@@ -55,7 +59,7 @@ import kotlin.properties.Delegates
 @Plugin(
     id = "cocoa",
     name = "cocoa",
-    version = "1.1.0",
+    version = "1.1.7",
     url = "https://scala.gg/",
     authors = ["Scala"],
     dependencies = [
@@ -127,6 +131,14 @@ constructor(
     fun onInitialize(event: ProxyInitializeEvent)
     {
         val commandManager = VelocityCommandManager(server, this)
+
+        listOf<MessageType>(
+            MessageType.HELP, MessageType.INFO, MessageType.SYNTAX
+        ).forEach {
+            commandManager.getFormat(it).setColor(3, NamedTextColor.GRAY)
+            commandManager.getFormat(it).setColor(2, NamedTextColor.YELLOW)
+            commandManager.getFormat(it).setColor(1, NamedTextColor.GOLD)
+        }
         configureVelocityPlugin()
 
         commandManager.commandContexts.registerContext(Rank::class.java) {
@@ -138,6 +150,14 @@ constructor(
 
         commandManager.commandCompletions.registerCompletion("ranks") {
             return@registerCompletion DataStoreHandler.ranks.values.map { it.name }
+        }
+
+        commandManager.commandCompletions.registerCompletion("servers") {
+            return@registerCompletion server.allServers.map { it.serverInfo.name }
+        }
+
+        commandManager.commandCompletions.registerCompletion("players") {
+            return@registerCompletion server.allPlayers.map { it.username }
         }
 
         commandManager.enableUnstableAPI("help")

@@ -4,6 +4,7 @@ import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
+import gg.scala.cocoa.centered
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.lemon.rank.Rank
@@ -143,7 +144,7 @@ object CocoaCommand : BaseCommand()
     {
         CocoaSettingsProcessor
             .locate<CocoaServerPresenceSettings>()
-            ?.let {
+            ?.let { settings ->
                 actor.sendMessage {
                     LegacyComponentSerializer.legacyAmpersand()
                         .deserialize("&aViewing ${type.name} motd below:")
@@ -151,14 +152,17 @@ object CocoaCommand : BaseCommand()
 
                 val presence = when (type)
                 {
-                    PresenceType.Maintenance -> it.whitelistedPresence
-                    PresenceType.Public -> it.normalPresence
+                    PresenceType.Maintenance -> settings.whitelistedPresence
+                    PresenceType.Public -> settings.normalPresence
                 }
 
                 presence.split("\n")
                     .forEach {
                         actor.sendMessage {
-                            LegacyComponentSerializer.legacySection().deserialize(it)
+                            LegacyComponentSerializer.legacySection().deserialize(
+                                if (settings.shouldCenterPresence)
+                                    it.centered(132.2) else it
+                            )
                         }
                     }
             }
@@ -196,6 +200,7 @@ object CocoaCommand : BaseCommand()
                         it.whitelistedPresence = split
                             .joinToString("\n")
                     }
+
                     PresenceType.Public ->
                     {
                         val split = it

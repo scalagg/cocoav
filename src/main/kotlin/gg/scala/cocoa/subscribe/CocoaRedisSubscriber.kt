@@ -70,7 +70,7 @@ object CocoaRedisSubscriber
         "presence" to CocoaServerPresenceSettings::class
     )
 
-    @Subscribe("cloud-sync")
+//    @Subscribe("cloud-sync")
     fun onCloudSync(message: AwareMessage)
     {
         println("[Cocoa] Started cloud sync request!")

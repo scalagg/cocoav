@@ -133,7 +133,7 @@ object CocoaCommand : BaseCommand()
 
     enum class PresenceLine
     {
-        Bottom, Top
+        Top, Bottom
     }
 
     @Subcommand("presence lines view")

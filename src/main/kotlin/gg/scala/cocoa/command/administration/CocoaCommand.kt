@@ -132,7 +132,36 @@ object CocoaCommand : BaseCommand()
 
     enum class PresenceLine
     {
-        Top, Bottom
+        Bottom, Top
+    }
+
+    @Subcommand("presence lines view")
+    @Description("View presence lines.")
+    fun onViewPresence(
+        actor: Player, type: PresenceType
+    )
+    {
+        CocoaSettingsProcessor
+            .locate<CocoaServerPresenceSettings>()
+            ?.let {
+                actor.sendMessage {
+                    LegacyComponentSerializer.legacyAmpersand()
+                        .deserialize("&aViewing ${type.name} motd below:")
+                }
+
+                val presence = when (type)
+                {
+                    PresenceType.Maintenance -> it.whitelistedPresence
+                    PresenceType.Public -> it.normalPresence
+                }
+
+                presence.split("\n")
+                    .forEach {
+                        actor.sendMessage {
+                            LegacyComponentSerializer.legacySection().deserialize(it)
+                        }
+                    }
+            }
     }
 
     @Subcommand("presence lines update")
@@ -145,7 +174,7 @@ object CocoaCommand : BaseCommand()
         CocoaSettingsProcessor
             .locate<CocoaServerPresenceSettings>()
             ?.let {
-                val lineIndex = type.ordinal
+                val lineIndex = line.ordinal
 
                 when (type)
                 {

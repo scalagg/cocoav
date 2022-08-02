@@ -48,9 +48,10 @@ object CocoaCommand : BaseCommand()
         help.showHelp()
     }
 
+    @CommandCompletion("@ranks")
     @Subcommand("maintenance update")
     @Description("Update maintenance mode's rank.")
-    fun onUpdateRank(sender: Player, lemonSpigotRank: Rank)
+    fun onUpdateRank(sender: Player, rank: Rank)
     {
         val currentStatus = plugin.maintenance
 
@@ -59,11 +60,11 @@ object CocoaCommand : BaseCommand()
             throw ConditionFailedException("You must enable maintenance mode to perform this command.")
         }
 
-        plugin.updateMaintenanceRank(lemonSpigotRank)
+        plugin.updateMaintenanceRank(rank)
 
         sender.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&aMaintenance mode rank has been set to: &f${lemonSpigotRank.name}")
+                .deserialize("&aMaintenance mode rank has been set to: &f${rank.name}")
         }
     }
 
@@ -72,17 +73,17 @@ object CocoaCommand : BaseCommand()
     @Description("Toggle maintenance mode.")
     fun onToggle(
         sender: Player,
-        @Optional lemonSpigotRank: Rank?
+        @Optional rank: Rank?
     )
     {
         val currentStatus = plugin.maintenance
 
-        if (!currentStatus && lemonSpigotRank == null)
+        if (!currentStatus && rank == null)
         {
             throw ConditionFailedException("You must define a rank to toggle maintenance mode")
         }
 
-        plugin.updateMaintenanceMode(lemonSpigotRank)
+        plugin.updateMaintenanceMode(rank)
 
         sender.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()

@@ -114,6 +114,22 @@ constructor(
         CocoaSettingsProcessor.loadSettings<CocoaServerPresenceSettings>("presence")
         CocoaSettingsProcessor.loadSettings<CocoaCountdownSettings>("countdown")
 
+        val executor = Executors
+            .newScheduledThreadPool(1)
+
+        if (
+            CocoaSettingsProcessor
+                .locate<CocoaVelocitySettings>()!!
+                .consul.enabled
+        )
+        {
+            executor.scheduleAtFixedRate(
+                CocoaConsulRefresh,
+                0L, 1L,
+                TimeUnit.SECONDS
+            )
+        }
+
         DataStoreHandler.configure()
 
         CocoaServerPresenceHandler.initialLoad()
@@ -131,6 +147,7 @@ constructor(
     fun onInitialize(event: ProxyInitializeEvent)
     {
         val commandManager = VelocityCommandManager(server, this)
+        configureVelocityPlugin()
 
         listOf<MessageType>(
             MessageType.HELP, MessageType.INFO, MessageType.SYNTAX
@@ -139,7 +156,6 @@ constructor(
             commandManager.getFormat(it).setColor(2, NamedTextColor.YELLOW)
             commandManager.getFormat(it).setColor(1, NamedTextColor.GOLD)
         }
-        configureVelocityPlugin()
 
         commandManager.commandContexts.registerContext(Rank::class.java) {
             val firstArg = it.popFirstArg()
@@ -221,15 +237,6 @@ constructor(
                 DataStoreHandler.updateRank(it.uniqueId)
             }
         }, 0L, 2L, TimeUnit.SECONDS)
-
-        if (settings.consul.enabled)
-        {
-            executor.scheduleAtFixedRate(
-                CocoaConsulRefresh,
-                0L, 1L,
-                TimeUnit.SECONDS
-            )
-        }
 
         executor.scheduleAtFixedRate({
             settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)

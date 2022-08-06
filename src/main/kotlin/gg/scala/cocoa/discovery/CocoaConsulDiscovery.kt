@@ -1,6 +1,6 @@
 package gg.scala.cocoa.discovery
 
-import com.google.common.net.HostAndPort
+import com.orbitz.google.common.net.HostAndPort
 import com.orbitz.consul.Consul
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor

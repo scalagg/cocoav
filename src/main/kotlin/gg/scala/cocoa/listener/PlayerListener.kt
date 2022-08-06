@@ -259,7 +259,11 @@ object PlayerListener
 
             val server = event.player.currentServer.get()
 
-            if (plugin.isLobbyServer(server.serverInfo))
+            if (
+                plugin.isLobbyServer(server.serverInfo) ||
+                server.serverInfo.name.contains("pack") ||
+                plugin.isLobbyServer(event.originalServer.serverInfo)
+            )
             {
                 return
             }
@@ -360,7 +364,7 @@ object PlayerListener
         val newServer = if (event.player.hasPermission("cocoa.staff"))
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
-        if (newServer != null && newServer != event.server)
+        if (newServer != null)
         {
             event.result = KickedFromServerEvent
                 .RedirectPlayer.create(newServer)
@@ -369,7 +373,8 @@ object PlayerListener
             event.result = KickedFromServerEvent
                 .DisconnectPlayer.create(
                     event.serverKickReason.orElse(
-                        Component.text("Sorry, we weren't able to find an available lobby for you.")
+                        Component
+                            .text("Oops! There are no lobby servers for you to join.")
                             .color(NamedTextColor.RED)
                     )
                 )

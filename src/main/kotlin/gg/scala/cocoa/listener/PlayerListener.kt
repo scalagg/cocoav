@@ -369,6 +369,19 @@ object PlayerListener
             (event.kickedDuringServerConnect() || event.server != newServer)
         )
         {
+            if (event.kickedDuringServerConnect())
+            {
+                event.result = KickedFromServerEvent
+                    .Notify.create(
+                        event.serverKickReason.orElse(
+                            Component
+                                .text("You are not allowed to connected to this server.")
+                                .color(NamedTextColor.RED)
+                        )
+                    )
+                return
+            }
+
             event.result = KickedFromServerEvent
                 .RedirectPlayer.create(newServer)
         } else

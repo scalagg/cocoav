@@ -31,7 +31,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ForkJoinPool
-import java.util.concurrent.TimeUnit
 
 /**
  * @author GrowlyX
@@ -41,10 +40,8 @@ object PlayerListener
 {
     private val plugin = CocoaVelocityPlugin.INSTANCE
 
-    private val kickCounter = CacheBuilder
-        .newBuilder()
-        .expireAfterAccess(2L, TimeUnit.SECONDS)
-        .build<UUID, Int>()
+    private val connectedThroughMiddleware = CacheBuilder
+        .newBuilder().build<UUID, Boolean>()
 
     @Subscribe
     fun onLogout(event: LoginEvent)
@@ -61,6 +58,9 @@ object PlayerListener
     @Subscribe
     fun onLogout(event: DisconnectEvent)
     {
+        this.connectedThroughMiddleware
+            .invalidate(event.player.uniqueId)
+
         produce(
             "network-disconnect",
             "uniqueId" to event.player.uniqueId
@@ -230,8 +230,15 @@ object PlayerListener
             val settings = CocoaSettingsProcessor
                 .locate<CocoaVelocitySettings>()!!
 
-            if (settings.middleware != null)
+            if (
+                settings.middleware != null &&
+                !this.connectedThroughMiddleware
+                    .asMap().contains(event.player.uniqueId)
+            )
             {
+                this.connectedThroughMiddleware
+                    .put(event.player.uniqueId, true)
+
                 event.result = ServerPreConnectEvent.ServerResult
                     .allowed(
                         plugin.server.getServer(settings.middleware).get()

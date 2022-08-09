@@ -44,7 +44,7 @@ object PlayerListener
         .newBuilder().build<UUID, Boolean>()
 
     @Subscribe
-    fun onLogout(event: LoginEvent)
+    fun onLogin(event: LoginEvent)
     {
         produce(
             "friend-network-update",

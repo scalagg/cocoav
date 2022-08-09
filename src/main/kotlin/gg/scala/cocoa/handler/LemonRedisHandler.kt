@@ -3,6 +3,7 @@ package gg.scala.cocoa.handler
 import gg.scala.aware.annotation.Subscribe
 import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.permission.CocoaPermissionEngine
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.type.DataStoreStorageType
 import java.util.*
@@ -21,6 +22,9 @@ object LemonRedisHandler
 
         DataStoreHandler.rankOf[targetUuid] =
             DataStoreHandler.loadRankOfNow(targetUuid).uuid
+
+        CocoaPermissionEngine
+            .calculatePermissions(targetUuid)
     }
 
     @Subscribe("recalculate-punishments")

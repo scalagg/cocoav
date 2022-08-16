@@ -29,7 +29,7 @@ object TrafficCommand : BaseCommand()
         help.showHelp()
     }
 
-    @CommandAlias("redirect")
+    @CommandAlias("redirect|send")
     @CommandCompletion("@players @servers")
     @Description("Redirect a player to a server.")
     fun onSend(
@@ -65,7 +65,7 @@ object TrafficCommand : BaseCommand()
             }
     }
 
-    @CommandAlias("redirectall")
+    @CommandAlias("redirectall|sendall")
     @CommandCompletion("@servers")
     @Description("Redirect all player to a server.")
     fun onSend(

@@ -1,6 +1,9 @@
 package gg.scala.cocoa.presence
 
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.format.NamedTextColor
+import java.util.UUID
 
 /**
  * @author GrowlyX
@@ -10,11 +13,18 @@ object CocoaServerPresenceRunnable : Runnable
 {
     private val cachedPresences = mutableMapOf<String, TextComponent>()
 
+    private val fallback: UUID = UUID.randomUUID()
+    private val fallbackPresence = Component
+        .text("Fallback proxy state - is something wrong?")
+        .color(NamedTextColor.GRAY)
+
     fun cachedPresence(): TextComponent
     {
         return cachedPresences[
-                CocoaServerPresenceHandler.current.getUniqueId()
-        ]!!
+                kotlin.runCatching {
+                    CocoaServerPresenceHandler.current.getUniqueId()
+                }.getOrDefault(fallback)
+        ] ?: fallbackPresence
     }
 
     override fun run()

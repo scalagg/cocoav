@@ -64,6 +64,7 @@ object CocoaConsulRefresh : Runnable
                     )
             }
 
+        // yes i can but idk cba prob other plugin depend on it
         healthy
             .filter {
                 !registeredNames

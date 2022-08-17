@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
+import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
 import com.velocitypowered.api.event.permission.PermissionsSetupEvent
@@ -368,6 +369,19 @@ object PlayerListener
     @Subscribe
     fun onKick(event: KickedFromServerEvent)
     {
+        if ("pack" in event.server.serverInfo.name)
+        {
+            event.result = KickedFromServerEvent
+                .DisconnectPlayer.create(
+                    event.serverKickReason.orElse(
+                        Component
+                            .text("We were unable to apply our pack to your client.")
+                            .color(NamedTextColor.RED)
+                    )
+                )
+            return
+        }
+
         val newServer = if (event.player.hasPermission("cocoa.staff"))
             plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 

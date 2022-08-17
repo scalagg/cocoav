@@ -50,6 +50,16 @@ object TrafficCommand : BaseCommand()
 
         player.player.createConnectionRequest(registered)
             .connect().thenAccept {
+                if (it.isSuccessful)
+                {
+                    player.player.sendMessage(
+                        LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize(
+                                "&6You were summoned to &l${registered.serverInfo.name}&6."
+                            )
+                    )
+                }
+
                 actor.sendMessage {
                     LegacyComponentSerializer.legacyAmpersand()
                         .deserialize(
@@ -85,12 +95,68 @@ object TrafficCommand : BaseCommand()
                     if (isSuccessful)
                     {
                         successful++
+
+                        it.sendMessage(
+                            LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize(
+                                    "&6You were summoned to &l${registered.serverInfo.name}&6."
+                                )
+                        )
                     } else
                     {
                         declined++
                     }
                 }
         }
+
+        actor.sendMessage {
+            LegacyComponentSerializer.legacyAmpersand()
+                .deserialize(
+                    """
+                        &eWe've connected &l$successful&e players to &f$server&e!
+                        &7We were unable to connect &l$declined&7 player though.
+                    """.trimIndent()
+                )
+        }
+    }
+
+    @CommandAlias("redirectcurrent|sendcurrent")
+    @CommandCompletion("@servers")
+    @Description("Redirect all player to a server.")
+    fun onSendCurrent(
+        actor: Player, server: String
+    )
+    {
+        val registered = CocoaVelocityPlugin.INSTANCE.server.getServer(server).orElse(null)
+            ?: throw ConditionFailedException("Sorry, that server does not exist.")
+
+        var successful = 0
+        var declined = 0
+
+        CocoaVelocityPlugin.INSTANCE.server.allPlayers
+            .filter {
+                it.currentServer.isPresent &&
+                        it.currentServer.get().server.serverInfo.name == actor.currentServer.get().serverInfo.name
+            }.forEach {
+                it.createConnectionRequest(registered)
+                    .connect().join()
+                    .apply {
+                        if (isSuccessful)
+                        {
+                            successful++
+
+                            it.sendMessage(
+                                LegacyComponentSerializer.legacyAmpersand()
+                                    .deserialize(
+                                        "&6You were summoned to &l${registered.serverInfo.name}&6."
+                                    )
+                            )
+                        } else
+                        {
+                            declined++
+                        }
+                    }
+            }
 
         actor.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()

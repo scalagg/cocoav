@@ -5,6 +5,7 @@ import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.evilblock.cubed.serializers.Serializers
 import java.io.InputStreamReader
 import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Handles everything in relation
@@ -23,7 +24,12 @@ object CocoaNetworkAddressHandler
     }
 
     @JvmStatic
-    val REQUEST_URL = "https://api.vpnblocker.net/v2/json/%s"
+    val REQUEST_URL by lazy {
+        "https://api.vpnblocker.net/v2/json/$API_KEY"
+    }
+
+    private val vpnBlockerResponses =
+        ConcurrentHashMap<String, CocoaNetworkAddressModel>()
 
     /**
      * Requests host data for the target ip address.
@@ -33,13 +39,24 @@ object CocoaNetworkAddressHandler
      */
     fun requestHostData(ipAddress: String): CocoaNetworkAddressModel?
     {
-        val url = URL(
-            String.format(REQUEST_URL, ipAddress)
-        )
+        val cached =
+            vpnBlockerResponses[ipAddress]
+
+        if (cached != null)
+        {
+            return cached
+        }
+
+        val url = URL(REQUEST_URL)
 
         return Serializers.gson.fromJson(
             url.openStream().reader(),
             CocoaNetworkAddressModel::class.java
-        )
+        ).apply {
+            if (this != null)
+            {
+                vpnBlockerResponses[ipAddress] = this
+            }
+        }
     }
 }

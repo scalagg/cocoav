@@ -9,7 +9,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
 class CocoaServerPresenceSettings(
     var normalPresence: String = "Hey",
     var whitelistedPresence: String = "cocoaV Lol",
-    var whitelistedNotification: String = "",
+    var whitelistedNotification: String = "&cThe network is currently whitelisted!\n&cJoin our discord for more information!",
     var shouldCenterPresence: Boolean = false
 ) : CocoaSettingsModel()
 {

@@ -3,6 +3,7 @@ package gg.scala.cocoa.listener
 import com.google.common.cache.CacheBuilder
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
+import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
@@ -49,20 +50,23 @@ object PlayerListener
         this.connectedThroughMiddleware
             .invalidate(event.player.uniqueId)
 
-        produce(
-            "network-disconnect",
-            "uniqueId" to event.player.uniqueId
-        ).apply {
-            publish(channel = "cougar:backbone")
-            publish(channel = "party:backbone")
-        }
+        if (event.player.currentServer.isPresent)
+        {
+            produce(
+                "network-disconnect",
+                "uniqueId" to event.player.uniqueId
+            ).apply {
+                publish(channel = "cougar:backbone")
+                publish(channel = "party:backbone")
+            }
 
-        produce(
-            "friend-network-update",
-            "uniqueId" to event.player.uniqueId,
-            "type" to "left",
-        ).apply {
-            publish(channel = "friends")
+            produce(
+                "friend-network-update",
+                "uniqueId" to event.player.uniqueId,
+                "type" to "left",
+            ).apply {
+                publish(channel = "friends")
+            }
         }
     }
 
@@ -120,11 +124,17 @@ object PlayerListener
             if (settings.networking.handleNetworkingChecks)
             {
                 kotlin.runCatching {
+                    if (event.player.uniqueId.toString() in settings.vpnBypass)
+                    {
+                        return@runCatching
+                    }
+
                     val networkModel = CocoaNetworkAddressHandler
                         .requestHostData(
                             event.player.remoteAddress
                                 .address.hostAddress
                         )
+                        .join()
 
                     if (networkModel == null)
                     {
@@ -139,15 +149,19 @@ object PlayerListener
                             .DENIED_NETWORKING_INVALID
 
                         CocoaRedisSubscriber.sendStaffNotification(
-                            null, "§4${
+                            null, "§3[global] §4${
                                 event.player.username
                             }§c tried logging on with a VPN.",
                             "lemon.vpn.notifications"
                         )
                     }
                 }.onFailure {
-                    event.result = CocoaVelocityConstants
-                        .DENIED_NETWORKING_ERROR
+                    it.printStackTrace()
+
+                    event.result = ResultedEvent.ComponentResult
+                        .denied(
+                            Component.text("Something went wrong")
+                        )
                 }
             }
 

@@ -2,9 +2,10 @@ package gg.scala.cocoa.network
 
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import kong.unirest.Unirest
 import net.evilblock.cubed.serializers.Serializers
-import java.io.InputStreamReader
 import java.net.URL
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -16,18 +17,6 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object CocoaNetworkAddressHandler
 {
-    @JvmStatic
-    val API_KEY by lazy {
-        CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
-            .networking.apiKey
-    }
-
-    @JvmStatic
-    val REQUEST_URL by lazy {
-        "https://api.vpnblocker.net/v2/json/$API_KEY"
-    }
-
     private val vpnBlockerResponses =
         ConcurrentHashMap<String, CocoaNetworkAddressModel>()
 
@@ -37,26 +26,40 @@ object CocoaNetworkAddressHandler
      * @param ipAddress the ip address in its [String] form
      * @return nullable [CocoaNetworkAddressModel]
      */
-    fun requestHostData(ipAddress: String): CocoaNetworkAddressModel?
+    fun requestHostData(ipAddress: String): CompletableFuture<CocoaNetworkAddressModel?>
     {
-        val cached =
-            vpnBlockerResponses[ipAddress]
+        val cached = vpnBlockerResponses[ipAddress]
 
         if (cached != null)
         {
-            return cached
+            return CompletableFuture.completedFuture(cached)
         }
 
-        val url = URL(REQUEST_URL)
+        val apiKey = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
+            .networking.apiKey
 
-        return Serializers.gson.fromJson(
-            url.openStream().reader(),
-            CocoaNetworkAddressModel::class.java
-        ).apply {
-            if (this != null)
-            {
-                vpnBlockerResponses[ipAddress] = this
+        return Unirest
+            .get("https://api.vpnblocker.net/v2/json/$ipAddress")
+            .header("X-API-KEY", apiKey)
+            .asStringAsync()
+            .thenApply {
+                if (it.status != 200)
+                {
+                    println("Failed VPNBlocker request: returned ${it.status}")
+                    return@thenApply null
+                }
+
+                Serializers.gson
+                    .fromJson(
+                        it.body, CocoaNetworkAddressModel::class.java
+                    )
+                    .apply {
+                        if (this != null)
+                        {
+                            vpnBlockerResponses[ipAddress] = this
+                        }
+                    }
             }
-        }
     }
 }

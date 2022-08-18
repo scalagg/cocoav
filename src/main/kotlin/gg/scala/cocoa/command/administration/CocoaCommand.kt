@@ -277,7 +277,7 @@ object CocoaCommand : BaseCommand()
     @CommandPermission("cocoa.command.inet-info")
     fun onIpInfo(
         actor: Player, player: OnlinePlayer
-    )
+    ): CompletableFuture<Void>
     {
         val start = System.currentTimeMillis()
 
@@ -293,24 +293,30 @@ object CocoaCommand : BaseCommand()
             throw ConditionFailedException("Cocoa networking is currently disabled.")
         }
 
-        CompletableFuture.supplyAsync {
-            CocoaNetworkAddressHandler.requestHostData(
+        return CocoaNetworkAddressHandler
+            .requestHostData(
                 player.player.remoteAddress.address.hostAddress
             )
-        }.whenComplete { data, throwable ->
-            if (throwable == null && data != null)
-            {
+            .exceptionally {
+                it.printStackTrace()
+                return@exceptionally null
+            }
+            .thenAccept { data ->
+                if (data == null)
+                {
+                    actor.sendMessage {
+                        LegacyComponentSerializer
+                            .legacyAmpersand()
+                            .deserialize("Something went wrong")
+                    }
+                    return@thenAccept
+                }
+
                 val message = """
                     &eIP info for &b${player.player.username}&e:
                       &7● &fLegitimate: ${
-                    if (data.shouldBlock)
-                    {
-                        "&cNo - VPN or Proxy"
-                    } else
-                    {
-                        "&aYes"
-                    }
-                }
+                          if (data.shouldBlock) "&cNo - VPN or Proxy" else "&aYes"
+                      }
                       &7● &fHost: &6${data.networkId} 
                      
                     &aThis took ${System.currentTimeMillis() - start}ms to run.
@@ -320,16 +326,8 @@ object CocoaCommand : BaseCommand()
                     LegacyComponentSerializer.legacyAmpersand()
                         .deserialize(message)
                 }
-            } else
-            {
-                throwable?.printStackTrace()
-
-                actor.sendMessage {
-                    LegacyComponentSerializer.legacyAmpersand()
-                        .deserialize("&cSomething went terribly wrong while executing this command.")
-                }
             }
-        }
+
     }
 
     @Subcommand("manager register-server")

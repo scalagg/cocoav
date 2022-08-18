@@ -98,7 +98,8 @@ object CocoaRedisSubscriber
     fun sendStaffNotification(
         sender: Player?,
         notification: String,
-        permission: String = "lemon.staff"
+        permission: String = "lemon.staff",
+        flag: String? = null
     )
     {
         buildMessage(
@@ -111,6 +112,11 @@ object CocoaRedisSubscriber
 
                 it["server"] = "proxy"
                 it["with-server"] = "false"
+
+                if (flag != null)
+                {
+                    it["flag"] = flag
+                }
             }
         ).publish()
     }

@@ -15,9 +15,13 @@ object CocoaVelocityConstants
     val MAINTENANCE by lazy {
         LegacyComponentSerializer.legacyAmpersand()
             .deserialize(
-                VelocitySettingsProcessor
-                    .locate<CocoaServerPresenceSettings>()!!
-                    .whitelistedNotification
+//                VelocitySettingsProcessor
+//                    .locate<CocoaServerPresenceSettings>()!!
+//                    .whitelistedNotification
+            """
+                &CThe server is whitelisted!
+                &cAdditional information may be found in our discord.
+            """.trimIndent()
             )
     }
 
@@ -32,8 +36,9 @@ object CocoaVelocityConstants
         .deserialize("&cYou cannot join with a VPN!")
 
     @JvmStatic
-    val DENIED_MAINTENANCE = ResultedEvent
-        .ComponentResult.denied(MAINTENANCE)!!
+    val DENIED_MAINTENANCE by lazy {
+        ResultedEvent.ComponentResult.denied(MAINTENANCE)!!
+    }
 
     @JvmStatic
     val DENIED_NETWORKING_ERROR = ResultedEvent

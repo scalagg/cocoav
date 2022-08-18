@@ -261,8 +261,7 @@ object CocoaCommand : BaseCommand()
             
               &7● &fHandling Networking Checks:
                &d${networking.handleNetworkingChecks}
-              &7● &fAPI Key:
-               &b${networking.apiKey}
+              &7● &fAPI Key: &b<redacted>
             
         """.trimIndent()
 

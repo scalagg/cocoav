@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture
  * @author GrowlyX
  * @since 12/16/2021
  */
-@CommandAlias("cpm|cocoaproxymanager")
+@CommandAlias("cpm")
 @CommandPermission("cocoa.command.cocoa")
 object CocoaCommand : BaseCommand()
 {

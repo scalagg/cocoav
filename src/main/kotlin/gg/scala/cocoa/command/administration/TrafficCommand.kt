@@ -18,7 +18,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
  * @author GrowlyX
  * @since 12/19/2021
  */
-@CommandAlias("traffic|trfk|proxytraffic")
+@CommandAlias("traffic|trfk")
 @CommandPermission("cocoa.command.traffic")
 object TrafficCommand : BaseCommand()
 {

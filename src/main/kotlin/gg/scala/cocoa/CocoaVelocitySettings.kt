@@ -10,6 +10,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
 class CocoaVelocitySettings(
     val externalProxy: Boolean = false,
     val externalProxyPrefix: String = "-ofl",
+    val serverBrand: String = "1.8.9-1.19.2",
     val middleware: String? = null,
     val listeningGroups: List<String> = listOf("practice", "hub"),
     val listeningExemptions: List<String> = listOf("build"),

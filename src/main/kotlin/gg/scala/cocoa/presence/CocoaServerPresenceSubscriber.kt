@@ -5,6 +5,8 @@ import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyPingEvent
 import com.velocitypowered.api.proxy.server.ServerPing
 import gg.scala.cocoa.CocoaVelocityPlugin
+import gg.scala.cocoa.CocoaVelocitySettings
+import gg.scala.cocoa.settings.CocoaSettingsProcessor
 
 /**
  * @author GrowlyX
@@ -18,19 +20,30 @@ object CocoaServerPresenceSubscriber
     private val plugin = CocoaVelocityPlugin.INSTANCE
 
     private val whitelisted = Version(
-        -1, "Whitelisted"
+        5000, "Whitelisted"
     )
+
+    private val brand = CocoaSettingsProcessor
+        .locate<CocoaVelocitySettings>()!!
+        .serverBrand
 
     @Subscribe
     fun onProxyPing(event: ProxyPingEvent)
     {
         event.ping = ServerPing(
             if (plugin.maintenance)
-                whitelisted else event.ping.version,
+            {
+                whitelisted
+            } else
+            {
+                Version(
+                    event.ping.version.protocol,
+                    brand
+                )
+            },
             Players(
-                TrevorService.getAPI()
-                    .instanceData.playerCount,
-                10000, mutableListOf()
+                TrevorService.getAPI().instanceData.playerCount,
+                2000, mutableListOf()
             ),
             CocoaServerPresenceRunnable
                 .cachedPresence(),

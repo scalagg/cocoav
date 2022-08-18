@@ -152,7 +152,8 @@ object PlayerListener
                             null, "§3[global] §4${
                                 event.player.username
                             }§c tried logging on with a VPN.",
-                            "lemon.vpn.notifications"
+                            "lemon.vpn.notifications",
+                            "vpn-alerts-disabled"
                         )
                     }
                 }.onFailure {

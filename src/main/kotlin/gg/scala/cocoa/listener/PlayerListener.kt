@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
-import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
 import com.velocitypowered.api.event.permission.PermissionsSetupEvent
@@ -43,18 +42,6 @@ object PlayerListener
 
     private val connectedThroughMiddleware = CacheBuilder
         .newBuilder().build<UUID, Boolean>()
-
-    @Subscribe
-    fun onLogin(event: LoginEvent)
-    {
-        produce(
-            "friend-network-update",
-            "uniqueId" to event.player.uniqueId,
-            "type" to "joined",
-        ).apply {
-            publish(channel = "friends")
-        }
-    }
 
     @Subscribe
     fun onLogout(event: DisconnectEvent)
@@ -185,6 +172,14 @@ object PlayerListener
 
             lemonPlayer.recalculatePunishments().join()
             lemonPlayer.checkForIpRelative().join()
+
+            produce(
+                "friend-network-update",
+                "uniqueId" to event.player.uniqueId,
+                "type" to "joined",
+            ).apply {
+                publish(channel = "friends")
+            }
 
             continuation.resume()
         }

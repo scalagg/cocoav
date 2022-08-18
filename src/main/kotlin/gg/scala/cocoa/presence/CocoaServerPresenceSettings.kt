@@ -9,6 +9,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
 class CocoaServerPresenceSettings(
     var normalPresence: String = "Hey",
     var whitelistedPresence: String = "cocoaV Lol",
+    var whitelistedNotification: String = "",
     var shouldCenterPresence: Boolean = false
 ) : CocoaSettingsModel()
 {

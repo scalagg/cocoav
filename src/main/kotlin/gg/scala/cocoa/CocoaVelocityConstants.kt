@@ -1,6 +1,8 @@
 package gg.scala.cocoa
 
 import com.velocitypowered.api.event.ResultedEvent
+import gg.scala.cocoa.presence.CocoaServerPresenceSettings
+import gg.scala.store.velocity.settings.VelocitySettingsProcessor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
 /**
@@ -13,10 +15,9 @@ object CocoaVelocityConstants
     val MAINTENANCE by lazy {
         LegacyComponentSerializer.legacyAmpersand()
             .deserialize(
-                """
-                    &cSorry, we're currently whitelisted.
-                    &cAdditional info may be found on discord.
-                """.trimIndent()
+                VelocitySettingsProcessor
+                    .locate<CocoaServerPresenceSettings>()!!
+                    .whitelistedNotification
             )
     }
 
@@ -31,11 +32,6 @@ object CocoaVelocityConstants
         .deserialize("&cYou cannot join with a VPN!")
 
     @JvmStatic
-    val PROXY_BOOT = LegacyComponentSerializer
-        .legacyAmpersand()
-        .deserialize("&c[Velocity] The proxy is currently booting.")
-
-    @JvmStatic
     val DENIED_MAINTENANCE = ResultedEvent
         .ComponentResult.denied(MAINTENANCE)!!
 
@@ -46,10 +42,6 @@ object CocoaVelocityConstants
     @JvmStatic
     val DENIED_NETWORKING_INVALID = ResultedEvent
         .ComponentResult.denied(NETWORKING_INVALID)!!
-
-    @JvmStatic
-    val NEW_LINE = LegacyComponentSerializer
-        .legacyAmpersand().deserialize("&r\n")
 
     const val DENIED_SERVER_ENTRY = "&cYour connection to server &c&l%s&c has been prevented due to you being %s."
 }

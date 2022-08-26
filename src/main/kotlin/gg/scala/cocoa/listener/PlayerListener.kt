@@ -519,7 +519,7 @@ object PlayerListener
 
             model.sessionAuthenticated = true
 
-            player.sendMessage("&b[MFA] &aYou've been authenticated.".legacy())
+            player.sendMessage("&b[MFA] &a&lYour account has been authenticated!".legacy())
         }
     }
 

@@ -54,20 +54,14 @@ object PlayerListener
     {
         val label = event.command
             .split(" ")
-            .first().lowercase()
+            .first().toLowerCase()
 
-        if (event.commandSource is Player)
+        if (event.commandSource is Player && !label.contains("mfa"))
         {
-            if (
-                !label.startsWith("/2fa") ||
-                !label.startsWith("/mfa")
-            )
+            if (!this.allowAction(event.commandSource as Player, "performing commands"))
             {
-                if (!this.allowAction(event.commandSource as Player))
-                {
-                    event.result = CommandExecuteEvent.CommandResult.denied()
-                    return
-                }
+                event.result = CommandExecuteEvent.CommandResult.denied()
+                return
             }
         }
     }
@@ -75,7 +69,7 @@ object PlayerListener
     @Subscribe
     fun onChat(event: PlayerChatEvent)
     {
-        if (!this.allowAction(event.player))
+        if (!this.allowAction(event.player, "sending chat messages"))
         {
             event.result = PlayerChatEvent.ChatResult.allowed()
         }
@@ -95,6 +89,12 @@ object PlayerListener
 
         if (model != null)
         {
+            if (model.persistIpAddress)
+            {
+                model.previousIpAddress = event.player
+                    .remoteAddress.address.hostAddress
+            }
+
             twoFactor.save(model, DataStoreStorageType.REDIS)
         }
 
@@ -407,7 +407,7 @@ object PlayerListener
                 return
             }
 
-            if (!this.allowAction(event.player))
+            if (!this.allowAction(event.player, "joining a server"))
             {
                 event.result = ServerPreConnectEvent
                     .ServerResult.denied()
@@ -456,7 +456,7 @@ object PlayerListener
         }
     }
 
-    fun allowAction(player: Player): Boolean
+    fun allowAction(player: Player, action: String = "performing this action"): Boolean
     {
         val model = DataStoreObjectControllerCache
             .findNotNull<TwoFactorModel>()
@@ -476,8 +476,8 @@ object PlayerListener
         if (!model.sessionAuthenticated)
         {
             player.sendMessage("&cYou must authenticate through &l${
-                if (model.secret == null) "/2fa configure" else "/2fa authenticate"
-            }&c before performing this action.".legacy())
+                if (model.secret == null) "/mfa configure" else "/mfa authenticate"
+            }&c before $action.".legacy())
             return false
         }
 
@@ -497,13 +497,13 @@ object PlayerListener
             {
                 model.sessionAuthenticated = true
 
-                player.sendMessage("&ab[MFA] &aYou've been exempt from two-factor-authentication.".legacy())
+                player.sendMessage("&b[MFA] &aYou've been exempt from two-factor-authentication.".legacy())
                 return
             }
 
             if (model.secret == null)
             {
-                player.sendMessage("&ab[MFA] &aThe server requires you to configure two-factor-authentication on your account. &7(Use /2fa configure)".legacy())
+                player.sendMessage("&b[MFA] &aThe server requires you to configure two-factor-authentication on your account. &7(Use /mfa configure)".legacy())
                 return
             }
 
@@ -513,7 +513,7 @@ object PlayerListener
                 model.sessionAuthenticated = false
                 model.save().join()
 
-                player.sendMessage("&ab[MFA] &cThe server requires you to authenticate. &7(Use /2fa authenticate)".legacy())
+                player.sendMessage("&b[MFA] &cThe server requires you to authenticate. &7(Use /mfa authenticate)".legacy())
                 return
             }
 

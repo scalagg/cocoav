@@ -19,6 +19,7 @@ import gg.scala.aware.AwareHub
 import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.command.LobbyCommand
+import gg.scala.cocoa.command.MfaCommand
 import gg.scala.cocoa.command.administration.CocoaCommand
 import gg.scala.cocoa.command.administration.CountdownCommand
 import gg.scala.cocoa.command.administration.TrafficCommand
@@ -182,7 +183,7 @@ constructor(
         commandManager.enableUnstableAPI("help")
 
         listOf(
-            LobbyCommand, CocoaCommand, TrafficCommand, CountdownCommand
+            LobbyCommand, CocoaCommand, TrafficCommand, CountdownCommand, MfaCommand
         ).forEach {
             commandManager.registerCommand(it)
         }

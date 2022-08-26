@@ -1,5 +1,6 @@
 package gg.scala.cocoa.command
 
+import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.totp.TimeBasedOneTimePasswordUtil
@@ -60,7 +61,7 @@ object MfaCommand : BaseCommand()
 
         if (model.secret == null)
         {
-            throw ConditionFailedException("You must configure 2fa first by performing /2fa configure.")
+            throw ConditionFailedException("You must configure 2fa first by performing /mfa configure.")
         }
 
         if (model.sessionAuthenticated)
@@ -83,7 +84,7 @@ object MfaCommand : BaseCommand()
             .remoteAddress.address.hostAddress
 
         return model.save().thenRun {
-            player.sendMessage("&3[MFA] &aYou have been authenticated.".legacy())
+            player.sendMessage("&b[MFA] &aYou have been authenticated.".legacy())
         }
     }
 
@@ -113,11 +114,11 @@ object MfaCommand : BaseCommand()
         model.save().join()
 
         player.sendMessage(
-            "&3[MFA] &aYour authentication secret is: &f".legacy()
+            "&b[MFA] &aYour authentication secret is: &f".legacy()
                 .append(
                     secret.legacy()
                         .clickEvent(
-                            ClickEvent.copyToClipboard(secret)
+                            ClickEvent.suggestCommand(secret)
                         )
                         .hoverEvent(
                             HoverEvent.showText("&aClick to copy!".legacy())
@@ -127,24 +128,24 @@ object MfaCommand : BaseCommand()
         )
 
         player.sendMessage(
-            "&3[MFA] &aThis code can be entered in any OTP MFA provider (Authy, Google Auth, etc).".legacy()
+            "&b[MFA] &aThis code can be entered in any OTP MFA provider (Authy, Google Auth, etc).".legacy()
         )
 
         player.sendMessage(
-            "&3[MFA] &aOnce you receive your 6 character code, enter it in &f/2fa authenticate&a.".legacy()
+            "&b[MFA] &aOnce you receive your 6 character code, enter it in &f/mfa authenticate&a.".legacy()
         )
     }
 
     @Subcommand("reset")
     @Description("Reset a player's 2FA configuration.")
     @CommandPermission("cocoa.2fa.command.reset")
-    fun onReset(player: Player, target: OnlinePlayer)
+    fun onReset(player: CommandSource, target: OnlinePlayer)
     {
         val model = DataStoreObjectControllerCache
             .findNotNull<TwoFactorModel>()
-            .localCache()[player.uniqueId]
+            .localCache()[target.player.uniqueId]
             ?: throw ConditionFailedException(
-                "Please rejoin, we did not load your MFA account."
+                "Their MFA account was not loaded."
             )
 
         if (model.exempt)
@@ -158,7 +159,7 @@ object MfaCommand : BaseCommand()
         model.save().join()
 
         target.player.sendMessage(
-            "&3[MFA] &aYour authentication configuration has been reset.".legacy()
+            "&b[MFA] &aYour authentication configuration has been reset.".legacy()
         )
 
         player.sendMessage("&9[MFA Admin] &aYou have reset their 2FA configuration.".legacy())
@@ -167,13 +168,13 @@ object MfaCommand : BaseCommand()
     @Subcommand("exempt")
     @Description("Exempt a user from 2FA.")
     @CommandPermission("cocoa.2fa.command.exempt")
-    fun onExempt(player: Player, target: OnlinePlayer)
+    fun onExempt(player: CommandSource, target: OnlinePlayer)
     {
         val model = DataStoreObjectControllerCache
             .findNotNull<TwoFactorModel>()
-            .localCache()[player.uniqueId]
+            .localCache()[target.player.uniqueId]
             ?: throw ConditionFailedException(
-                "Please rejoin, we did not load your MFA account."
+                "Their MFA account was not loaded."
             )
 
         if (model.exempt)
@@ -186,7 +187,7 @@ object MfaCommand : BaseCommand()
         model.save().join()
 
         target.player.sendMessage(
-            "&3[MFA] &aYou are now exempt from MFA. You no longer need to authenticate.".legacy()
+            "&b[MFA] &aYou are now exempt from MFA. You no longer need to authenticate.".legacy()
         )
 
         player.sendMessage("&9[MFA Admin] &aThis player has been exempt.".legacy())
@@ -195,13 +196,13 @@ object MfaCommand : BaseCommand()
     @Subcommand("unexempt")
     @Description("Un-exempt a user from 2FA.")
     @CommandPermission("cocoa.2fa.command.exempt")
-    fun onUnExempt(player: Player, target: OnlinePlayer)
+    fun onUnExempt(player: CommandSource, target: OnlinePlayer)
     {
         val model = DataStoreObjectControllerCache
             .findNotNull<TwoFactorModel>()
-            .localCache()[player.uniqueId]
+            .localCache()[target.player.uniqueId]
             ?: throw ConditionFailedException(
-                "Please rejoin, we did not load your MFA account."
+                "Their MFA account was not loaded."
             )
 
         if (!model.exempt)
@@ -214,7 +215,7 @@ object MfaCommand : BaseCommand()
         model.save().join()
 
         target.player.sendMessage(
-            "&3[MFA] &aYou are no longer exempt, you must authenticate now.".legacy()
+            "&b[MFA] &aYou are no longer exempt, you must authenticate now.".legacy()
         )
 
         player.sendMessage("&9[MFA Admin] &aThis player has been un-exempt.".legacy())

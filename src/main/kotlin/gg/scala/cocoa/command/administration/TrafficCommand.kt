@@ -18,8 +18,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
  * @author GrowlyX
  * @since 12/19/2021
  */
-@CommandAlias("traffic|trfk")
-@CommandPermission("cocoa.command.traffic")
 object TrafficCommand : BaseCommand()
 {
     @Default
@@ -31,6 +29,7 @@ object TrafficCommand : BaseCommand()
 
     @CommandAlias("redirect|send")
     @CommandCompletion("@players @servers")
+    @CommandPermission("cocoa.command.traffic")
     @Description("Redirect a player to a server.")
     fun onSend(
         actor: Player, player: OnlinePlayer, server: String
@@ -75,8 +74,9 @@ object TrafficCommand : BaseCommand()
             }
     }
 
-    @CommandAlias("redirectall|sendall")
     @CommandCompletion("@servers")
+    @CommandAlias("redirectall|sendall")
+    @CommandPermission("cocoa.command.traffic")
     @Description("Redirect all player to a server.")
     fun onSend(
         actor: Player, server: String
@@ -120,8 +120,9 @@ object TrafficCommand : BaseCommand()
         }
     }
 
-    @CommandAlias("redirectcurrent|sendcurrent")
     @CommandCompletion("@servers")
+    @CommandPermission("cocoa.command.traffic")
+    @CommandAlias("redirectcurrent|sendcurrent")
     @Description("Redirect all player to a server.")
     fun onSendCurrent(
         actor: Player, server: String

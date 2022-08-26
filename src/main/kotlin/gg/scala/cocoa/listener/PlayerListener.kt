@@ -5,10 +5,12 @@ import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.event.Subscribe
+import com.velocitypowered.api.event.command.CommandExecuteEvent
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
 import com.velocitypowered.api.event.permission.PermissionsSetupEvent
 import com.velocitypowered.api.event.player.KickedFromServerEvent
+import com.velocitypowered.api.event.player.PlayerChatEvent
 import com.velocitypowered.api.event.player.ServerConnectedEvent
 import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import com.velocitypowered.api.proxy.Player
@@ -17,10 +19,13 @@ import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.handler.DataStoreHandler
+import gg.scala.cocoa.legacy
 import gg.scala.cocoa.lemon.LemonPlayer
+import gg.scala.cocoa.lemon.TwoFactorModel
 import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.permission.CocoaPermissionEngine
+import gg.scala.cocoa.permission.CocoaPermissionEngine.hasCocoaPermission
 import gg.scala.cocoa.permission.CocoaPermissionProvider
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
@@ -45,10 +50,53 @@ object PlayerListener
         .newBuilder().build<UUID, Boolean>()
 
     @Subscribe
+    fun onCommand(event: CommandExecuteEvent)
+    {
+        val label = event.command
+            .split(" ")
+            .first().toLowerCase()
+
+        if (event.commandSource is Player && !label.contains("mfa"))
+        {
+            if (!this.allowAction(event.commandSource as Player, "performing commands"))
+            {
+                event.result = CommandExecuteEvent.CommandResult.denied()
+                return
+            }
+        }
+    }
+
+    @Subscribe
+    fun onChat(event: PlayerChatEvent)
+    {
+        if (!this.allowAction(event.player, "sending chat messages"))
+        {
+            event.result = PlayerChatEvent.ChatResult.allowed()
+        }
+    }
+
+    @Subscribe
     fun onLogout(event: DisconnectEvent)
     {
         this.connectedThroughMiddleware
             .invalidate(event.player.uniqueId)
+
+        val twoFactor = DataStoreObjectControllerCache
+            .findNotNull<TwoFactorModel>()
+
+        val model = twoFactor
+            .localCache()[event.player.uniqueId]
+
+        if (model != null)
+        {
+            if (model.persistIpAddress)
+            {
+                model.previousIpAddress = event.player
+                    .remoteAddress.address.hostAddress
+            }
+
+            twoFactor.save(model, DataStoreStorageType.REDIS)
+        }
 
         if (event.player.currentServer.isPresent)
         {
@@ -100,100 +148,140 @@ object PlayerListener
         val uniqueId = event.player.uniqueId
 
         ForkJoinPool.commonPool().execute {
-            val loadedRank = DataStoreHandler
-                .loadRankOfNow(event.player.uniqueId)
+            kotlin.runCatching scope@{
+                val loadedRank = DataStoreHandler
+                    .loadRankOfNow(event.player.uniqueId)
 
-            DataStoreHandler.rankOf[uniqueId] = loadedRank.uuid
+                DataStoreHandler.rankOf[uniqueId] = loadedRank.uuid
 
-            if (plugin.maintenance)
-            {
-                if (!plugin.shouldAllowOrStay(uniqueId))
+                if (plugin.maintenance)
                 {
-                    event.result = CocoaVelocityConstants
-                        .DENIED_MAINTENANCE
+                    if (!plugin.shouldAllowOrStay(uniqueId))
+                    {
+                        event.result = CocoaVelocityConstants
+                            .DENIED_MAINTENANCE
 
-                    DataStoreHandler.rankOf.remove(uniqueId)
+                        DataStoreHandler.rankOf.remove(uniqueId)
+                        continuation.resume()
+                        return@execute
+                    }
+                }
+
+                val settings = CocoaSettingsProcessor
+                    .locate<CocoaVelocitySettings>()!!
+
+                if (settings.networking.handleNetworkingChecks)
+                {
+                    kotlin.runCatching {
+                        if (event.player.uniqueId.toString() in settings.vpnBypass)
+                        {
+                            return@runCatching
+                        }
+
+                        val networkModel = CocoaNetworkAddressHandler
+                            .requestHostData(
+                                event.player.remoteAddress
+                                    .address.hostAddress
+                            )
+                            .join()
+
+                        if (networkModel == null)
+                        {
+                            event.result = CocoaVelocityConstants
+                                .DENIED_NETWORKING_ERROR
+                            return@runCatching
+                        }
+
+                        if (networkModel.shouldBlock)
+                        {
+                            event.result = CocoaVelocityConstants
+                                .DENIED_NETWORKING_INVALID
+
+                            CocoaRedisSubscriber.sendStaffNotification(
+                                null, "§3[global] §4${
+                                    event.player.username
+                                }§c tried logging on with a VPN.",
+                                "lemon.vpn.notifications",
+                                "vpn-alerts-disabled"
+                            )
+                        }
+                    }.onFailure {
+                        it.printStackTrace()
+
+                        event.result = ResultedEvent.ComponentResult
+                            .denied(
+                                Component.text("Something went wrong")
+                            )
+                    }
+                }
+
+                if (!event.result.isAllowed)
+                {
+                    DataStoreHandler
+                        .rankOf.remove(uniqueId)
+
                     continuation.resume()
                     return@execute
                 }
-            }
 
-            val settings = CocoaSettingsProcessor
-                .locate<CocoaVelocitySettings>()!!
-
-            if (settings.networking.handleNetworkingChecks)
-            {
-                kotlin.runCatching {
-                    if (event.player.uniqueId.toString() in settings.vpnBypass)
-                    {
-                        return@runCatching
-                    }
-
-                    val networkModel = CocoaNetworkAddressHandler
-                        .requestHostData(
-                            event.player.remoteAddress
-                                .address.hostAddress
+                val lemonPlayer = DataStoreObjectControllerCache
+                    .findNotNull<LemonPlayer>()
+                    .loadOptimalCopy(uniqueId) {
+                        LemonPlayer(
+                            uniqueId,
+                            event.player.username
                         )
+                    }
+                    .join()
+
+                lemonPlayer.recalculatePunishments().join()
+                lemonPlayer.checkForIpRelative().join()
+
+                CocoaPermissionEngine
+                    .calculatePermissions(
+                        event.player.uniqueId
+                    )
+
+                if (event.player.hasCocoaPermission("cocoa.2fa"))
+                {
+                    var model = DataStoreObjectControllerCache
+                        .findNotNull<TwoFactorModel>()
+                        .load(event.player.uniqueId, DataStoreStorageType.REDIS)
                         .join()
 
-                    if (networkModel == null)
+                    if (model == null)
                     {
-                        event.result = CocoaVelocityConstants
-                            .DENIED_NETWORKING_ERROR
-                        return@runCatching
-                    }
-
-                    if (networkModel.shouldBlock)
-                    {
-                        event.result = CocoaVelocityConstants
-                            .DENIED_NETWORKING_INVALID
-
-                        CocoaRedisSubscriber.sendStaffNotification(
-                            null, "§3[global] §4${
-                                event.player.username
-                            }§c tried logging on with a VPN.",
-                            "lemon.vpn.notifications",
-                            "vpn-alerts-disabled"
+                        model = TwoFactorModel(
+                            event.player.uniqueId,
+                            event.player.remoteAddress.address.hostAddress
                         )
                     }
-                }.onFailure {
-                    it.printStackTrace()
 
-                    event.result = ResultedEvent.ComponentResult
-                        .denied(
-                            Component.text("Something went wrong")
-                        )
+                    DataStoreObjectControllerCache
+                        .findNotNull<TwoFactorModel>()
+                        .localCache()[event.player.uniqueId] = model
+
+                    if (model.persistIpAddress)
+                    {
+                        model.currentIpAddress = event.player
+                            .remoteAddress.address.hostAddress
+                    }
                 }
-            }
 
-            if (!event.result.isAllowed)
-            {
-                DataStoreHandler
-                    .rankOf.remove(uniqueId)
-
-                continuation.resume()
-                return@execute
-            }
-
-            val lemonPlayer = DataStoreObjectControllerCache
-                .findNotNull<LemonPlayer>()
-                .loadOptimalCopy(uniqueId) {
-                    LemonPlayer(
-                        uniqueId,
-                        event.player.username
-                    )
+                produce(
+                    "friend-network-update",
+                    "uniqueId" to event.player.uniqueId,
+                    "type" to "joined",
+                ).apply {
+                    publish(channel = "friends")
                 }
-                .join()
-
-            lemonPlayer.recalculatePunishments().join()
-            lemonPlayer.checkForIpRelative().join()
-
-            produce(
-                "friend-network-update",
-                "uniqueId" to event.player.uniqueId,
-                "type" to "joined",
-            ).apply {
-                publish(channel = "friends")
+            }.onFailure {
+                event.result = ResultedEvent.ComponentResult.denied(
+                    """
+                        &cAn internal server error occurred.
+                        &cContact an administrator immediately.
+                    """.trimIndent().legacy()
+                )
             }
 
             continuation.resume()
@@ -278,8 +366,7 @@ object PlayerListener
             val server = event.player.currentServer.get()
 
             if (
-                plugin.isLobbyServer(server.serverInfo) ||
-                server.serverInfo.name.contains("pack") ||
+                plugin.isLobbyServer(server.serverInfo) &&
                 plugin.isLobbyServer(event.originalServer.serverInfo)
             )
             {
@@ -317,34 +404,25 @@ object PlayerListener
 
                 event.result = ServerPreConnectEvent
                     .ServerResult.denied()
+                return
+            }
+
+            if (!this.allowAction(event.player, "joining a server"))
+            {
+                event.result = ServerPreConnectEvent
+                    .ServerResult.denied()
             }
         }
     }
 
     @Subscribe
-    fun onPermissionSetup(
-        event: PermissionsSetupEvent,
-        continuation: Continuation
-    )
+    fun onPermissionSetup(event: PermissionsSetupEvent)
     {
         val subject = event.subject
 
-        if (subject !is Player)
+        if (subject is Player)
         {
-            continuation.resume()
-            return
-        }
-
-        ForkJoinPool.commonPool().execute {
-            CocoaPermissionEngine
-                .calculatePermissions(
-                    subject.uniqueId
-                )
-
-            event.provider =
-                CocoaPermissionProvider
-
-            continuation.resume()
+            event.provider = CocoaPermissionProvider
         }
     }
 
@@ -367,12 +445,81 @@ object PlayerListener
             } else
             {
                 plugin.server.scheduler.buildTask(plugin) {
+                    this.ensureAuthenticated(event.player)
+
                     CocoaRedisSubscriber.sendStaffNotification(
                         event.player,
                         "§b${color(event.player.uniqueId) + event.player.username}§3 connected to §b$serverName§3."
                     )
                 }.delay(HUNDRED_MILLI).schedule()
             }
+        }
+    }
+
+    fun allowAction(player: Player, action: String = "performing this action"): Boolean
+    {
+        val model = DataStoreObjectControllerCache
+            .findNotNull<TwoFactorModel>()
+            .localCache()[player.uniqueId]
+            ?: return true
+
+        if (!player.hasPermission("cocoa.2fa"))
+        {
+            return true
+        }
+
+        if (model.exempt)
+        {
+            return true
+        }
+
+        if (!model.sessionAuthenticated)
+        {
+            player.sendMessage("&cYou must authenticate through &l${
+                if (model.secret == null) "/mfa configure" else "/mfa authenticate"
+            }&c before $action.".legacy())
+            return false
+        }
+
+        return true
+    }
+
+    fun ensureAuthenticated(player: Player)
+    {
+        if (player.hasCocoaPermission("cocoa.2fa"))
+        {
+            val model = DataStoreObjectControllerCache
+                .findNotNull<TwoFactorModel>()
+                .localCache()[player.uniqueId]
+                ?: return
+
+            if (model.exempt)
+            {
+                model.sessionAuthenticated = true
+
+                player.sendMessage("&b[MFA] &aYou've been exempt from two-factor-authentication.".legacy())
+                return
+            }
+
+            if (model.secret == null)
+            {
+                player.sendMessage("&b[MFA] &aThe server requires you to configure two-factor-authentication on your account. &7(Use /mfa configure)".legacy())
+                return
+            }
+
+            if (model.currentIpAddress != model.previousIpAddress)
+            {
+                model.persistIpAddress = false
+                model.sessionAuthenticated = false
+                model.save().join()
+
+                player.sendMessage("&b[MFA] &cThe server requires you to authenticate. &7(Use /mfa authenticate)".legacy())
+                return
+            }
+
+            model.sessionAuthenticated = true
+
+            player.sendMessage("&b[MFA] &a&lYour account has been authenticated!".legacy())
         }
     }
 

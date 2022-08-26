@@ -1,5 +1,6 @@
 package gg.scala.cocoa
 
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.util.*
 import java.util.regex.Pattern
 
@@ -16,6 +17,9 @@ fun String.centered(pixels: Double): String
 {
     return center(this, pixels)
 }
+
+fun String.legacy() = LegacyComponentSerializer
+    .legacyAmpersand().deserialize(this)
 
 private fun center(message: String, centerPixels: Double): String
 {

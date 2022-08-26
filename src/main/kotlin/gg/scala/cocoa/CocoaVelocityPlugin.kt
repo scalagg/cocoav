@@ -1,5 +1,8 @@
 package gg.scala.cocoa
 
+import co.schemati.trevor.api.TrevorAPI
+import co.schemati.trevor.api.TrevorService
+import co.schemati.trevor.velocity.TrevorVelocity
 import com.google.inject.Inject
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
@@ -16,6 +19,7 @@ import gg.scala.aware.AwareHub
 import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.command.LobbyCommand
+import gg.scala.cocoa.command.MfaCommand
 import gg.scala.cocoa.command.administration.CocoaCommand
 import gg.scala.cocoa.command.administration.CountdownCommand
 import gg.scala.cocoa.command.administration.TrafficCommand
@@ -179,7 +183,7 @@ constructor(
         commandManager.enableUnstableAPI("help")
 
         listOf(
-            LobbyCommand, CocoaCommand, TrafficCommand, CountdownCommand
+            LobbyCommand, CocoaCommand, TrafficCommand, CountdownCommand, MfaCommand
         ).forEach {
             commandManager.registerCommand(it)
         }
@@ -231,6 +235,19 @@ constructor(
             proxyChannel.shutdown()
             spigotChannel.shutdown()
         })
+
+        executor.scheduleAtFixedRate({
+            settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
+            {
+                this.connection.useResource {
+                    kotlin.runCatching {
+                        sync().set("global-player-count${
+                            if (settings.externalProxy) settings.externalProxyPrefix else ""
+                        }", TrevorService.getAPI().instanceData.playerCount.toString())
+                    }
+                }
+            }
+        }, 0L, 10L, TimeUnit.MILLISECONDS)
 
         executor.scheduleAtFixedRate({
             server.allPlayers.forEach {

@@ -24,7 +24,9 @@ object LemonRedisHandler
             DataStoreHandler.loadRankOfNow(targetUuid).uuid
 
         CocoaPermissionEngine
-            .calculatePermissions(targetUuid)
+            .calculatePermissions(
+                targetUuid, forceCalculate = true
+            )
     }
 
     @Subscribe("recalculate-punishments")

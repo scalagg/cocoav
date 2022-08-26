@@ -85,6 +85,20 @@ object MfaCommand : BaseCommand()
 
         return model.save().thenRun {
             player.sendMessage("&b[MFA] &aYou have been authenticated.".legacy())
+
+            if (
+                player.currentServer.isPresent &&
+                player.currentServer.get().serverInfo.name.contains("pack")
+            )
+            {
+                val isStaffMember = player
+                    .hasPermission("cocoa.staff")
+
+                val bestHubServer = if (isStaffMember)
+                    plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
+
+                player.createConnectionRequest(bestHubServer).connect()
+            }
         }
     }
 

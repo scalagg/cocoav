@@ -4,13 +4,13 @@ import com.mongodb.client.model.Filters
 import gg.scala.cocoa.lemon.Grant
 import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.lemon.Punishment
+import gg.scala.cocoa.lemon.TwoFactorModel
 import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.CachedDataStoreStorageLayer
 import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
-import net.evilblock.cubed.serializers.Serializers
 import org.bson.conversions.Bson
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -27,6 +27,7 @@ object DataStoreHandler
     fun configure()
     {
         DataStoreObjectControllerCache.create<Rank>()
+        DataStoreObjectControllerCache.create<TwoFactorModel>()
         DataStoreObjectControllerCache.create<Grant>()
         DataStoreObjectControllerCache.create<Punishment>()
         DataStoreObjectControllerCache.create<LemonPlayer>()

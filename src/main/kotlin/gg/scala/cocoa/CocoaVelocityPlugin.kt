@@ -1,5 +1,8 @@
 package gg.scala.cocoa
 
+import co.schemati.trevor.api.TrevorAPI
+import co.schemati.trevor.api.TrevorService
+import co.schemati.trevor.velocity.TrevorVelocity
 import com.google.inject.Inject
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
@@ -231,6 +234,19 @@ constructor(
             proxyChannel.shutdown()
             spigotChannel.shutdown()
         })
+
+        executor.scheduleAtFixedRate({
+            settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
+            {
+                this.connection.useResource {
+                    kotlin.runCatching {
+                        sync().set("global-player-count${
+                            if (settings.externalProxy) settings.externalProxyPrefix else ""
+                        }", TrevorService.getAPI().instanceData.playerCount.toString())
+                    }
+                }
+            }
+        }, 0L, 10L, TimeUnit.MILLISECONDS)
 
         executor.scheduleAtFixedRate({
             server.allPlayers.forEach {

@@ -13,27 +13,26 @@ object CocoaPermissionEngine
 {
     private val permissions = mutableMapOf<UUID, List<String>>()
 
-    fun calculatePermissions(uniqueId: UUID)
+    fun calculatePermissions(uniqueId: UUID, forceCalculate: Boolean = false)
     {
         try
         {
             var playerRank = DataStoreHandler.rankOf[uniqueId]
 
-            if (playerRank == null)
+            if (playerRank == null || forceCalculate)
             {
                 playerRank = DataStoreHandler.loadRankOfNow(uniqueId).uuid
             }
 
-            val rank = DataStoreHandler
-                .findRank(playerRank) ?:
-                DataStoreHandler.getDefaultRank()
+            val rank = DataStoreHandler.findRank(playerRank)
+                ?: DataStoreHandler.getDefaultRank()
 
             permissions[uniqueId] = rank.getCompoundedPermissions()
                 .filter { it.startsWith("%") }
                 .map { it.removePrefix("%") }
-        } catch (e: Exception)
+        } catch (exception: Exception)
         {
-            e.printStackTrace()
+            exception.printStackTrace()
             permissions[uniqueId] = mutableListOf()
         }
     }

@@ -27,6 +27,7 @@ import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.permission.CocoaPermissionEngine
 import gg.scala.cocoa.permission.CocoaPermissionEngine.hasCocoaPermission
 import gg.scala.cocoa.permission.CocoaPermissionProvider
+import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectControllerCache
@@ -158,8 +159,14 @@ object PlayerListener
                 {
                     if (!plugin.shouldAllowOrStay(uniqueId))
                     {
-                        event.result = CocoaVelocityConstants
-                            .DENIED_MAINTENANCE
+                        val notification = CocoaSettingsProcessor
+                            .locate<CocoaServerPresenceSettings>()
+                            ?.whitelistedNotification
+                            ?: "§cWe're currently whitelisted."
+
+                        event.result = ResultedEvent.ComponentResult.denied(
+                            LegacyComponentSerializer.legacySection().deserialize(notification)
+                        )
 
                         DataStoreHandler.rankOf.remove(uniqueId)
                         continuation.resume()

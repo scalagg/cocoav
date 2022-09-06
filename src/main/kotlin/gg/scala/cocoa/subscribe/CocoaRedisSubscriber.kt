@@ -1,5 +1,6 @@
 package gg.scala.cocoa.subscribe
 
+import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.aware.annotation.Subscribe
@@ -11,6 +12,7 @@ import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.store.storage.type.DataStoreStorageType
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.net.InetSocketAddress
 import java.util.*
 
@@ -25,10 +27,18 @@ object CocoaRedisSubscriber
     @Subscribe("maintenance-kick")
     fun onMaintenanceKick(message: AwareMessage)
     {
+        val notification = CocoaSettingsProcessor
+            .locate<CocoaServerPresenceSettings>()
+            ?.whitelistedNotification
+            ?: "§cWe're currently whitelisted."
+
+        val component = LegacyComponentSerializer
+            .legacySection().deserialize(notification)
+
         plugin.server.allPlayers
             .filter { !plugin.shouldAllowOrStay(it.uniqueId) }
             .forEach {
-                it.disconnect(CocoaVelocityConstants.MAINTENANCE)
+                it.disconnect(component)
             }
     }
 

@@ -7,6 +7,7 @@ import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.centered
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
+import gg.scala.cocoa.legacy
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
@@ -46,6 +47,61 @@ object CocoaCommand : BaseCommand()
     fun onHelp(help: CommandHelp)
     {
         help.showHelp()
+    }
+
+    @Subcommand("maintenance deny-component update")
+    @Description("Update the component shown when a player logs in when not whitelisted.")
+    fun onDenyComponentUpdate(player: Player, message: String)
+    {
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaServerPresenceSettings>()!!
+
+        settings.whitelistedNotification = message
+            .replace("&", "§")
+            .replace("<nl>", "\n")
+
+        player.sendMessage {
+            "&cYou've updated the component to: \n${
+                message.replace("<nl>", "\n")
+            }".legacy()
+        }
+    }
+
+    @Subcommand("maintenance deny-component append")
+    @Description("Append text to the component shown when a player logs in when not whitelisted.")
+    fun onDenyComponentAppend(player: Player, message: String)
+    {
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaServerPresenceSettings>()!!
+
+        settings.whitelistedNotification =
+            settings.whitelistedNotification + message
+                .replace("&", "§")
+                .replace("<nl>", "\n")
+
+        player.sendMessage {
+            "&cYou've added the following text to the component: \n${
+                message.replace("<nl>", "\n")
+            }".legacy()
+        }
+    }
+
+    @Subcommand("maintenance deny-component view")
+    @Description("View the text shown when a player logs in when not whitelisted.")
+    fun onDenyComponentView(player: Player)
+    {
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaServerPresenceSettings>()!!
+
+        player.sendMessage {
+            "&aThe following text is shown:".legacy()
+        }
+
+        player.sendMessage {
+            LegacyComponentSerializer.legacySection().deserialize(
+                settings.whitelistedNotification
+            )
+        }
     }
 
     @CommandCompletion("@ranks")
@@ -314,8 +370,8 @@ object CocoaCommand : BaseCommand()
                 val message = """
                     &eIP info for &b${player.player.username}&e:
                       &7● &fLegitimate: ${
-                          if (data.shouldBlock) "&cNo - VPN or Proxy" else "&aYes"
-                      }
+                    if (data.shouldBlock) "&cNo - VPN or Proxy" else "&aYes"
+                }
                       &7● &fHost: &6${data.networkId} 
                      
                     &aThis took ${System.currentTimeMillis() - start}ms to run.

@@ -12,20 +12,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 object CocoaVelocityConstants
 {
     @JvmStatic
-    val MAINTENANCE by lazy {
-        LegacyComponentSerializer.legacyAmpersand()
-            .deserialize(
-//                VelocitySettingsProcessor
-//                    .locate<CocoaServerPresenceSettings>()!!
-//                    .whitelistedNotification
-            """
-                &CThe server is whitelisted!
-                &cAdditional information may be found in our discord.
-            """.trimIndent()
-            )
-    }
-
-    @JvmStatic
     val NETWORKING_ERROR = LegacyComponentSerializer
         .legacyAmpersand()
         .deserialize("&cWe were unable to contact the API.\n&cPlease contact a system administrator!")
@@ -34,11 +20,6 @@ object CocoaVelocityConstants
     val NETWORKING_INVALID = LegacyComponentSerializer
         .legacyAmpersand()
         .deserialize("&cYou cannot join with a VPN!")
-
-    @JvmStatic
-    val DENIED_MAINTENANCE by lazy {
-        ResultedEvent.ComponentResult.denied(MAINTENANCE)!!
-    }
 
     @JvmStatic
     val DENIED_NETWORKING_ERROR = ResultedEvent

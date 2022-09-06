@@ -1,8 +1,6 @@
 package gg.scala.cocoa
 
-import co.schemati.trevor.api.TrevorAPI
 import co.schemati.trevor.api.TrevorService
-import co.schemati.trevor.velocity.TrevorVelocity
 import com.google.inject.Inject
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
@@ -287,6 +285,7 @@ constructor(
         return server.allServers
             .sortedBy { it.playersConnected.size }
             .firstOrNull { isLobbyServer(it.serverInfo) }
+            ?: server.allServers.first()
     }
 
     fun fetchBestRestrictedLobby(): RegisteredServer?

@@ -18,7 +18,7 @@ object LemonRedisHandler
     fun onGrantHanding(message: AwareMessage)
     {
         val targetUuid = message
-            .retrieve<UUID>("uniqueId")
+            .retrieve<UUID>("target")
 
         DataStoreHandler.rankOf[targetUuid] =
             DataStoreHandler.loadRankOfNow(targetUuid).uuid

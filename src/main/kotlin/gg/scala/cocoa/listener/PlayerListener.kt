@@ -11,6 +11,7 @@ import com.velocitypowered.api.event.connection.LoginEvent
 import com.velocitypowered.api.event.permission.PermissionsSetupEvent
 import com.velocitypowered.api.event.player.KickedFromServerEvent
 import com.velocitypowered.api.event.player.PlayerChatEvent
+import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent
 import com.velocitypowered.api.event.player.ServerConnectedEvent
 import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import com.velocitypowered.api.proxy.Player
@@ -327,44 +328,46 @@ object PlayerListener
     }
 
     @Subscribe
-    fun onServerPreConnect(event: ServerPreConnectEvent)
+    fun onChooseInitialServer(event: PlayerChooseInitialServerEvent)
     {
         val isStaffMember = event.player.hasPermission("cocoa.staff")
 
-        if (!event.player.currentServer.isPresent)
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
+
+        if (
+            settings.middleware != null &&
+            !this.connectedThroughMiddleware
+                .asMap().contains(event.player.uniqueId)
+        )
         {
-            val settings = CocoaSettingsProcessor
-                .locate<CocoaVelocitySettings>()!!
+            this.connectedThroughMiddleware
+                .put(event.player.uniqueId, true)
 
-            if (
-                settings.middleware != null &&
-                !this.connectedThroughMiddleware
-                    .asMap().contains(event.player.uniqueId)
+            event.setInitialServer(
+                plugin.server.getServer(settings.middleware).get()
             )
-            {
-                this.connectedThroughMiddleware
-                    .put(event.player.uniqueId, true)
+            return
+        }
 
-                event.result = ServerPreConnectEvent.ServerResult
-                    .allowed(
-                        plugin.server.getServer(settings.middleware).get()
-                    )
-                return
-            }
+        val server = if (isStaffMember)
+            plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
 
-            val server = if (isStaffMember)
-                plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
+        if (server != null)
+        {
+            event.setInitialServer(server)
+            return
+        }
 
-            if (server != null)
-            {
-                event.result = ServerPreConnectEvent
-                    .ServerResult.allowed(server)
-            } else
-            {
-                event.result = ServerPreConnectEvent
-                    .ServerResult.denied()
-            }
-        } else
+        event.player.disconnect(
+            "&cSorry! We couldn't find any lobby servers for you to join.".legacy()
+        )
+    }
+
+    @Subscribe
+    fun onServerPreConnect(event: ServerPreConnectEvent)
+    {
+        if (event.player.currentServer.isPresent)
         {
             val lemonPlayer = DataStoreHandler
                 .findPlayerNullable(event.player.uniqueId)

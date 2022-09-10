@@ -16,6 +16,8 @@ import gg.scala.aware.AwareBuilder
 import gg.scala.aware.AwareHub
 import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
+import gg.scala.cache.uuid.ScalaStoreUuidCache
+import gg.scala.cache.uuid.impl.distribution.DistributedRedisUuidCacheTranslator
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MfaCommand
 import gg.scala.cocoa.command.administration.CocoaCommand
@@ -51,6 +53,7 @@ import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.properties.Delegates
 
@@ -143,12 +146,15 @@ constructor(
         startRedisFunctionality()
     }
 
+    private val commandManager by lazy {
+        VelocityCommandManager(server, this)
+    }
+
     @Subscribe(
         order = PostOrder.LAST
     )
     fun onInitialize(event: ProxyInitializeEvent)
     {
-        val commandManager = VelocityCommandManager(server, this)
         configureVelocityPlugin()
 
         listOf<MessageType>(
@@ -157,6 +163,12 @@ constructor(
             commandManager.getFormat(it).setColor(3, NamedTextColor.GRAY)
             commandManager.getFormat(it).setColor(2, NamedTextColor.YELLOW)
             commandManager.getFormat(it).setColor(1, NamedTextColor.GOLD)
+            commandManager.getFormat(it).setColor(4, NamedTextColor.WHITE)
+        }
+
+        listOf<MessageType>(MessageType.ERROR).forEach {
+            commandManager.getFormat(it).setColor(2, NamedTextColor.YELLOW)
+            commandManager.getFormat(it).setColor(1, NamedTextColor.RED)
         }
 
         commandManager.commandContexts.registerContext(Rank::class.java) {
@@ -209,6 +221,10 @@ constructor(
             .codec(AwareMessageCodec)
             .build()
 
+        ScalaStoreUuidCache.configure(
+            DistributedRedisUuidCacheTranslator(proxyChannel)
+        )
+
         spigotChannel = AwareBuilder
             .of<AwareMessage>("lemon")
             .logger(logger)
@@ -239,9 +255,11 @@ constructor(
             {
                 this.connection.useResource {
                     kotlin.runCatching {
-                        sync().set("global-player-count${
-                            if (settings.externalProxy) settings.externalProxyPrefix else ""
-                        }", TrevorService.getAPI().instanceData.playerCount.toString())
+                        sync().set(
+                            "global-player-count${
+                                if (settings.externalProxy) settings.externalProxyPrefix else ""
+                            }", TrevorService.getAPI().instanceData.playerCount.toString()
+                        )
                     }
                 }
             }

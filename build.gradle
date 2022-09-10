@@ -27,13 +27,15 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.velocitypowered:velocity-api:3.0.1"
-    kapt "com.velocitypowered:velocity-api:3.0.1"
+    compileOnly "com.velocitypowered:velocity-api:3.1.0"
+    kapt "com.velocitypowered:velocity-api:3.1.0"
 
     compileOnly "gg.scala.store:velocity:0.1.3"
-    implementation "gg.scala.commons:velocity:2.0.4"
+    implementation "gg.scala.commons:velocity:2.1.7"
 
-    implementation 'com.konghq:unirest-java:3.13.10'
+    implementation "ch.qos.logback:logback-classic:1.4.0"
+
+    implementation "com.konghq:unirest-java:3.13.11"
     api fileTree("asdf")
 
     compileOnly fileTree("lib")

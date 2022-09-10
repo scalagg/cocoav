@@ -16,6 +16,7 @@ import com.velocitypowered.api.event.player.ServerConnectedEvent
 import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import com.velocitypowered.api.proxy.Player
 import gg.scala.aware.message.AwareMessage
+import gg.scala.cache.uuid.ScalaStoreUuidCache
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
@@ -230,6 +231,10 @@ object PlayerListener
 
                     continuation.resume()
                     return@execute
+                }
+
+                ScalaStoreUuidCache.useTranslator {
+                    update(event.player.uniqueId to  event.player.username)
                 }
 
                 val lemonPlayer = DataStoreObjectControllerCache

@@ -221,10 +221,6 @@ constructor(
             .codec(AwareMessageCodec)
             .build()
 
-        ScalaStoreUuidCache.configure(
-            DistributedRedisUuidCacheTranslator(proxyChannel)
-        )
-
         spigotChannel = AwareBuilder
             .of<AwareMessage>("lemon")
             .logger(logger)
@@ -234,7 +230,10 @@ constructor(
         proxyChannel.listen(CocoaRedisSubscriber)
         spigotChannel.listen(LemonRedisHandler)
 
-        proxyChannel.connect().toCompletableFuture().join()
+        ScalaStoreUuidCache.configure(
+            DistributedRedisUuidCacheTranslator(proxyChannel)
+        )
+
         spigotChannel.connect().toCompletableFuture().join()
 
         settingsLayer = DataStoreObjectControllerCache.create()

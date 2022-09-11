@@ -115,20 +115,16 @@ object CocoaRedisSubscriber
         buildMessage(
             "staff-message",
             HashMap<String, String>().also {
-                it["sender-fancy"] = sender?.username ?: ""
                 it["message"] = notification
-                it["permission"] = permission
-                it["message-type"] = "NOTIFICATION"
-
-                it["server"] = "proxy"
-                it["with-server"] = "false"
+                it["from"] = "proxy"
+                it["includeFrom"] = "false"
 
                 if (flag != null)
                 {
-                    it["flag"] = flag
+                    it["additionalFlag"] = flag
                 }
             }
-        ).publish()
+        ).publish(channel = "staff:messages")
     }
 
     fun buildMessage(

@@ -18,7 +18,6 @@ import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
 import gg.scala.cache.uuid.ScalaStoreUuidCache
 import gg.scala.cache.uuid.impl.distribution.DistributedRedisUuidCacheTranslator
-import gg.scala.cache.uuid.resolver.DataResolver
 import gg.scala.cache.uuid.resolver.ResolverType
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MfaCommand
@@ -41,6 +40,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.commons.acf.ConditionFailedException
+import gg.scala.commons.acf.MessageKeys
 import gg.scala.commons.acf.MessageType
 import gg.scala.commons.acf.VelocityCommandManager
 import gg.scala.store.controller.DataStoreObjectController
@@ -55,9 +55,9 @@ import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.properties.Delegates
+
 
 /**
  * @author GrowlyX
@@ -158,6 +158,25 @@ constructor(
     fun onInitialize(event: ProxyInitializeEvent)
     {
         configureVelocityPlugin()
+
+        kotlin.runCatching {
+            val properties = Properties()
+            properties.load(
+                File(this.directoryFile, "acf-core_en.properties").inputStream()
+            )
+
+            for (message in MessageKeys.values())
+            {
+                val locale = Locale("en")
+
+                commandManager.locales.addMessage(
+                    locale, message,
+                    properties
+                        .getProperty("acf-core.${message.name.toLowerCase()}")
+                        .replace("&", "§")
+                )
+            }
+        }
 
         listOf<MessageType>(
             MessageType.HELP, MessageType.INFO, MessageType.SYNTAX

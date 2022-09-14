@@ -18,6 +18,8 @@ import gg.scala.aware.codec.codecs.interpretation.AwareMessageCodec
 import gg.scala.aware.message.AwareMessage
 import gg.scala.cache.uuid.ScalaStoreUuidCache
 import gg.scala.cache.uuid.impl.distribution.DistributedRedisUuidCacheTranslator
+import gg.scala.cache.uuid.resolver.DataResolver
+import gg.scala.cache.uuid.resolver.ResolverType
 import gg.scala.cocoa.command.LobbyCommand
 import gg.scala.cocoa.command.MfaCommand
 import gg.scala.cocoa.command.administration.CocoaCommand
@@ -175,7 +177,7 @@ constructor(
             val firstArg = it.popFirstArg()
 
             return@registerContext DataStoreHandler.findRank(firstArg)
-                ?: throw ConditionFailedException("There is no rank with the name §e$firstArg§c.")
+                ?: throw ConditionFailedException("§cThere is no rank with the name §e$firstArg§c.")
         }
 
         commandManager.commandCompletions.registerCompletion("ranks") {
@@ -231,7 +233,8 @@ constructor(
         spigotChannel.listen(LemonRedisHandler)
 
         ScalaStoreUuidCache.configure(
-            DistributedRedisUuidCacheTranslator(proxyChannel)
+            DistributedRedisUuidCacheTranslator(proxyChannel),
+            ScalaStoreUuidCache.resolve(ResolverType.Mojang)
         )
 
         spigotChannel.connect().toCompletableFuture().join()

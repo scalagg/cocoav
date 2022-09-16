@@ -14,9 +14,6 @@ class CocoaVelocitySettings(
     val middleware: String? = null,
     val listeningGroups: List<String> = listOf("practice", "hub"),
     val listeningExemptions: List<String> = listOf("build"),
-    val vpnBypass: List<String> = listOf(
-        "ff16dcbd-ed92-4f11-ab99-7947f2f74fb6"
-    ),
     val consul: ConsulSettings = ConsulSettings(),
     val credentials: WrappedAwareUri = WrappedAwareUri(),
     val networking: NetworkingSettings = NetworkingSettings()

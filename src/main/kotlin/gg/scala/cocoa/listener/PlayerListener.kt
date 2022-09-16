@@ -179,14 +179,12 @@ object PlayerListener
                 val settings = CocoaSettingsProcessor
                     .locate<CocoaVelocitySettings>()!!
 
-                if (settings.networking.handleNetworkingChecks)
+                if (
+                    settings.networking.handleNetworkingChecks &&
+                    !event.player.hasCocoaPermission("cocoa.vpn.bypass")
+                )
                 {
                     kotlin.runCatching {
-                        if (event.player.uniqueId.toString() in settings.vpnBypass)
-                        {
-                            return@runCatching
-                        }
-
                         val networkModel = CocoaNetworkAddressHandler
                             .requestHostData(
                                 event.player.remoteAddress

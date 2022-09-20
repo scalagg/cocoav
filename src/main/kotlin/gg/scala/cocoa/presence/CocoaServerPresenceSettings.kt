@@ -7,6 +7,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  * @since 12/15/2021
  */
 class CocoaServerPresenceSettings(
+    var playerCap: Int = 1000,
     var normalPresence: String = "Hey",
     var whitelistedPresence: String = "cocoaV Lol",
     var whitelistedNotification: String = """

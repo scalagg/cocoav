@@ -43,7 +43,10 @@ object CocoaServerPresenceSubscriber
             },
             Players(
                 TrevorService.getAPI().instanceData.playerCount,
-                2000, mutableListOf()
+                CocoaSettingsProcessor
+                    .locate<CocoaServerPresenceSettings>()
+                    ?.playerCap ?: 1000,
+                mutableListOf()
             ),
             CocoaServerPresenceRunnable
                 .cachedPresence(),

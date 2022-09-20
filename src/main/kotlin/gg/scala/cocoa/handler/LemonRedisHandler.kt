@@ -25,7 +25,7 @@ object LemonRedisHandler
 
         CocoaPermissionEngine
             .calculatePermissions(
-                targetUuid, forceCalculate = true
+                targetUuid
             )
     }
 

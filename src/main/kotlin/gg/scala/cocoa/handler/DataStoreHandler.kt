@@ -112,6 +112,20 @@ object DataStoreHandler
             }
     }
 
+    fun getPermissionGrants(uuid: UUID): List<Grant>
+    {
+        return DataStoreObjectControllerCache.findNotNull<Grant>()
+            .useLayerWithReturn<MongoDataStoreStorageLayer<Grant>, List<Grant>>(
+                DataStoreStorageType.MONGO
+            ) {
+                val grants = loadAllWithFilterSync(
+                    Filters.eq("target", uuid.toString())
+                )
+
+                return@useLayerWithReturn grants.values.toList()
+            }
+    }
+
     fun fetchPunishmentsForTargetOfCategoryAndActive(
         uuid: UUID,
         category: PunishmentCategory

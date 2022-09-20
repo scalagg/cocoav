@@ -10,6 +10,7 @@ import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.legacy
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
+import gg.scala.cocoa.presence.CocoaServerPresenceRunnable
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
@@ -27,6 +28,7 @@ import gg.scala.commons.acf.annotation.Optional
 import gg.scala.commons.acf.annotation.Single
 import gg.scala.commons.acf.annotation.Subcommand
 import gg.scala.commons.acf.velocity.contexts.OnlinePlayer
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.net.InetSocketAddress
 import java.util.concurrent.CompletableFuture
@@ -47,6 +49,29 @@ object CocoaCommand : BaseCommand()
     fun onHelp(help: CommandHelp)
     {
         help.showHelp()
+    }
+
+    @Subcommand("fix-fallback-presence")
+    fun onFixFallbackPresence(player: Player)
+    {
+        CocoaServerPresenceRunnable.run()
+
+        player.sendMessage(
+            Component.text("Fixed fallback presence. (Should look into restarting proxy soon)")
+        )
+    }
+
+    @Subcommand("max-player-count")
+    fun onValueThing(player: Player, newValue: Int)
+    {
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaServerPresenceSettings>()!!
+
+        settings.playerCap = newValue
+
+        player.sendMessage {
+            "&aYou've updated the component to: $newValue".legacy()
+        }
     }
 
     @Subcommand("maintenance deny-component update")

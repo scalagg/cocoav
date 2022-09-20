@@ -3,6 +3,7 @@ package gg.scala.cocoa.presence.override
 import gg.scala.cocoa.centered
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
@@ -18,9 +19,9 @@ interface PresenceOverride
     fun ableToBeManuallyToggle(): Boolean
     fun shouldOverride(): Boolean
 
-    fun updatePresence(): TextComponent
+    fun updatePresence(): Component
 
-    fun updatedPresence(): TextComponent
+    fun updatedPresence(): Component
     {
         val settings = CocoaSettingsProcessor
             .locate<CocoaServerPresenceSettings>()!!

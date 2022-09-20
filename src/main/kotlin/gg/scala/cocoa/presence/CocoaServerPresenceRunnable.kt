@@ -11,14 +11,14 @@ import java.util.UUID
  */
 object CocoaServerPresenceRunnable : Runnable
 {
-    private val cachedPresences = mutableMapOf<String, TextComponent>()
+    private val cachedPresences = mutableMapOf<String, Component>()
 
     private val fallback: UUID = UUID.randomUUID()
     private val fallbackPresence = Component
         .text("Fallback proxy state - is something wrong?")
         .color(NamedTextColor.GRAY)
 
-    fun cachedPresence(): TextComponent
+    fun cachedPresence(): Component
     {
         return cachedPresences[
                 kotlin.runCatching {

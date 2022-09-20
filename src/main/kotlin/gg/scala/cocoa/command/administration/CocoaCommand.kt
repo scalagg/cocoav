@@ -29,6 +29,7 @@ import gg.scala.commons.acf.annotation.Single
 import gg.scala.commons.acf.annotation.Subcommand
 import gg.scala.commons.acf.velocity.contexts.OnlinePlayer
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.net.InetSocketAddress
 import java.util.concurrent.CompletableFuture
@@ -241,10 +242,20 @@ object CocoaCommand : BaseCommand()
                 presence.split("\n")
                     .forEach {
                         actor.sendMessage {
-                            LegacyComponentSerializer.legacySection().deserialize(
-                                if (settings.shouldCenterPresence)
-                                    it.centered(132.2) else it
-                            )
+                            LegacyComponentSerializer
+                                .legacySection()
+                                .deserialize(
+                                    LegacyComponentSerializer
+                                        .legacySection()
+                                        .serialize(
+                                            MiniMessage
+                                                .miniMessage()
+                                                .deserialize(
+                                                    if (settings.shouldCenterPresence)
+                                                        it.centered(132.2) else it
+                                                )
+                                        )
+                                )
                         }
                     }
             }
@@ -276,7 +287,14 @@ object CocoaCommand : BaseCommand()
 
                         actor.sendMessage {
                             LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize("&aYou've updated the ${type.name} presence ${line.name} line to:\n${split[lineIndex]}")
+                                .deserialize(
+                                    "&aYou've updated the ${type.name} presence ${line.name} line to:\n${
+                                        LegacyComponentSerializer.legacyAmpersand()
+                                            .serialize(
+                                                MiniMessage.miniMessage().deserialize(split[lineIndex])
+                                            )
+                                    }"
+                                )
                         }
 
                         it.whitelistedPresence = split
@@ -295,7 +313,14 @@ object CocoaCommand : BaseCommand()
 
                         actor.sendMessage {
                             LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize("&aYou've updated the ${type.name} presence ${line.name} line to:\n${split[lineIndex]}")
+                                .deserialize(
+                                    "&aYou've updated the ${type.name} presence ${line.name} line to:\n${
+                                        LegacyComponentSerializer.legacyAmpersand()
+                                            .serialize(
+                                                MiniMessage.miniMessage().deserialize(split[lineIndex])
+                                            )
+                                    }"
+                                )
                         }
 
                         it.normalPresence = split

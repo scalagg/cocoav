@@ -1,5 +1,8 @@
 package gg.scala.cocoa.listener
 
+import co.schemati.trevor.api.TrevorAPI
+import co.schemati.trevor.api.TrevorService
+import co.schemati.trevor.velocity.TrevorVelocity
 import com.google.common.cache.CacheBuilder
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
@@ -220,6 +223,28 @@ object PlayerListener
                                 Component.text("Something went wrong")
                             )
                     }
+                }
+
+                val presenceSettings = CocoaSettingsProcessor
+                    .locate<CocoaServerPresenceSettings>()
+
+                if (
+                    presenceSettings != null &&
+                    !event.player.hasCocoaPermission("cocoa.playercap.bypass") &&
+                    TrevorService.getAPI().instanceData.playerCount >= presenceSettings.playerCap
+                )
+                {
+                    event.result = ResultedEvent.ComponentResult
+                        .denied(
+                            LegacyComponentSerializer
+                                .legacyAmpersand()
+                                .deserialize(
+                                    """
+                                        &cSorry, the server is full.
+                                        &cPlease try joining again later!
+                                    """.trimIndent()
+                                )
+                        )
                 }
 
                 if (!event.result.isAllowed)

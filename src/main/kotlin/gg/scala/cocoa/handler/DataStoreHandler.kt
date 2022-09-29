@@ -145,6 +145,7 @@ object DataStoreHandler
             .thenApply {
                 val accounts = mutableListOf<LemonPlayer>()
                 val lemonPlayer = findPlayer(uuid)
+                    ?: return@thenApply accounts
 
                 for (entry in it)
                 {
@@ -163,14 +164,14 @@ object DataStoreHandler
             }
     }
 
-    fun findPlayer(uuid: UUID): LemonPlayer
+    fun findPlayer(uuid: UUID): LemonPlayer?
     {
         return DataStoreObjectControllerCache
             .findNotNull<LemonPlayer>()
-            .useLayerWithReturn<CachedDataStoreStorageLayer<LemonPlayer>, LemonPlayer>(
+            .useLayerWithReturn<CachedDataStoreStorageLayer<LemonPlayer>, LemonPlayer?>(
                 DataStoreStorageType.CACHE
             ) {
-                connection.getConnection()[uuid]!!
+                connection.getConnection()[uuid]
             }
     }
 

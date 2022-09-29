@@ -35,10 +35,11 @@ object LemonRedisHandler
         val targetUuid = message
             .retrieve<UUID>("uniqueId")
 
-        DataStoreHandler.findPlayer(targetUuid).let {
-            it.checkForIpRelative()
-            it.recalculatePunishments()
-        }
+        DataStoreHandler.findPlayer(targetUuid)
+            ?.let {
+                it.checkForIpRelative()
+                it.recalculatePunishments()
+            }
     }
 
     @Subscribe("rank-delete")

@@ -600,9 +600,10 @@ object PlayerListener
                 )
                 {
                     event.result = KickedFromServerEvent
-                        .Notify.create(
+                        .DisconnectPlayer.create(
                             event.serverKickReason.get()!!
                         )
+                    return
                 }
             }
 

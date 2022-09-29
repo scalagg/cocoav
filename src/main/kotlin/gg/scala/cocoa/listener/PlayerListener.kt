@@ -59,8 +59,8 @@ object PlayerListener
     fun onCommand(event: CommandExecuteEvent)
     {
         val label = event.command
-            .split(" ")
-            .first().toLowerCase()
+            .split(" ").first()
+            .lowercase()
 
         if (event.commandSource is Player && !label.contains("mfa"))
         {
@@ -585,7 +585,28 @@ object PlayerListener
             (event.kickedDuringServerConnect() || event.server != newServer)
         )
         {
-            if (event.kickedDuringServerConnect())
+            if (event.serverKickReason.isPresent)
+            {
+                val thing = LegacyComponentSerializer.legacySection()
+                    .serialize(
+                        event.serverKickReason.get()!!
+                    )
+                    .lowercase()
+
+                if (
+                    thing.contains("ban") ||
+                    thing.contains("kick") ||
+                    thing.contains("blacklist")
+                )
+                {
+                    event.result = KickedFromServerEvent
+                        .Notify.create(
+                            event.serverKickReason.get()!!
+                        )
+                }
+            }
+
+            if (event.kickedDuringServerConnect() )
             {
                 event.result = KickedFromServerEvent
                     .Notify.create(

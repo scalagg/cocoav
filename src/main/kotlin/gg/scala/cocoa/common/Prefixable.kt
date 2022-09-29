@@ -1,4 +1,4 @@
-package gg.scala.common
+package gg.scala.cocoa.common
 
 interface Prefixable {
 

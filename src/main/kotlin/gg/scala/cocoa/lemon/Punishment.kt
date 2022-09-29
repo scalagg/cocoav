@@ -3,7 +3,7 @@ package gg.scala.cocoa.lemon
 import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.lemon.category.PunishmentCategoryIntensity
 import gg.scala.cocoa.lemon.expirable.LemonExpirable
-import gg.scala.common.Savable
+import gg.scala.cocoa.common.Savable
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.storable.IDataStoreObject
 import gg.scala.store.storage.type.DataStoreStorageType

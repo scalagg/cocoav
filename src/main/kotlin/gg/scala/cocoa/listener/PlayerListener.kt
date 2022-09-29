@@ -60,7 +60,7 @@ object PlayerListener
     {
         val label = event.command
             .split(" ").first()
-            .lowercase()
+            .toLowerCase()
 
         if (event.commandSource is Player && !label.contains("mfa"))
         {
@@ -591,7 +591,7 @@ object PlayerListener
                     .serialize(
                         event.serverKickReason.get()!!
                     )
-                    .lowercase()
+                    .toLowerCase()
 
                 if (
                     thing.contains("ban") ||

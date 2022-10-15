@@ -15,6 +15,7 @@ import gg.scala.store.storage.type.DataStoreStorageType
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.net.InetSocketAddress
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * @author GrowlyX
@@ -56,10 +57,12 @@ object CocoaRedisSubscriber
             return
 
         plugin.server.registerServer(
-            ServerInfo(id, InetSocketAddress(
-                message.retrieve("address", String::class),
-                message.retrieve("port", Int::class)
-            ))
+            ServerInfo(
+                id, InetSocketAddress(
+                    message.retrieve("address", String::class),
+                    message.retrieve("port", Int::class)
+                )
+            )
         )
     }
 
@@ -80,7 +83,7 @@ object CocoaRedisSubscriber
         "presence" to CocoaServerPresenceSettings::class
     )
 
-//    @Subscribe("cloud-sync")
+    //    @Subscribe("cloud-sync")
     fun onCloudSync(message: AwareMessage)
     {
         println("[Cocoa] Started cloud sync request!")
@@ -108,23 +111,28 @@ object CocoaRedisSubscriber
     fun sendStaffNotification(
         sender: Player?,
         notification: String,
-        permission: String = "lemon.staff",
+        permission: String = "scstaff.staff-member",
         flag: String? = null
     )
     {
-        buildMessage(
-            "staff-message",
-            HashMap<String, String>().also {
-                it["message"] = notification
-                it["from"] = "proxy"
-                it["includeFrom"] = "false"
+        CocoaVelocityPlugin.INSTANCE.server.scheduler
+            .buildTask(CocoaVelocityPlugin.INSTANCE) {
+                buildMessage(
+                    "staff-message",
+                    HashMap<String, String>().also {
+                        it["message"] = notification
+                        it["from"] = "proxy"
+                        it["includeFrom"] = "false"
 
-                if (flag != null)
-                {
-                    it["additionalFlag"] = flag
-                }
-            }
-        ).publish(channel = "staff:messages")
+                        if (flag != null)
+                        {
+                            it["additionalFlag"] = flag
+                        }
+                    }
+                ).publish(
+                    channel = "staff:messages"
+                )
+            }.delay(100L, TimeUnit.MILLISECONDS).schedule()
     }
 
     fun buildMessage(

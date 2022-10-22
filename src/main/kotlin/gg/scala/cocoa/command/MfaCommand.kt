@@ -84,7 +84,7 @@ object MfaCommand : BaseCommand()
             .remoteAddress.address.hostAddress
 
         return model.save().thenRun {
-            player.sendMessage("&b[MFA] &aYou have been authenticated.".legacy())
+            player.sendMessage("&a[auth] &aYou have been authenticated.".legacy())
 
             if (
                 player.currentServer.isPresent &&
@@ -128,7 +128,7 @@ object MfaCommand : BaseCommand()
         model.save().join()
 
         player.sendMessage(
-            "&b[MFA] &aYour authentication secret is: &f".legacy()
+            "&a[auth] &aYour authentication secret is: &f".legacy()
                 .append(
                     secret.legacy()
                         .clickEvent(
@@ -142,11 +142,11 @@ object MfaCommand : BaseCommand()
         )
 
         player.sendMessage(
-            "&b[MFA] &aThis code can be entered in any OTP MFA provider (Authy, Google Auth, etc).".legacy()
+            "&a[auth] &aThis code can be entered in any OTP MFA provider (Authy, Google Auth, etc).".legacy()
         )
 
         player.sendMessage(
-            "&b[MFA] &aOnce you receive your 6 character code, enter it in &f/mfa authenticate&a.".legacy()
+            "&a[auth] &aOnce you receive your 6 character code, enter it in &f/mfa authenticate&a.".legacy()
         )
     }
 
@@ -167,13 +167,30 @@ object MfaCommand : BaseCommand()
             throw ConditionFailedException("This player is already exempt.")
         }
 
+        if (player is Player)
+        {
+            val modelSelf = DataStoreObjectControllerCache
+                .findNotNull<TwoFactorModel>()
+                .localCache()[player.uniqueId]
+                ?: throw ConditionFailedException(
+                    "Please rejoin, we did not load your MFA account."
+                )
+
+            if (!modelSelf.sessionAuthenticated)
+            {
+                throw ConditionFailedException(
+                    "You must authenticate before performing this command"
+                )
+            }
+        }
+
         model.secret = null
         model.exempt = false
         model.sessionAuthenticated = false
         model.save().join()
 
         target.player.sendMessage(
-            "&b[MFA] &aYour authentication configuration has been reset.".legacy()
+            "&a[auth] &aYour authentication configuration has been reset.".legacy()
         )
 
         player.sendMessage("&9[MFA Admin] &aYou have reset their 2FA configuration.".legacy())
@@ -196,12 +213,29 @@ object MfaCommand : BaseCommand()
             throw ConditionFailedException("This player is already exempt.")
         }
 
+        if (player is Player)
+        {
+            val modelSelf = DataStoreObjectControllerCache
+                .findNotNull<TwoFactorModel>()
+                .localCache()[player.uniqueId]
+                ?: throw ConditionFailedException(
+                    "Please rejoin, we did not load your MFA account."
+                )
+
+            if (!modelSelf.sessionAuthenticated)
+            {
+                throw ConditionFailedException(
+                    "You must authenticate before performing this command"
+                )
+            }
+        }
+
         model.exempt = true
         model.sessionAuthenticated = true
         model.save().join()
 
         target.player.sendMessage(
-            "&b[MFA] &aYou are now exempt from MFA. You no longer need to authenticate.".legacy()
+            "&a[auth] &aYou are now exempt from MFA. You no longer need to authenticate.".legacy()
         )
 
         player.sendMessage("&9[MFA Admin] &aThis player has been exempt.".legacy())
@@ -224,12 +258,29 @@ object MfaCommand : BaseCommand()
             throw ConditionFailedException("This player is not exempt.")
         }
 
+        if (player is Player)
+        {
+            val modelSelf = DataStoreObjectControllerCache
+                .findNotNull<TwoFactorModel>()
+                .localCache()[player.uniqueId]
+                ?: throw ConditionFailedException(
+                    "Please rejoin, we did not load your MFA account."
+                )
+
+            if (!modelSelf.sessionAuthenticated)
+            {
+                throw ConditionFailedException(
+                    "You must authenticate before performing this command"
+                )
+            }
+        }
+
         model.exempt = false
         model.sessionAuthenticated = false
         model.save().join()
 
         target.player.sendMessage(
-            "&b[MFA] &aYou are no longer exempt, you must authenticate now.".legacy()
+            "&a[auth] &aYou are no longer exempt, you must authenticate now.".legacy()
         )
 
         player.sendMessage("&9[MFA Admin] &aThis player has been un-exempt.".legacy())

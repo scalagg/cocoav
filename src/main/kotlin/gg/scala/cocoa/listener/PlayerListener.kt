@@ -270,8 +270,10 @@ object PlayerListener
                     }
                     .join()
 
-                lemonPlayer.recalculatePunishments().join()
-                lemonPlayer.checkForIpRelative().join()
+                kotlin.runCatching {
+                    lemonPlayer.recalculatePunishments().join()
+                    lemonPlayer.checkForIpRelative().join()
+                }
 
                 CocoaPermissionEngine
                     .calculatePermissions(
@@ -312,6 +314,7 @@ object PlayerListener
                     publish(channel = "friends")
                 }
             }.onFailure {
+                it.printStackTrace()
                 event.result = ResultedEvent.ComponentResult.denied(
                     """
                         &cAn internal server error occurred.
@@ -589,7 +592,7 @@ object PlayerListener
             {
                 val thing = LegacyComponentSerializer.legacySection()
                     .serialize(
-                        event.serverKickReason.get()!!
+                        event.serverKickReason.get()
                     )
                     .toLowerCase()
 

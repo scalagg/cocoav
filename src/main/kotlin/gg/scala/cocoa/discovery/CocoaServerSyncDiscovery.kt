@@ -4,31 +4,29 @@ import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.commons.agnostic.sync.server.ServerContainer
+import gg.scala.commons.agnostic.sync.server.impl.GameServer
 import java.net.InetSocketAddress
 
 /**
  * @author GrowlyX
  * @since 7/2/2022
  */
-object CocoaConsulRefresh : Runnable
+object CocoaServerSyncDiscovery : Runnable
 {
     override fun run()
     {
-        val health = CocoaConsulDiscovery
-            .consul()
-            .healthClient()
-
         val healthy = CocoaSettingsProcessor
             .locate<CocoaVelocitySettings>()!!
             .listeningGroups
             .flatMap {
-                health.getHealthyServiceInstances(it)
-                    .response
+                ServerContainer.getServersInGroup(it)
             }
+            .filterIsInstance<GameServer>()
 
         val mapped = healthy
             .map {
-                it.service.id
+                it.id
             }
 
         val registered = CocoaVelocityPlugin
@@ -60,7 +58,7 @@ object CocoaConsulRefresh : Runnable
                 CocoaVelocityPlugin
                     .INSTANCE.logger
                     .info(
-                        "[Consul] Unregistered dead server: ${it.serverInfo.name}"
+                        "[ServerSync] Unregistered dead server: ${it.serverInfo.name}"
                     )
             }
 
@@ -68,15 +66,15 @@ object CocoaConsulRefresh : Runnable
             .filter {
                 !registeredNames
                     .contains(
-                        it.service.id
+                        it.id
                     )
             }
             .forEach {
                 val info = ServerInfo(
-                    it.service.id,
+                    it.id,
                     InetSocketAddress(
-                        it.service.address,
-                        it.service.port
+                        it.getHost(),
+                        it.getPort() ?: return@forEach
                     )
                 )
 
@@ -87,7 +85,7 @@ object CocoaConsulRefresh : Runnable
                 CocoaVelocityPlugin
                     .INSTANCE.logger
                     .info(
-                        "[Consul] Registered healthy server: ${it.service.id}"
+                        "[ServerSync] Registered healthy server: ${it.id}"
                     )
             }
     }

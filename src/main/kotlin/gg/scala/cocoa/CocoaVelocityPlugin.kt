@@ -27,7 +27,7 @@ import gg.scala.cocoa.command.administration.TrafficCommand
 import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
-import gg.scala.cocoa.discovery.CocoaConsulRefresh
+import gg.scala.cocoa.discovery.CocoaServerSyncDiscovery
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
@@ -131,7 +131,7 @@ constructor(
         )
         {
             executor.scheduleAtFixedRate(
-                CocoaConsulRefresh,
+                CocoaServerSyncDiscovery,
                 0L, 1L,
                 TimeUnit.SECONDS
             )

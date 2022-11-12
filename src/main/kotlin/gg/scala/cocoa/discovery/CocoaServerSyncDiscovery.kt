@@ -73,8 +73,7 @@ object CocoaServerSyncDiscovery : Runnable
                 val info = ServerInfo(
                     it.id,
                     InetSocketAddress(
-                        it.getHost(),
-                        it.getPort() ?: return@forEach
+                        it.getHost(), (it.getMetadata("server", "port")?.value as Double? ?: return@forEach).toInt()
                     )
                 )
 

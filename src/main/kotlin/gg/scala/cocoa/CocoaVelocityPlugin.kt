@@ -43,6 +43,7 @@ import gg.scala.commons.acf.ConditionFailedException
 import gg.scala.commons.acf.MessageKeys
 import gg.scala.commons.acf.MessageType
 import gg.scala.commons.acf.VelocityCommandManager
+import gg.scala.commons.agnostic.sync.ServerSync
 import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.serializer.serializers.GsonSerializer
@@ -124,19 +125,6 @@ constructor(
         val executor = Executors
             .newScheduledThreadPool(1)
 
-        if (
-            CocoaSettingsProcessor
-                .locate<CocoaVelocitySettings>()!!
-                .consul.enabled
-        )
-        {
-            executor.scheduleAtFixedRate(
-                CocoaServerSyncDiscovery,
-                0L, 1L,
-                TimeUnit.SECONDS
-            )
-        }
-
         DataStoreHandler.configure()
 
         CocoaServerPresenceHandler.initialLoad()
@@ -146,6 +134,21 @@ constructor(
         CocoaCountdown.initialLoad()
 
         startRedisFunctionality()
+
+        if (
+            CocoaSettingsProcessor
+                .locate<CocoaVelocitySettings>()!!
+                .consul.enabled
+        )
+        {
+            ServerSync.configureIndependent()
+
+            executor.scheduleAtFixedRate(
+                CocoaServerSyncDiscovery,
+                0L, 500L,
+                TimeUnit.MILLISECONDS
+            )
+        }
     }
 
     private val commandManager by lazy {

@@ -610,14 +610,21 @@ object PlayerListener
                 }
             }
 
-            if (event.kickedDuringServerConnect() )
+            if (event.kickedDuringServerConnect())
             {
                 event.result = KickedFromServerEvent
                     .Notify.create(
                         event.serverKickReason.orElse(
                             Component
-                                .text("You are not allowed to connected to this server.")
+                                .text("Sorry! We were unable to redirect you to: ${event.server.serverInfo.name}")
                                 .color(NamedTextColor.RED)
+                                .append(
+                                    Component.newline()
+                                )
+                                .append(
+                                    Component.text("Please try logging in again, or contact an administrator for help.")
+                                        .color(NamedTextColor.RED)
+                                )
                         )
                     )
                 return

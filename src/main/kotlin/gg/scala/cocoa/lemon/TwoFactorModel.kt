@@ -17,7 +17,8 @@ data class TwoFactorModel(
     var persistIpAddress: Boolean = true,
     var sessionAuthenticated: Boolean = false,
     var exempt: Boolean = false,
-    var secret: String? = null
+    var secret: String? = null,
+    var recoveryCodes: MutableList<String>? = null
 ) : IDataStoreObject, Savable
 {
     override fun save() =

@@ -2,6 +2,7 @@ package gg.scala.cocoa.command
 
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
+import dev.samstevens.totp.recovery.RecoveryCodeGenerator
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.totp.TimeBasedOneTimePasswordUtil
 import gg.scala.cocoa.legacy
@@ -19,8 +20,10 @@ import gg.scala.commons.acf.annotation.Single
 import gg.scala.commons.acf.annotation.Subcommand
 import gg.scala.commons.acf.velocity.contexts.OnlinePlayer
 import gg.scala.store.controller.DataStoreObjectControllerCache
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
+import net.kyori.adventure.text.format.TextColor
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -74,7 +77,31 @@ object MfaCommand : BaseCommand()
 
         if (!correctCode.equals(code, true))
         {
-            throw ConditionFailedException("The code you have provided is invalid.")
+            var foundRecoveryCode = false
+
+            if (model.recoveryCodes != null)
+            {
+                if (model.recoveryCodes!!.contains(code))
+                {
+                    model.recoveryCodes!! -= code
+                    model.save()
+
+                    player.sendMessage(
+                        Component
+                            .text(
+                                "[You have ${model.recoveryCodes!!.size} remaining recovery codes]"
+                            )
+                            .color(TextColor.fromHexString("#ff0000"))
+                    )
+
+                    foundRecoveryCode = true
+                }
+            }
+
+            if (!foundRecoveryCode)
+            {
+                throw ConditionFailedException("The code you have provided is invalid.")
+            }
         }
 
         model.sessionAuthenticated = true
@@ -100,6 +127,48 @@ object MfaCommand : BaseCommand()
                 player.createConnectionRequest(bestHubServer).connect()
             }
         }
+    }
+
+    @Subcommand("generate-recovery-codes")
+    @Description("Generate recovery codes.")
+    fun onRecoveryCodeRegen(player: Player)
+    {
+        val modelSelf = DataStoreObjectControllerCache
+            .findNotNull<TwoFactorModel>()
+            .localCache()[player.uniqueId]
+            ?: throw ConditionFailedException(
+                "Please rejoin, we did not load your MFA account."
+            )
+
+        if (!modelSelf.sessionAuthenticated)
+        {
+            throw ConditionFailedException(
+                "You must authenticate before performing this command"
+            )
+        }
+
+        modelSelf.recoveryCodes = RecoveryCodeGenerator()
+            .generateCodes(8)
+            .toMutableList()
+
+        player.sendMessage(
+            Component
+                .text("[Click to copy your new recovery codes]")
+                .color(TextColor.fromHexString("#dffc03"))
+                .clickEvent(
+                    ClickEvent.copyToClipboard(
+                        modelSelf.recoveryCodes!!.joinToString("\n")
+                    )
+                )
+                .hoverEvent(
+                    HoverEvent.showText(Component.text("Click to copy!"))
+                )
+        )
+        player.sendMessage(
+            Component
+                .text("[These codes will not be shown again!]")
+                .color(TextColor.fromHexString("#fc03c2"))
+        )
     }
 
     @Subcommand("configure")

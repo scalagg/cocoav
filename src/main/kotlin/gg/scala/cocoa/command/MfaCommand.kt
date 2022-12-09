@@ -232,7 +232,7 @@ object MfaCommand : BaseCommand()
 
         model.exempt = true
         model.sessionAuthenticated = true
-        model.save().join()
+        model.save()
 
         target.player.sendMessage(
             "&a[auth] &aYou are now exempt from MFA. You no longer need to authenticate.".legacy()
@@ -277,7 +277,7 @@ object MfaCommand : BaseCommand()
 
         model.exempt = false
         model.sessionAuthenticated = false
-        model.save().join()
+        model.save()
 
         target.player.sendMessage(
             "&a[auth] &aYou are no longer exempt, you must authenticate now.".legacy()

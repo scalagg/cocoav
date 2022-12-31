@@ -406,7 +406,30 @@ constructor(
             DataStoreHandler.rankOf[uuid]
         ) ?: DataStoreHandler.getDefaultRank()
 
-        return rankOfPlayer.weight >= maintenanceRank.weight
+        if (rankOfPlayer.weight >= maintenanceRank.weight)
+        {
+            return true
+        }
+
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
+
+        if (settings.ensureTokenWhitelisted && maintenanceRank.weight < settings.tokenWhitelistHighestWeightBeforeNotEffective)
+        {
+            if (
+                settingsLayer.useLayerWithReturn<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>, Boolean>(DataStoreStorageType.REDIS)
+                {
+                    this.connection.useResourceWithReturn {
+                        sync().hexists("whitelist-tokens:whitelisted", uuid.toString())
+                    } == true
+                }
+            )
+            {
+                return true
+            }
+        }
+
+        return false
     }
 
     fun maintenanceRank(): Rank

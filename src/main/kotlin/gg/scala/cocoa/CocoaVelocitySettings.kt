@@ -9,6 +9,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  */
 class CocoaVelocitySettings(
     val externalProxy: Boolean = false,
+    val showPlayerCountWhileWhitelisted: Boolean = false,
     val ensureTokenWhitelisted: Boolean = false,
     val tokenWhitelistHighestWeightBeforeNotEffective: Int = 99,
     val externalProxyPrefix: String = "-ofl",

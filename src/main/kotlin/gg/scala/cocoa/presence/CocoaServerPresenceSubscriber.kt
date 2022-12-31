@@ -30,8 +30,11 @@ object CocoaServerPresenceSubscriber
     @Subscribe
     fun onProxyPing(event: ProxyPingEvent)
     {
+        val settings = CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()!!
+
         event.ping = ServerPing(
-            if (plugin.maintenance)
+            if (plugin.maintenance && !settings.showPlayerCountWhileWhitelisted)
             {
                 whitelisted
             } else

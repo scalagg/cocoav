@@ -39,6 +39,7 @@ import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.*
@@ -167,10 +168,10 @@ object PlayerListener
                         val notification = CocoaSettingsProcessor
                             .locate<CocoaServerPresenceSettings>()
                             ?.whitelistedNotification
-                            ?: "§cWe're currently whitelisted."
+                            ?: "<red>We're currently whitelisted."
 
                         event.result = ResultedEvent.ComponentResult.denied(
-                            LegacyComponentSerializer.legacySection().deserialize(notification)
+                            MiniMessage.miniMessage().deserialize(notification)
                         )
 
                         DataStoreHandler.rankOf.remove(uniqueId)

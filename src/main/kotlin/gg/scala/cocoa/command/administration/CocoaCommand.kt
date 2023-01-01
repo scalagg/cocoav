@@ -83,14 +83,19 @@ object CocoaCommand : BaseCommand()
             .locate<CocoaServerPresenceSettings>()!!
 
         settings.whitelistedNotification = message
-            .replace("&", "§")
             .replace("<nl>", "\n")
 
         player.sendMessage {
-            "&cYou've updated the component to: \n${
-                message.replace("<nl>", "\n")
-            }".legacy()
+            "&cYou've updated the component to:".legacy()
         }
+
+        player.sendMessage(
+            MiniMessage
+                .miniMessage()
+                .deserialize(
+                    message.replace("<nl>", "\n")
+                )
+        )
     }
 
     @Subcommand("maintenance deny-component append")
@@ -102,14 +107,19 @@ object CocoaCommand : BaseCommand()
 
         settings.whitelistedNotification =
             settings.whitelistedNotification + message
-                .replace("&", "§")
                 .replace("<nl>", "\n")
 
         player.sendMessage {
-            "&cYou've added the following text to the component: \n${
-                message.replace("<nl>", "\n")
-            }".legacy()
+            "&cYou've added the following text to the component:".legacy()
         }
+
+        player.sendMessage(
+            MiniMessage
+                .miniMessage()
+                .deserialize(
+                    message.replace("<nl>", "\n")
+                )
+        )
     }
 
     @Subcommand("maintenance deny-component view")
@@ -124,9 +134,9 @@ object CocoaCommand : BaseCommand()
         }
 
         player.sendMessage {
-            LegacyComponentSerializer.legacySection().deserialize(
-                settings.whitelistedNotification
-            )
+            MiniMessage
+                .miniMessage()
+                .deserialize(settings.whitelistedNotification)
         }
     }
 

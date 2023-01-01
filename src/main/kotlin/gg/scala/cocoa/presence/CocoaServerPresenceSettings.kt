@@ -11,10 +11,10 @@ class CocoaServerPresenceSettings(
     var normalPresence: String = "Hey",
     var whitelistedPresence: String = "cocoaV Lol",
     var whitelistedNotification: String = """
-        §cWe're currently whitelisted.
+        <red>We're currently whitelisted.
         
-        §cAdditional information may be found in:
-        §c§ldiscord.gg/asdf
+        <red>Additional information may be found in:
+        <red><bold>discord.gg/asdf
     """.trimIndent(),
     var shouldCenterPresence: Boolean = false
 ) : CocoaSettingsModel()

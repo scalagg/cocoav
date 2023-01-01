@@ -1,18 +1,16 @@
 package gg.scala.cocoa.subscribe
 
-import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.aware.annotation.Subscribe
 import gg.scala.aware.message.AwareMessage
-import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.store.storage.type.DataStoreStorageType
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import net.kyori.adventure.text.minimessage.MiniMessage
 import java.net.InetSocketAddress
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -31,10 +29,9 @@ object CocoaRedisSubscriber
         val notification = CocoaSettingsProcessor
             .locate<CocoaServerPresenceSettings>()
             ?.whitelistedNotification
-            ?: "§cWe're currently whitelisted."
+            ?: "<red>We're currently whitelisted."
 
-        val component = LegacyComponentSerializer
-            .legacySection().deserialize(notification)
+        val component = MiniMessage.miniMessage().deserialize(notification)
 
         plugin.server.allPlayers
             .filter { !plugin.shouldAllowOrStay(it.uniqueId) }

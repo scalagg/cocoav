@@ -154,13 +154,6 @@ object CocoaCommand : BaseCommand()
 
         plugin.updateMaintenanceRank(rank)
 
-        CocoaRedisSubscriber.buildMessage(
-            "maintenance-kick",
-            mapOf()
-        ).publish(
-            channel = "cocoa"
-        )
-
         sender.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize("&aMaintenance mode rank has been set to: &f${rank.name}")

@@ -315,6 +315,22 @@ constructor(
                         }"
                     ).entries)
                     {
+                        if (
+                            maintenanceRank != null &&
+                            maintenanceRank != entry.value
+                        )
+                        {
+                            CocoaRedisSubscriber.buildMessage(
+                                "maintenance-kick",
+                                mapOf()
+                            ).publish(
+                                channel = "cocoa"
+                            )
+
+                            maintenanceRank = entry.value
+                            return@useResource
+                        }
+
                         maintenanceRank = entry.value
                     }
                 }

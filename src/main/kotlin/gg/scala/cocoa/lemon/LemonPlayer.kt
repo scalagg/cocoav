@@ -18,7 +18,8 @@ class LemonPlayer(
     override val identifier: UUID
         get() = uniqueId
 
-    var pastIpAddresses = mutableMapOf<String, Long>()
+    val ipAddress: String = ""
+    var pastIpAddresses = mutableListOf<String>()
 
     lateinit var punishments: MutableMap<PunishmentCategory, Punishment?>
 

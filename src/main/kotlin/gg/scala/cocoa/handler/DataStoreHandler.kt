@@ -138,29 +138,52 @@ object DataStoreHandler
         }
     }
 
+    private fun fetchPlayerAccountsFiltered(filter: Bson) =
+        DataStoreObjectControllerCache
+            .findNotNull<LemonPlayer>()
+            .useLayerWithReturn<MongoDataStoreStorageLayer<LemonPlayer>, CompletableFuture<Map<UUID, LemonPlayer>>>(
+                DataStoreStorageType.MONGO
+            ) {
+                this.loadAllWithFilter(filter)
+            }
+
     fun fetchAlternateAccountsFor(uuid: UUID): CompletableFuture<List<LemonPlayer>>
     {
-        return DataStoreObjectControllerCache.findNotNull<LemonPlayer>()
-            .loadAll(DataStoreStorageType.MONGO)
-            .thenApply {
-                val accounts = mutableListOf<LemonPlayer>()
-                val lemonPlayer = findPlayer(uuid)
-                    ?: return@thenApply accounts
-
-                for (entry in it)
+        return CompletableFuture
+            .supplyAsync {
+                findPlayer(uuid)
+            }
+            .thenComposeAsync { lemonPlayer ->
+                if (lemonPlayer == null)
                 {
-                    if (entry.value.uniqueId == uuid) continue
-
-                    lemonPlayer.pastIpAddresses.keys.forEachIndexed { _, address ->
-                        if (entry.value.pastIpAddresses.containsKey(address))
-                        {
-                            accounts.add(entry.value)
-                            return@forEachIndexed
-                        }
-                    }
+                    return@thenComposeAsync CompletableFuture
+                        .completedFuture(
+                            null to mapOf<UUID, LemonPlayer>()
+                        )
                 }
 
-                return@thenApply accounts
+                fetchPlayerAccountsFiltered(
+                    Filters.and(
+                        Filters.ne("uniqueId", uuid.toString()),
+                        Filters.or(
+                            Filters.eq("ipAddress", lemonPlayer.ipAddress),
+                            Filters.`in`(
+                                "pastIpAddresses",
+                                *lemonPlayer.pastIpAddresses.toTypedArray()
+                            )
+                        )
+                    )
+                ).thenApply { lemonPlayer to it }
+            }
+            .thenApplyAsync {
+                it.first
+                    ?: return@thenApplyAsync mutableListOf<LemonPlayer>()
+
+                return@thenApplyAsync it.second.values.toList()
+            }
+            .exceptionally {
+                it.printStackTrace()
+                return@exceptionally listOf<LemonPlayer>()
             }
     }
 

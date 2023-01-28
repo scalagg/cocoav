@@ -5,7 +5,9 @@ import gg.scala.cocoa.formatIntoDetailedString
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.presence.override.PresenceOverride
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.util.concurrent.TimeUnit
 
@@ -26,8 +28,11 @@ object CocoaCountdownPresence : PresenceOverride
         val settings = CocoaSettingsProcessor
             .locate<CocoaServerPresenceSettings>()!!
 
-        val firstLineOfNormal = settings.normalPresence
-            .split("\n")[0]
+        val firstLineOfNormal = MiniMessage
+            .miniMessage().deserialize(
+                settings.normalPresence
+                    .split("\n")[0]
+            )
 
         val secondsUntilEnd = TimeUnit.MILLISECONDS.toSeconds(
             (CocoaCountdown.INSTANCE.duration + CocoaCountdown.INSTANCE.addedAt) - System.currentTimeMillis()
@@ -38,19 +43,24 @@ object CocoaCountdownPresence : PresenceOverride
         val detailed = formatIntoDetailedString(secondsUntilEnd)
         val abbreviated = formatIntoAbbreviatedString(secondsUntilEnd)
 
-        return LegacyComponentSerializer.legacyAmpersand()
-            .deserialize(
-                "$firstLineOfNormal\n${
-                    if (ended)
-                    {
-                        CocoaCountdown.INSTANCE.commencedFormat
-                    } else
-                    {
-                        CocoaCountdown.INSTANCE.presenceFormat
-                            .replace("[abbrev]", abbreviated)
-                            .replace("[detailed]", detailed)
-                    }
-                }"
+        return Component
+            .textOfChildren(
+                firstLineOfNormal
+                    .append(Component.newline())
+                    .append(
+                        LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize(
+                                if (ended)
+                                {
+                                    CocoaCountdown.INSTANCE.commencedFormat
+                                } else
+                                {
+                                    CocoaCountdown.INSTANCE.presenceFormat
+                                        .replace("[abbrev]", abbreviated)
+                                        .replace("[detailed]", detailed)
+                                }
+                            )
+                    )
             )
     }
 }

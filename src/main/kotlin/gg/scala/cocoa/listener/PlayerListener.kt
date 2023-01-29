@@ -210,7 +210,7 @@ object PlayerListener
 
                             CocoaRedisSubscriber.sendStaffNotification(
                                 null, "§3[global] §4${
-                                    event.player.username
+                                    color(event.player.uniqueId) + event.player.username
                                 }§c tried logging on with a VPN.",
                                 "lemon.vpn.notifications",
                                 "vpn-alerts-disabled"

@@ -45,7 +45,7 @@ object CocoaServerPresenceSubscriber
                 )
             },
             Players(
-                TrevorService.getAPI().instanceData.playerCount,
+                plugin.server.playerCount,
                 CocoaSettingsProcessor
                     .locate<CocoaServerPresenceSettings>()
                     ?.playerCap ?: 1000,

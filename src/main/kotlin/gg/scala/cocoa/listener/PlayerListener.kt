@@ -266,7 +266,8 @@ object PlayerListener
                     .loadOptimalCopy(uniqueId) {
                         LemonPlayer(
                             uniqueId,
-                            event.player.username
+                            event.player.username,
+                            event.player.remoteAddress.address.hostAddress
                         )
                     }
                     .join()
@@ -274,6 +275,8 @@ object PlayerListener
                 kotlin.runCatching {
                     lemonPlayer.recalculatePunishments().join()
                     lemonPlayer.checkForIpRelative().join()
+                }.onFailure {
+                    it.printStackTrace()
                 }
 
                 CocoaPermissionEngine

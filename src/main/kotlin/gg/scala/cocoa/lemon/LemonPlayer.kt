@@ -12,13 +12,13 @@ import java.util.concurrent.CompletableFuture
  */
 class LemonPlayer(
     var uniqueId: UUID,
-    var name: String
+    var name: String,
+    val ipAddress: String
 ) : IDataStoreObject
 {
     override val identifier: UUID
         get() = uniqueId
 
-    val ipAddress: String = ""
     var pastIpAddresses = mutableListOf<String>()
 
     lateinit var punishments: MutableMap<PunishmentCategory, Punishment?>
@@ -61,29 +61,31 @@ class LemonPlayer(
 
     fun checkForIpRelative(): CompletableFuture<Void>
     {
-        return DataStoreHandler.fetchAlternateAccountsFor(uniqueId).thenAcceptAsync { lemonPlayers ->
-            lemonPlayers.forEach {
-                val lastIpAddress = getMetadata("last-ip-address")?.asString() ?: ""
-                val targetLastIpAddress = it.getMetadata("last-ip-address")?.asString() ?: ""
+        return DataStoreHandler
+            .fetchAlternateAccountsFor(uniqueId)
+            .thenAcceptAsync { lemonPlayers ->
+                lemonPlayers.forEach {
+                    val lastIpAddress = ipAddress
+                    val targetLastIpAddress = it.ipAddress
 
-                val matchingIpInfo = lastIpAddress == targetLastIpAddress
+                    val matchingIpInfo = lastIpAddress == targetLastIpAddress
 
-                if (matchingIpInfo)
-                {
-                    for (punishmentCategory in PunishmentCategory.IP_REL)
+                    if (matchingIpInfo)
                     {
-                        val punishments = DataStoreHandler
-                            .fetchPunishmentsForTargetOfCategoryAndActive(it.uniqueId, punishmentCategory)
-                            .join()
-
-                        if (punishments.isNotEmpty())
+                        for (punishmentCategory in PunishmentCategory.IP_REL)
                         {
-                            this.punishments[PunishmentCategory.IP_RELATIVE] = punishments[0]
+                            val punishments = DataStoreHandler
+                                .fetchPunishmentsForTargetOfCategoryAndActive(it.uniqueId, punishmentCategory)
+                                .join()
+
+                            if (punishments.isNotEmpty())
+                            {
+                                this.punishments[PunishmentCategory.IP_RELATIVE] = punishments[0]
+                            }
                         }
                     }
                 }
             }
-        }
     }
 
     fun updateOrAddMetadata(id: String, data: Metadata)

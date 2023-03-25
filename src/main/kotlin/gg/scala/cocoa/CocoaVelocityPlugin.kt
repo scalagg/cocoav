@@ -338,19 +338,24 @@ constructor(
         }, 0L, 500L, TimeUnit.MILLISECONDS)
     }
 
-    fun fetchBestLobby(): RegisteredServer?
+    fun fetchBestLobby(filterOut: ServerInfo? = null): RegisteredServer?
     {
         return server.allServers
             .sortedBy { it.playersConnected.size }
-            .firstOrNull { isLobbyServer(it.serverInfo) }
+            .firstOrNull {
+                (filterOut == null || !filterOut.name.equals(it.serverInfo.name)) && isLobbyServer(it.serverInfo)
+            }
             ?: server.allServers.first()
     }
 
-    fun fetchBestRestrictedLobby(): RegisteredServer?
+    fun fetchBestRestrictedLobby(filterOut: ServerInfo? = null): RegisteredServer?
     {
         return server.allServers
             .sortedBy { it.playersConnected.size }
-            .firstOrNull { isRestrictedLobbyServer(it.serverInfo) } ?: fetchBestLobby()
+            .firstOrNull {
+                (filterOut == null || !filterOut.name.equals(it.serverInfo.name)) && isRestrictedLobbyServer(it.serverInfo)
+            }
+            ?: fetchBestLobby()
     }
 
     fun isLobbyServer(info: ServerInfo): Boolean

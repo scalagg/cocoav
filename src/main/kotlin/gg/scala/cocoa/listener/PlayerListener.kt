@@ -585,7 +585,7 @@ object PlayerListener
         }
 
         val newServer = if (event.player.hasPermission("cocoa.staff"))
-            plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
+            plugin.fetchBestRestrictedLobby(event.server.serverInfo) else plugin.fetchBestLobby(event.server.serverInfo)
 
         if (
             newServer != null &&
@@ -608,7 +608,7 @@ object PlayerListener
                 {
                     event.result = KickedFromServerEvent
                         .DisconnectPlayer.create(
-                            event.serverKickReason.get()!!
+                            event.serverKickReason.get()
                         )
                     return
                 }

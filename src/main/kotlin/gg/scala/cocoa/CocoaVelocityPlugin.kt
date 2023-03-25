@@ -145,7 +145,7 @@ constructor(
 
             executor.scheduleAtFixedRate(
                 CocoaServerSyncDiscovery,
-                0L, 500L,
+                0L, 1000L,
                 TimeUnit.MILLISECONDS
             )
         }

@@ -69,9 +69,12 @@ object CocoaCommand : BaseCommand()
             .locate<CocoaServerPresenceSettings>()!!
 
         settings.playerCap = newValue
+        CocoaSettingsProcessor.saveSettingsToFile(
+            CocoaServerPresenceSettings::class, "presence"
+        )
 
         player.sendMessage {
-            "&aYou've updated the component to: $newValue".legacy()
+            "&aYou've updated the max player count to: &f$newValue".legacy()
         }
     }
 

@@ -1,8 +1,6 @@
 package gg.scala.cocoa.listener
 
-import co.schemati.trevor.api.TrevorAPI
 import co.schemati.trevor.api.TrevorService
-import co.schemati.trevor.velocity.TrevorVelocity
 import com.google.common.cache.CacheBuilder
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder

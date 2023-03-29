@@ -6,6 +6,7 @@ import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.lemon.Punishment
 import gg.scala.cocoa.lemon.TwoFactorModel
 import gg.scala.cocoa.lemon.category.PunishmentCategory
+import gg.scala.cocoa.lemon.category.PunishmentCategoryIntensity
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.CachedDataStoreStorageLayer
@@ -41,7 +42,10 @@ object DataStoreHandler
             }
     }
 
-    private fun fetchPunishments(filter: Bson, test: (Punishment) -> Boolean): CompletableFuture<List<Punishment>>
+    private fun fetchPunishments(
+        filter: Bson,
+        test: ((Punishment) -> Boolean)? = null
+    ): CompletableFuture<List<Punishment>>
     {
         val controller = DataStoreObjectControllerCache.findNotNull<Punishment>()
 
@@ -52,7 +56,7 @@ object DataStoreHandler
                 val mutableList = mutableListOf<Punishment>()
 
                 it.forEach { entry ->
-                    if (test.invoke(entry.value))
+                    if (test?.invoke(entry.value) ?: true)
                     {
                         mutableList.add(entry.value)
                     }
@@ -61,13 +65,6 @@ object DataStoreHandler
                 return@thenApply mutableList
             }
         }
-    }
-
-    fun fetchAllPunishmentsForTarget(uuid: UUID): CompletableFuture<List<Punishment>>
-    {
-        return fetchPunishments(
-            Filters.eq("target", uuid.toString())
-        ) { !it.hasExpired }
     }
 
     fun updateRank(uuid: UUID)
@@ -126,17 +123,62 @@ object DataStoreHandler
             }
     }
 
+    fun fetchPunishmentsForTargetOfCategory(
+        uuid: UUID,
+        category: PunishmentCategory
+    ) = fetchPunishments(
+        Filters.and(
+            Filters.eq("target", uuid.toString()),
+            Filters.eq("category", category.name)
+        )
+    )
+
     fun fetchPunishmentsForTargetOfCategoryAndActive(
         uuid: UUID,
         category: PunishmentCategory
-    ): CompletableFuture<List<Punishment>>
-    {
-        return fetchPunishments(
-            Filters.eq("target", uuid.toString())
-        ) {
-            it.category == category && it.isActive
-        }
+    ) = fetchPunishments(
+        Filters.and(
+            Filters.eq("target", uuid.toString()),
+            Filters.eq("category", category.name)
+        )
+    ) {
+        it.isActive
     }
+
+    fun fetchPunishmentsByExecutorOfCategory(
+        uuid: UUID,
+        category: PunishmentCategory
+    ) = fetchPunishments(
+        Filters.and(
+            Filters.eq("addedBy", uuid.toString()),
+            Filters.eq("category", category.name)
+        )
+    )
+
+    fun fetchPunishmentsRemovedByOfCategory(
+        uuid: UUID,
+        category: PunishmentCategory
+    ) = fetchPunishments(
+        Filters.and(
+            Filters.eq("removedBy", uuid.toString()),
+            Filters.eq("category", category.name)
+        )
+    )
+
+    fun fetchPunishmentsRemovedBy(uuid: UUID) =
+        fetchPunishments(
+            Filters.eq("removedBy", uuid.toString())
+        )
+
+    fun fetchAllPunishmentsForTarget(uuid: UUID) =
+        fetchPunishments(
+            Filters.eq("target", uuid.toString())
+        )
+
+    fun fetchAllPunishmentsByExecutor(uuid: UUID) =
+        fetchPunishments(
+            Filters.eq("addedBy", uuid.toString())
+        )
 
     private fun fetchPlayerAccountsFiltered(filter: Bson) =
         DataStoreObjectControllerCache

@@ -109,7 +109,7 @@ object PlayerListener
                 "network-disconnect",
                 "uniqueId" to event.player.uniqueId
             ).apply {
-                publish(channel = "cougar:backbone")
+                publish(channel = "queue:backbone")
                 publish(channel = "party:backbone")
             }
 

@@ -145,7 +145,7 @@ constructor(
 
             executor.scheduleAtFixedRate(
                 CocoaServerSyncDiscovery,
-                0L, 1000L,
+                0L, 500L,
                 TimeUnit.MILLISECONDS
             )
         }
@@ -341,20 +341,19 @@ constructor(
     fun fetchBestLobby(filterOut: ServerInfo? = null): RegisteredServer?
     {
         return server.allServers
-            .sortedBy { it.playersConnected.size }
-            .firstOrNull {
-                (filterOut == null || !filterOut.name.equals(it.serverInfo.name)) && isLobbyServer(it.serverInfo)
+            .filter {
+                (filterOut == null || it.serverInfo.name != filterOut.name) && isLobbyServer(it.serverInfo)
             }
-            ?: server.allServers.first()
+            .minByOrNull { it.playersConnected.size }
     }
 
     fun fetchBestRestrictedLobby(filterOut: ServerInfo? = null): RegisteredServer?
     {
         return server.allServers
-            .sortedBy { it.playersConnected.size }
-            .firstOrNull {
-                (filterOut == null || !filterOut.name.equals(it.serverInfo.name)) && isRestrictedLobbyServer(it.serverInfo)
+            .filter {
+                (filterOut == null || it.serverInfo.name != filterOut.name) && isRestrictedLobbyServer(it.serverInfo)
             }
+            .minByOrNull { it.playersConnected.size }
             ?: fetchBestLobby()
     }
 

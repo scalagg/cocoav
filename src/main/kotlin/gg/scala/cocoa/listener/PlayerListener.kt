@@ -383,8 +383,12 @@ object PlayerListener
             return
         }
 
+        val current = event.player.currentServer
+            .orElseGet(null)
+            ?.serverInfo
+
         val server = if (isStaffMember)
-            plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
+            plugin.fetchBestRestrictedLobby(current) else plugin.fetchBestLobby(current)
 
         if (server != null)
         {

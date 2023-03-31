@@ -354,7 +354,7 @@ constructor(
                 (filterOut == null || it.serverInfo.name != filterOut.name) && isRestrictedLobbyServer(it.serverInfo)
             }
             .minByOrNull { it.playersConnected.size }
-            ?: fetchBestLobby()
+            ?: fetchBestLobby(filterOut)
     }
 
     fun isLobbyServer(info: ServerInfo): Boolean

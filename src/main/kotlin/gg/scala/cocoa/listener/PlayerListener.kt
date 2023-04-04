@@ -345,7 +345,7 @@ object PlayerListener
         {
             CocoaRedisSubscriber.sendStaffNotification(
                 event.player,
-                "§b${color(event.player.uniqueId) + event.player.username}§3 has disconnected from §b$serverName§3."
+                "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
             )
         }
 

@@ -287,7 +287,7 @@ constructor(
                     }
                 }
             }
-        }, 0L, 10L, TimeUnit.MILLISECONDS)
+        }, 0L, 500L, TimeUnit.MILLISECONDS)
 
         executor.scheduleAtFixedRate({
             server.allPlayers.forEach {

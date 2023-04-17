@@ -384,7 +384,7 @@ object PlayerListener
         }
 
         val current = event.player.currentServer
-            .orElseGet(null)
+            ?.orElseGet(null)
             ?.serverInfo
 
         val server = if (isStaffMember)

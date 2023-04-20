@@ -383,12 +383,8 @@ object PlayerListener
             return
         }
 
-        val current = event.player.currentServer
-            ?.orElseGet(null)
-            ?.serverInfo
-
         val server = if (isStaffMember)
-            plugin.fetchBestRestrictedLobby(current) else plugin.fetchBestLobby(current)
+            plugin.fetchBestRestrictedLobby(null) else plugin.fetchBestLobby(null)
 
         if (server != null)
         {
@@ -397,7 +393,7 @@ object PlayerListener
         }
 
         event.player.disconnect(
-            "&cSorry! We couldn't find any lobby servers for you to join.".legacy()
+            "&cWhoops! We don't have any lobby servers for you to join!".legacy()
         )
     }
 

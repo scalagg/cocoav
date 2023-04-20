@@ -30,7 +30,8 @@ object CocoaServerPresenceRunnable : Runnable
     override fun run()
     {
         val computed = CocoaServerPresenceHandler
-            .presences.sortedByDescending {
+            .presences
+            .sortedByDescending {
                 it.getWeight()
             }
             .firstOrNull {

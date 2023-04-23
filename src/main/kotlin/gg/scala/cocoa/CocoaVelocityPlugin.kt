@@ -359,12 +359,12 @@ constructor(
 
     fun isLobbyServer(info: ServerInfo): Boolean
     {
-        return (info.name.contains("hub") || info.name.contains("lobby"))
+        return (info.name.startsWith("hub") || info.name.startsWith("lobby"))
     }
 
     private fun isRestrictedLobbyServer(info: ServerInfo): Boolean
     {
-        return (info.name.contains("hub") || info.name.contains("lobby")) && info.name.contains("restricted")
+        return (info.name.startsWith("hub") || info.name.startsWith("lobby")) && info.name.endsWith("restricted")
     }
 
     fun updateMaintenanceRank(lemonSpigotRank: Rank)

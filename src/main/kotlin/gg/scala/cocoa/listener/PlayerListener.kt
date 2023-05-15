@@ -200,7 +200,7 @@ object PlayerListener
                                 .legacyAmpersand()
                                 .deserialize(
                                     """
-                                        &cSorry, the server is full.
+                                        &cThe server is currently at max capacity!
                                         &cPlease try joining again later!
                                     """.trimIndent()
                                 )
@@ -470,7 +470,8 @@ object PlayerListener
                 }
 
                 event.player.sendMessage(
-                    LegacyComponentSerializer.legacyAmpersand()
+                    LegacyComponentSerializer
+                        .legacyAmpersand()
                         .deserialize(
                             String.format(
                                 CocoaVelocityConstants.DENIED_SERVER_ENTRY, serverName, extension
@@ -525,7 +526,7 @@ object PlayerListener
 
                     CocoaRedisSubscriber.sendStaffNotification(
                         event.player,
-                        "§b${color(event.player.uniqueId) + event.player.username}§3 has connected to §b$serverName§3."
+                        "§b${color(event.player.uniqueId) + event.player.username}§3 connected to §b$serverName§3."
                     )
                 }.delay(HUNDRED_MILLI).schedule()
             }

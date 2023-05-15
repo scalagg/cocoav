@@ -14,7 +14,7 @@ object CocoaVelocityConstants
     @JvmStatic
     val NETWORKING_ERROR = LegacyComponentSerializer
         .legacyAmpersand()
-        .deserialize("&cWe were unable to contact the API.\n&cPlease contact a system administrator!")
+        .deserialize("&cWe were unable to contact an internal service.\n&cPlease contact a system administrator!")
 
     @JvmStatic
     val NETWORKING_INVALID = LegacyComponentSerializer

@@ -17,6 +17,7 @@ import com.velocitypowered.api.event.player.ServerConnectedEvent
 import com.velocitypowered.api.event.player.ServerPreConnectEvent
 import com.velocitypowered.api.proxy.Player
 import gg.scala.aware.message.AwareMessage
+import gg.scala.aware.thread.AwareThreadContext
 import gg.scala.cache.uuid.ScalaStoreUuidCache
 import gg.scala.cocoa.CocoaVelocityConstants
 import gg.scala.cocoa.CocoaVelocityPlugin
@@ -54,12 +55,15 @@ object PlayerListener
     private val connectedThroughMiddleware = CacheBuilder
         .newBuilder().build<UUID, Boolean>()
 
+    private val connection = CocoaVelocityPlugin.INSTANCE
+        .proxyChannel.internal().connect()
+
     @Subscribe
     fun onCommand(event: CommandExecuteEvent)
     {
         val label = event.command
             .split(" ").first()
-            .toLowerCase()
+            .lowercase(Locale.getDefault())
 
         if (event.commandSource is Player && !label.contains("mfa"))
         {
@@ -77,49 +81,6 @@ object PlayerListener
         if (!this.allowAction(event.player, "sending chat messages"))
         {
             event.result = PlayerChatEvent.ChatResult.allowed()
-        }
-    }
-
-    @Subscribe
-    fun onLogout(event: DisconnectEvent)
-    {
-        this.connectedThroughMiddleware
-            .invalidate(event.player.uniqueId)
-
-        val twoFactor = DataStoreObjectControllerCache
-            .findNotNull<TwoFactorModel>()
-
-        val model = twoFactor
-            .localCache()[event.player.uniqueId]
-
-        if (model != null)
-        {
-            if (model.persistIpAddress)
-            {
-                model.previousIpAddress = event.player
-                    .remoteAddress.address.hostAddress
-            }
-
-            twoFactor.save(model, DataStoreStorageType.REDIS)
-        }
-
-        if (event.player.currentServer.isPresent)
-        {
-            produce(
-                "network-disconnect",
-                "uniqueId" to event.player.uniqueId
-            ).apply {
-                publish(channel = "queue:backbone")
-                publish(channel = "party:backbone")
-            }
-
-            produce(
-                "friend-network-update",
-                "uniqueId" to event.player.uniqueId,
-                "type" to "left",
-            ).apply {
-                publish(channel = "friends")
-            }
         }
     }
 
@@ -256,7 +217,7 @@ object PlayerListener
                 }
 
                 ScalaStoreUuidCache.useTranslator {
-                    update(event.player.uniqueId to  event.player.username)
+                    update(event.player.uniqueId to event.player.username)
                 }
 
                 val lemonPlayer = DataStoreObjectControllerCache
@@ -358,6 +319,80 @@ object PlayerListener
                 event.player.uniqueId,
                 DataStoreStorageType.CACHE
             )
+
+        this.connectedThroughMiddleware
+            .invalidate(event.player.uniqueId)
+
+        val twoFactor = DataStoreObjectControllerCache
+            .findNotNull<TwoFactorModel>()
+
+        val model = twoFactor
+            .localCache()[event.player.uniqueId]
+
+        if (model != null)
+        {
+            if (model.persistIpAddress)
+            {
+                model.previousIpAddress = event.player
+                    .remoteAddress.address.hostAddress
+            }
+
+            twoFactor.save(model, DataStoreStorageType.REDIS)
+        }
+
+        ForkJoinPool.commonPool().execute {
+            val profile = connection.sync()
+                .hget(
+                    "disguise:disguised-players",
+                    event.player.uniqueId.toString()
+                )
+
+            if (profile != null)
+            {
+                connection.sync()
+                    .hdel(
+                        "disguise:in-use",
+                        profile
+                    )
+
+                connection.sync()
+                    .hdel(
+                        "disguise:disguised-players",
+                        event.player.uniqueId.toString()
+                    )
+            }
+
+            produce(
+                "network-disconnect",
+                "uniqueId" to event.player.uniqueId
+            ).apply {
+                publish(
+                    context = AwareThreadContext.SYNC,
+                    channel = "party:backbone"
+                )
+            }
+
+            produce(
+                "leave",
+                "player" to event.player.uniqueId
+            ).apply {
+                publish(
+                    context = AwareThreadContext.SYNC,
+                    channel = "queue:backbone"
+                )
+            }
+
+            produce(
+                "friend-network-update",
+                "uniqueId" to event.player.uniqueId,
+                "type" to "left",
+            ).apply {
+                publish(
+                    context = AwareThreadContext.SYNC,
+                    channel = "friends"
+                )
+            }
+        }
     }
 
     @Subscribe
@@ -518,9 +553,11 @@ object PlayerListener
 
         if (!model.sessionAuthenticated)
         {
-            player.sendMessage("&cYou must authenticate through &l${
-                if (model.secret == null) "/mfa configure" else "/mfa authenticate"
-            }&c before $action.".legacy())
+            player.sendMessage(
+                "&cYou must authenticate through &l${
+                    if (model.secret == null) "/mfa configure" else "/mfa authenticate"
+                }&c before $action.".legacy()
+            )
             return false
         }
 
@@ -596,7 +633,7 @@ object PlayerListener
                     .serialize(
                         event.serverKickReason.get()
                     )
-                    .toLowerCase()
+                    .lowercase(Locale.getDefault())
 
                 if (
                     thing.contains("ban") ||

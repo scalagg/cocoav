@@ -29,5 +29,5 @@ object CocoaVelocityConstants
     val DENIED_NETWORKING_INVALID = ResultedEvent
         .ComponentResult.denied(NETWORKING_INVALID)!!
 
-    const val DENIED_SERVER_ENTRY = "&cYour connection to server &c&l%s&c has been prevented due to you being %s."
+    const val DENIED_SERVER_ENTRY = "&cYour connection to &c&l%s&c has been prevented due to you being %s."
 }

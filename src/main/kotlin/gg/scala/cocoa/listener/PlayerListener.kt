@@ -340,58 +340,56 @@ object PlayerListener
             twoFactor.save(model, DataStoreStorageType.REDIS)
         }
 
-        ForkJoinPool.commonPool().execute {
-            val profile = connection.sync()
-                .hget(
+        val profile = connection.sync()
+            .hget(
+                "disguise:disguised-players",
+                event.player.uniqueId.toString()
+            )
+
+        if (profile != null)
+        {
+            connection.sync()
+                .hdel(
+                    "disguise:in-use",
+                    profile
+                )
+
+            connection.sync()
+                .hdel(
                     "disguise:disguised-players",
                     event.player.uniqueId.toString()
                 )
+        }
 
-            if (profile != null)
-            {
-                connection.sync()
-                    .hdel(
-                        "disguise:in-use",
-                        profile
-                    )
+        produce(
+            "network-disconnect",
+            "uniqueId" to event.player.uniqueId
+        ).apply {
+            publish(
+                context = AwareThreadContext.SYNC,
+                channel = "party:backbone"
+            )
+        }
 
-                connection.sync()
-                    .hdel(
-                        "disguise:disguised-players",
-                        event.player.uniqueId.toString()
-                    )
-            }
+        produce(
+            "leave",
+            "player" to event.player.uniqueId
+        ).apply {
+            publish(
+                context = AwareThreadContext.SYNC,
+                channel = "queue:backbone"
+            )
+        }
 
-            produce(
-                "network-disconnect",
-                "uniqueId" to event.player.uniqueId
-            ).apply {
-                publish(
-                    context = AwareThreadContext.SYNC,
-                    channel = "party:backbone"
-                )
-            }
-
-            produce(
-                "leave",
-                "player" to event.player.uniqueId
-            ).apply {
-                publish(
-                    context = AwareThreadContext.SYNC,
-                    channel = "queue:backbone"
-                )
-            }
-
-            produce(
-                "friend-network-update",
-                "uniqueId" to event.player.uniqueId,
-                "type" to "left",
-            ).apply {
-                publish(
-                    context = AwareThreadContext.SYNC,
-                    channel = "friends"
-                )
-            }
+        produce(
+            "friend-network-update",
+            "uniqueId" to event.player.uniqueId,
+            "type" to "left",
+        ).apply {
+            publish(
+                context = AwareThreadContext.SYNC,
+                channel = "friends"
+            )
         }
     }
 

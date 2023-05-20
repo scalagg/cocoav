@@ -576,13 +576,13 @@ object PlayerListener
             {
                 model.sessionAuthenticated = true
 
-                player.sendMessage("&a[auth] &7You're exempt from authentication.".legacy())
+                player.sendMessage("&7You've been authenticated as you logged in from a 2FA exempt account.".legacy())
                 return
             }
 
             if (model.secret == null)
             {
-                player.sendMessage("&a[auth] &aThe server requires you to configure two-factor-authentication on your account. &f(Use /mfa configure)".legacy())
+                player.sendMessage("&aThe server requires you to configure two-factor-authentication on your account. &f(Use /mfa configure)".legacy())
                 return
             }
 
@@ -592,13 +592,13 @@ object PlayerListener
                 model.sessionAuthenticated = false
                 model.save().join()
 
-                player.sendMessage("&a[auth] &cThe server requires you to authenticate. &f(Use /mfa authenticate)".legacy())
+                player.sendMessage("&cThe server requires you to authenticate yourself. &f(Use /mfa authenticate)".legacy())
                 return
             }
 
             model.sessionAuthenticated = true
 
-            player.sendMessage("&a[auth] &7You've been authenticated.".legacy())
+            player.sendMessage("&7You've been authenticated as you logged in from the same address.".legacy())
         }
     }
 

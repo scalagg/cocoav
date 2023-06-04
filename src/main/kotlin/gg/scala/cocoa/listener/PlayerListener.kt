@@ -361,35 +361,38 @@ object PlayerListener
                 )
         }
 
-        produce(
-            "network-disconnect",
-            "uniqueId" to event.player.uniqueId
-        ).apply {
-            publish(
-                context = AwareThreadContext.SYNC,
-                channel = "party:backbone"
-            )
-        }
+        if (event.loginStatus == DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN)
+        {
+            produce(
+                "network-disconnect",
+                "uniqueId" to event.player.uniqueId
+            ).apply {
+                publish(
+                    context = AwareThreadContext.SYNC,
+                    channel = "party:backbone"
+                )
+            }
 
-        produce(
-            "leave",
-            "player" to event.player.uniqueId
-        ).apply {
-            publish(
-                context = AwareThreadContext.SYNC,
-                channel = "queue:backbone"
-            )
-        }
+            produce(
+                "leave",
+                "player" to event.player.uniqueId
+            ).apply {
+                publish(
+                    context = AwareThreadContext.SYNC,
+                    channel = "queue:backbone"
+                )
+            }
 
-        produce(
-            "friend-network-update",
-            "uniqueId" to event.player.uniqueId,
-            "type" to "left",
-        ).apply {
-            publish(
-                context = AwareThreadContext.SYNC,
-                channel = "friends"
-            )
+            produce(
+                "friend-network-update",
+                "uniqueId" to event.player.uniqueId,
+                "type" to "left",
+            ).apply {
+                publish(
+                    context = AwareThreadContext.SYNC,
+                    channel = "friends"
+                )
+            }
         }
     }
 

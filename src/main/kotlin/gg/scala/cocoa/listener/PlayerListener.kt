@@ -374,7 +374,7 @@ object PlayerListener
             }
 
             produce(
-                "leave",
+                "network-logout",
                 "player" to event.player.uniqueId
             ).apply {
                 publish(
@@ -526,6 +526,16 @@ object PlayerListener
             {
                 plugin.server.scheduler.buildTask(plugin) {
                     this.ensureAuthenticated(event.player)
+
+                    produce(
+                        "network-login",
+                        "player" to event.player.uniqueId
+                    ).apply {
+                        publish(
+                            context = AwareThreadContext.SYNC,
+                            channel = "queue:backbone"
+                        )
+                    }
 
                     CocoaRedisSubscriber.sendStaffNotification(
                         event.player,

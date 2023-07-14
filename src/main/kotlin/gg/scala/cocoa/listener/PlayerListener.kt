@@ -341,13 +341,6 @@ object PlayerListener
                 DataStoreStorageType.CACHE
             )
 
-        guildByUser(event.player.uniqueId)
-            .thenAccept {
-                it?.sendMessage(
-                    "§c${event.player.username}§e left."
-                )
-            }
-
         this.connectedThroughMiddleware
             .invalidate(event.player.uniqueId)
 
@@ -410,6 +403,13 @@ object PlayerListener
                     channel = "queue:backbone"
                 )
             }
+
+            guildByUser(event.player.uniqueId)
+                .thenAccept {
+                    it?.sendMessage(
+                        "§c${event.player.username}§e left."
+                    )
+                }
 
             produce(
                 "friend-network-update",

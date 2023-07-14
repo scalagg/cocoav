@@ -2,6 +2,7 @@ package gg.scala.cocoa.listener
 
 import co.schemati.trevor.api.TrevorService
 import com.google.common.cache.CacheBuilder
+import com.mongodb.client.model.Filters
 import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.ResultedEvent
@@ -19,11 +20,8 @@ import com.velocitypowered.api.proxy.Player
 import gg.scala.aware.message.AwareMessage
 import gg.scala.aware.thread.AwareThreadContext
 import gg.scala.cache.uuid.ScalaStoreUuidCache
-import gg.scala.cocoa.CocoaVelocityConstants
-import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.CocoaVelocitySettings
+import gg.scala.cocoa.*
 import gg.scala.cocoa.handler.DataStoreHandler
-import gg.scala.cocoa.legacy
 import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.lemon.TwoFactorModel
 import gg.scala.cocoa.lemon.category.PunishmentCategory
@@ -35,11 +33,13 @@ import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectControllerCache
+import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import org.bson.conversions.Bson
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ForkJoinPool
@@ -102,6 +102,20 @@ object PlayerListener
 
         return message
     }
+
+    fun findSingleWithFilter(or: Bson) =
+        (DataStoreObjectControllerCache
+            .findNotNull<Guild>()
+            .localLayerCache[DataStoreStorageType.MONGO]!! as MongoDataStoreStorageLayer<Guild>)
+            .loadWithFilter(or)
+
+    fun guildByUser(user: UUID) =
+        findSingleWithFilter(
+            Filters.or(
+                Filters.eq("creator.uniqueId", user.toString()),
+                Filters.exists("members.$user")
+            )
+        )
 
     @Subscribe(
         order = PostOrder.FIRST
@@ -276,6 +290,13 @@ object PlayerListener
                 ).apply {
                     publish(channel = "friends")
                 }
+
+                guildByUser(event.player.uniqueId)
+                    .thenAccept {
+                        it?.sendMessage(
+                            "§a${event.player.username}§e joined."
+                        )
+                    }
             }.onFailure {
                 it.printStackTrace()
                 event.result = ResultedEvent.ComponentResult.denied(
@@ -319,6 +340,13 @@ object PlayerListener
                 event.player.uniqueId,
                 DataStoreStorageType.CACHE
             )
+
+        guildByUser(event.player.uniqueId)
+            .thenAccept {
+                it?.sendMessage(
+                    "§c${event.player.username}§e left."
+                )
+            }
 
         this.connectedThroughMiddleware
             .invalidate(event.player.uniqueId)

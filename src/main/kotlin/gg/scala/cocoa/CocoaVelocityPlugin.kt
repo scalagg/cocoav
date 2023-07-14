@@ -264,6 +264,8 @@ constructor(
         settingsLayer = DataStoreObjectControllerCache.create()
         cloudLayer = DataStoreObjectControllerCache.create()
 
+        DataStoreObjectControllerCache.create<Guild>()
+
         val executor = Executors
             .newScheduledThreadPool(1)
 

@@ -78,9 +78,9 @@ object PlayerListener
     @Subscribe
     fun onChat(event: PlayerChatEvent)
     {
-        if (!this.allowAction(event.player, "sending chat messages"))
+        if (!allowAction(event.player, "sending chat messages"))
         {
-            event.result = PlayerChatEvent.ChatResult.allowed()
+            event.result = PlayerChatEvent.ChatResult.denied()
         }
     }
 

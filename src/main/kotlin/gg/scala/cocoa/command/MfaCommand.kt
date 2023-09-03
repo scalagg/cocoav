@@ -198,31 +198,34 @@ object MfaCommand : BaseCommand()
         model.secret = secret
         model.save().join()
 
+        val url = TimeBasedOneTimePasswordUtil
+            .qrImageUrl(
+                CocoaSettingsProcessor
+                    .locate<CocoaVelocitySettings>()
+                    ?.totpIssuer
+                    ?: "Scala%20Studios",
+                secret,
+                player.username
+            )
+
         player.sendMessage(
-            "&a[auth] &a&l(Click this message to open the QR code!)".legacy()
-                .append(
-                    secret.legacy()
-                        .clickEvent(
-                            ClickEvent.openUrl(
-                                TimeBasedOneTimePasswordUtil.qrImageUrl(
-                                    CocoaSettingsProcessor
-                                        .locate<CocoaVelocitySettings>()
-                                        ?.totpIssuer
-                                        ?: "Scala%20Studios",
-                                    secret,
-                                    player.username
-                                )
-                            )
-                        )
-                        .hoverEvent(
-                            HoverEvent.showText("&aClick to copy!".legacy())
-                        )
+            "&a[auth] &a&l(Click this message to copy the QR code!)".legacy()
+                .clickEvent(
+                    ClickEvent.copyToClipboard(url)
                 )
-                .append(" &7(Click the code to copy it)".legacy())
+                .hoverEvent(
+                    HoverEvent.showText("&aClick to copy the QR code URL to your clipboard!".legacy())
+                )
         )
 
         player.sendMessage(
-            "&a[auth] &aThis code can be entered in any OTP MFA provider (Authy, Google Auth, etc).".legacy()
+            "&a[auth] &6&l(Click this message to open the QR code!)".legacy()
+                .clickEvent(
+                    ClickEvent.openUrl(url)
+                )
+                .hoverEvent(
+                    HoverEvent.showText("&aClick to open the QR code URL to your clipboard!".legacy())
+                )
         )
 
         player.sendMessage(

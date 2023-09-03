@@ -4,9 +4,11 @@ import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
 import dev.samstevens.totp.recovery.RecoveryCodeGenerator
 import gg.scala.cocoa.CocoaVelocityPlugin
+import gg.scala.cocoa.CocoaVelocitySettings
 import gg.scala.cocoa.totp.TimeBasedOneTimePasswordUtil
 import gg.scala.cocoa.legacy
 import gg.scala.cocoa.lemon.TwoFactorModel
+import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.commons.acf.BaseCommand
 import gg.scala.commons.acf.CommandHelp
 import gg.scala.commons.acf.ConditionFailedException
@@ -197,11 +199,20 @@ object MfaCommand : BaseCommand()
         model.save().join()
 
         player.sendMessage(
-            "&a[auth] &aYour authentication secret is: &f".legacy()
+            "&a[auth] &a&l(Click this message to open the QR code!)".legacy()
                 .append(
                     secret.legacy()
                         .clickEvent(
-                            ClickEvent.suggestCommand(secret)
+                            ClickEvent.openUrl(
+                                TimeBasedOneTimePasswordUtil.qrImageUrl(
+                                    CocoaSettingsProcessor
+                                        .locate<CocoaVelocitySettings>()
+                                        ?.totpIssuer
+                                        ?: "Scala%20Studios",
+                                    secret,
+                                    player.username
+                                )
+                            )
                         )
                         .hoverEvent(
                             HoverEvent.showText("&aClick to copy!".legacy())

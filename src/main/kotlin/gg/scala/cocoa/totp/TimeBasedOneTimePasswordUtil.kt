@@ -112,24 +112,24 @@ object TimeBasedOneTimePasswordUtil
         return truncatedHash
     }
 
-    fun qrImageUrl(keyId: String, secret: String): String
+    fun qrImageUrl(keyId: String, secret: String, username: String): String
     {
         val sb = StringBuilder(128)
         sb.append("https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=200x200&chld=M|0&cht=qr&chl=")
-        addOtpAuthPart(keyId, secret, sb)
+        addOtpAuthPart(keyId, username, secret, sb)
         return sb.toString()
     }
 
-    fun generateOtpAuthUrl(keyId: String, secret: String): String
+    fun generateOtpAuthUrl(keyId: String, secret: String, username: String): String
     {
         val sb = StringBuilder(64)
-        addOtpAuthPart(keyId, secret, sb)
+        addOtpAuthPart(keyId, username, secret, sb)
         return sb.toString()
     }
 
-    private fun addOtpAuthPart(keyId: String, secret: String, sb: StringBuilder)
+    private fun addOtpAuthPart(keyId: String, username: String?, secret: String, sb: StringBuilder)
     {
-        sb.append("otpauth://totp/").append(keyId).append("%3Fsecret%3D").append(secret)
+        sb.append("otpauth://totp/$keyId:$username?secret=$secret&issuer=$keyId")
     }
 
     fun zeroPrepend(num: Long, digits: Int): String

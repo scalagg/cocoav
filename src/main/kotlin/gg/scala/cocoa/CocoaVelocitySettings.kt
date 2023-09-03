@@ -19,7 +19,8 @@ class CocoaVelocitySettings(
     val listeningExemptions: List<String> = listOf("build"),
     val consul: ConsulSettings = ConsulSettings(),
     val credentials: WrappedAwareUri = WrappedAwareUri(),
-    val networking: NetworkingSettings = NetworkingSettings()
+    val networking: NetworkingSettings = NetworkingSettings(),
+    val totpIssuer: String? = "Scala%20Studios"
 ) : CocoaSettingsModel()
 {
     override fun getAbstractType() = CocoaVelocitySettings::class.java

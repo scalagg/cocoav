@@ -18,8 +18,17 @@ fun String.centered(pixels: Double): String
     return center(this, pixels)
 }
 
-fun String.legacy() = LegacyComponentSerializer
-    .legacyAmpersand().deserialize(this)
+val serializer by lazy {
+    LegacyComponentSerializer
+        .legacyAmpersand()
+        .toBuilder()
+        .extractUrls()
+        .build()
+}
+
+fun String.legacy() = serializer
+    .deserialize(this)
+    .asComponent()
 
 private fun center(message: String, centerPixels: Double): String
 {

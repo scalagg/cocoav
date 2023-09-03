@@ -197,6 +197,8 @@ object MfaCommand : BaseCommand()
 
         val secret = TimeBasedOneTimePasswordUtil.generateBase32Secret()
         model.secret = secret
+        model.sessionAuthenticated = false
+        model.previousIpAddress = null
         model.save().join()
 
         val url = TimeBasedOneTimePasswordUtil
@@ -209,23 +211,17 @@ object MfaCommand : BaseCommand()
                 player.username
             )
 
-        player.sendMessage(
-            "&a[auth] &a&l(Click this message to copy the QR code!)".legacy()
-                .clickEvent(
-                    ClickEvent.copyToClipboard(url)
-                )
-                .hoverEvent(
-                    HoverEvent.showText("&aClick to copy the QR code URL to your clipboard!".legacy())
-                )
-        )
-
-        player.sendMessage(url.legacy())
-
         CocoaSettingsProcessor
             .locate<CocoaVelocitySettings>()
             ?.bitlyApiKey
             ?.apply {
-                val resp = Unirest
+                player.sendMessage(
+                    "&6Once you receive your 6 character code, enter it in &f/mfa authenticate&6.".legacy()
+                )
+
+                player.sendMessage("&7Generating your QR code link...".legacy())
+
+                Unirest
                     .post("https://api-ssl.bitly.com/v4/shorten")
                     .header(
                         "Authorization",
@@ -233,26 +229,23 @@ object MfaCommand : BaseCommand()
                     )
                     .body(
                         """
-                            {"long_url":"$url","domain":"bit.ly","group_guid": "${
-                            CocoaSettingsProcessor
-                                .locate<CocoaVelocitySettings>()?.bitlyGroupGuid
-                            }"}
+                            {"long_url":"$url","domain":"bit.ly"}
                         """.trimIndent()
                     )
                     .header(
                         "Content-Type",
                         "application/json"
                     )
-                    .asJson()
+                    .asJsonAsync()
+                    .thenAccept { resp ->
+                        val link = resp.body.`object`
+                            .get("link").toString()
 
-                player.sendMessage(
-                    resp.body.`object`.get("link").toString().legacy()
-                )
+                        player.sendMessage(
+                            "&6Your 2FA QR code can be viewed by opening this link: &r$link".legacy()
+                        )
+                    }
             }
-
-        player.sendMessage(
-            "&a[auth] &aOnce you receive your 6 character code, enter it in &f/mfa authenticate&a.".legacy()
-        )
     }
 
     @Subcommand("reset")

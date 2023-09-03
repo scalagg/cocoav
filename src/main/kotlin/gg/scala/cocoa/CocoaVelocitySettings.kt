@@ -20,7 +20,9 @@ class CocoaVelocitySettings(
     val consul: ConsulSettings = ConsulSettings(),
     val credentials: WrappedAwareUri = WrappedAwareUri(),
     val networking: NetworkingSettings = NetworkingSettings(),
-    val totpIssuer: String? = "Scala%20Studios"
+    val totpIssuer: String? = "Scala%20Studios",
+    val bitlyApiKey: String? = "",
+    val bitlyGroupGuid: String? = "",
 ) : CocoaSettingsModel()
 {
     override fun getAbstractType() = CocoaVelocitySettings::class.java

@@ -22,6 +22,7 @@ import gg.scala.commons.acf.annotation.Single
 import gg.scala.commons.acf.annotation.Subcommand
 import gg.scala.commons.acf.velocity.contexts.OnlinePlayer
 import gg.scala.store.controller.DataStoreObjectControllerCache
+import kong.unirest.Unirest
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
@@ -218,15 +219,36 @@ object MfaCommand : BaseCommand()
                 )
         )
 
-        player.sendMessage(
-            "&a[auth] &6&l(Click this message to open the QR code!)".legacy()
-                .clickEvent(
-                    ClickEvent.openUrl(url)
+        player.sendMessage(url.legacy())
+
+        CocoaSettingsProcessor
+            .locate<CocoaVelocitySettings>()
+            ?.bitlyApiKey
+            ?.apply {
+                val resp = Unirest
+                    .post("https://api-ssl.bitly.com/v4/shorten")
+                    .header(
+                        "Authorization",
+                        "Bearer $this"
+                    )
+                    .body(
+                        """
+                            {"long_url":"$url","domain":"bit.ly","group_guid": "${
+                            CocoaSettingsProcessor
+                                .locate<CocoaVelocitySettings>()?.bitlyGroupGuid
+                            }"}
+                        """.trimIndent()
+                    )
+                    .header(
+                        "Content-Type",
+                        "application/json"
+                    )
+                    .asJson()
+
+                player.sendMessage(
+                    resp.body.`object`.get("link").toString().legacy()
                 )
-                .hoverEvent(
-                    HoverEvent.showText("&aClick to open the QR code URL to your clipboard!".legacy())
-                )
-        )
+            }
 
         player.sendMessage(
             "&a[auth] &aOnce you receive your 6 character code, enter it in &f/mfa authenticate&a.".legacy()

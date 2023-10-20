@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 object CocoaCountdownPresence : PresenceOverride
 {
     override fun getUniqueId() = "countdown"
-    override fun getWeight() = 5
+    override fun getWeight() = 30000
 
     override fun ableToBeManuallyToggle() = false
     override fun shouldOverride() = CocoaCountdown.INSTANCE.activated

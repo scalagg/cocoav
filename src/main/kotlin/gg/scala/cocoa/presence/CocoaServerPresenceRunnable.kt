@@ -34,6 +34,7 @@ object CocoaServerPresenceRunnable : Runnable
             .sortedByDescending {
                 it.getWeight()
             }
+            .onEach { } // why do i need this bro
             .firstOrNull {
                 it.shouldOverride()
             }

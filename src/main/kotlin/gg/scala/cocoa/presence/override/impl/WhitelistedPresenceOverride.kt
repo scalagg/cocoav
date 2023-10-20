@@ -5,9 +5,7 @@ import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.presence.override.PresenceOverride
 import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
 /**
  * @author GrowlyX
@@ -18,7 +16,7 @@ object WhitelistedPresenceOverride : PresenceOverride
     private val plugin = CocoaVelocityPlugin.INSTANCE
 
     override fun getUniqueId() = "maintenance"
-    override fun getWeight() = 4
+    override fun getWeight() = 25000
 
     override fun ableToBeManuallyToggle() = false
     override fun shouldOverride() = plugin.maintenance
@@ -30,7 +28,7 @@ object WhitelistedPresenceOverride : PresenceOverride
 
         return MiniMessage.miniMessage()
             .deserialize(
-                settings.normalPresence
+                settings.whitelistedPresence
             )
     }
 }

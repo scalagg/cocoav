@@ -1,7 +1,9 @@
 package gg.scala.cocoa.presence
 
+import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.presence.override.PresenceOverride
 import gg.scala.cocoa.presence.override.impl.DefaultPresenceOverride
+import gg.scala.cocoa.presence.override.impl.WhitelistedPresenceOverride
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -27,10 +29,7 @@ object CocoaServerPresenceHandler
         )
 
         presences.add(DefaultPresenceOverride)
-    }
-
-    fun trackPresence(override: PresenceOverride)
-    {
-        presences.add(override)
+        presences.add(WhitelistedPresenceOverride)
+        presences.add(CocoaCountdownPresence)
     }
 }

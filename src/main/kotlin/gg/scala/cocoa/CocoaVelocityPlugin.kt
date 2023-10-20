@@ -128,9 +128,6 @@ constructor(
         DataStoreHandler.configure()
 
         CocoaServerPresenceHandler.initialLoad()
-        CocoaServerPresenceHandler.trackPresence(WhitelistedPresenceOverride)
-        CocoaServerPresenceHandler.trackPresence(CocoaCountdownPresence)
-
         CocoaCountdown.initialLoad()
 
         startRedisFunctionality()

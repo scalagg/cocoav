@@ -1,8 +1,8 @@
 plugins {
     id "maven-publish"
     id "com.jfrog.artifactory" version "4.28.2"
-    id "org.jetbrains.kotlin.jvm" version "1.7.10"
-    id "org.jetbrains.kotlin.kapt" version "1.7.20"
+    id "org.jetbrains.kotlin.jvm" version "1.9.10"
+    id "org.jetbrains.kotlin.kapt" version "1.9.10"
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
@@ -35,7 +35,7 @@ dependencies {
     compileOnly "gg.scala.store:velocity:0.1.3"
 
     implementation "gg.scala.commons:velocity:3.1.9"
-    implementation "gg.scala.commons:serversync:3.1.9"
+    implementation "gg.scala.commons:serversync:3.2.3"
 
     implementation "ch.qos.logback:logback-classic:1.4.4"
     implementation 'net.kyori:adventure-text-minimessage:4.11.0'
@@ -46,7 +46,7 @@ dependencies {
 
 compileKotlin {
     kotlinOptions.javaParameters = true
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 
 shadowJar {

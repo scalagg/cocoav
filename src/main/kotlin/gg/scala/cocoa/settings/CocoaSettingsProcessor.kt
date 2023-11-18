@@ -36,9 +36,9 @@ object CocoaSettingsProcessor
         return settings[T::class] as T
     }
 
-    inline fun <reified T> loadSettings(id: String)
+    inline fun <reified T> loadSettings(id: String, doNotSave: Boolean = false)
     {
-        saveSettingsToFile(T::class, id, commit = false)
+        saveSettingsToFile(T::class, id, commit = false, doNotSave = doNotSave)
 
         val reader = File(
             CocoaVelocityPlugin.INSTANCE.directoryFile,
@@ -49,7 +49,7 @@ object CocoaSettingsProcessor
     }
 
     fun saveSettingsToFile(
-        kClass: KClass<*>, id: String, commit: Boolean = true
+        kClass: KClass<*>, id: String, commit: Boolean = true, doNotSave: Boolean = false
     )
     {
         val file = File(
@@ -64,16 +64,29 @@ object CocoaSettingsProcessor
             settings.putIfAbsent(
                 kClass, kClass.java.newInstance() as CocoaSettingsModel
             )
+
+            if (doNotSave)
+            {
+                Files.write(
+                    Serializers.gson.toJson(
+                        settings[kClass], kClass.java
+                    ),
+                    file, Charsets.UTF_8
+                )
+            }
         }
 
         if (settings[kClass] != null)
         {
-            Files.write(
-                Serializers.gson.toJson(
-                    settings[kClass], kClass.java
-                ),
-                file, Charsets.UTF_8
-            )
+            if (!doNotSave)
+            {
+                Files.write(
+                    Serializers.gson.toJson(
+                        settings[kClass], kClass.java
+                    ),
+                    file, Charsets.UTF_8
+                )
+            }
 
             if (commit)
             {

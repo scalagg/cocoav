@@ -339,6 +339,26 @@ constructor(
 
     fun fetchBestLobby(filterOut: ServerInfo? = null): RegisteredServer?
     {
+        if (filterOut != null)
+        {
+            val redirect = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
+                .preferHubServerRedirects[filterOut.name]
+
+            if (redirect != null)
+            {
+                val result = server.allServers.filter {
+                    it.serverInfo.name == redirect || it.serverInfo.name.contains(redirect)
+                }.minByOrNull {
+                    it.playersConnected.size
+                }
+
+                if (result != null)
+                {
+                    return result
+                }
+            }
+        }
+
         return server.allServers
             .filter {
                 (filterOut == null || it.serverInfo.name != filterOut.name) && isLobbyServer(it.serverInfo)
@@ -348,6 +368,26 @@ constructor(
 
     fun fetchBestRestrictedLobby(filterOut: ServerInfo? = null): RegisteredServer?
     {
+        if (filterOut != null)
+        {
+            val redirect = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
+                .preferHubServerRedirects[filterOut.name]
+
+            if (redirect != null)
+            {
+                val result = server.allServers.filter {
+                    it.serverInfo.name == redirect || it.serverInfo.name.contains(redirect)
+                }.minByOrNull {
+                    it.playersConnected.size
+                }
+
+                if (result != null)
+                {
+                    return result
+                }
+            }
+        }
+
         return server.allServers
             .filter {
                 (filterOut == null || it.serverInfo.name != filterOut.name) && isRestrictedLobbyServer(it.serverInfo)

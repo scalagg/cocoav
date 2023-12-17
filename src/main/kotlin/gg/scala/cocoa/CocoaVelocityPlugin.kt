@@ -342,12 +342,14 @@ constructor(
         if (filterOut != null)
         {
             val redirect = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
-                .preferHubServerRedirects[filterOut.name]
+                .preferHubServerRedirects.entries.firstOrNull {
+                    filterOut.name.contains(it.key)
+                }
 
             if (redirect != null)
             {
                 val result = server.allServers.filter {
-                    it.serverInfo.name == redirect || it.serverInfo.name.contains(redirect)
+                    it.serverInfo.name == redirect.value || it.serverInfo.name.contains(redirect.value)
                 }.minByOrNull {
                     it.playersConnected.size
                 }
@@ -371,12 +373,14 @@ constructor(
         if (filterOut != null)
         {
             val redirect = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
-                .preferHubServerRedirects[filterOut.name]
+                .preferHubServerRedirects.entries.firstOrNull {
+                    filterOut.name.contains(it.key)
+                }
 
             if (redirect != null)
             {
                 val result = server.allServers.filter {
-                    it.serverInfo.name == redirect || it.serverInfo.name.contains(redirect)
+                    it.serverInfo.name == redirect.value || it.serverInfo.name.contains(redirect.value)
                 }.minByOrNull {
                     it.playersConnected.size
                 }

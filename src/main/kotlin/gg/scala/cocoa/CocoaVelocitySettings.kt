@@ -10,6 +10,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
 class CocoaVelocitySettings(
     val externalProxy: Boolean = false,
     val showPlayerCountWhileWhitelisted: Boolean = false,
+    val autoRegisterFromServerSyncDiscovery: Boolean = true,
     val ensureTokenWhitelisted: Boolean = false,
     val tokenWhitelistHighestWeightBeforeNotEffective: Int = 99,
     val externalProxyPrefix: String = "-ofl",
@@ -17,8 +18,6 @@ class CocoaVelocitySettings(
     val middleware: String? = null,
     val listeningGroups: List<String> = listOf("practice", "hub"),
     val listeningExemptions: List<String> = listOf("build"),
-    val consul: ConsulSettings = ConsulSettings(),
-    val credentials: WrappedAwareUri = WrappedAwareUri(),
     val networking: NetworkingSettings = NetworkingSettings(),
     val preferHubServerRedirects: Map<String, String> = mutableMapOf(
         "mipgame" to "miplobby"
@@ -32,11 +31,5 @@ class CocoaVelocitySettings(
     class NetworkingSettings(
         val handleNetworkingChecks: Boolean = false,
         val apiKey: String = ""
-    )
-
-    class ConsulSettings(
-        val enabled: Boolean = true,
-        val address: String = "127.0.0.1",
-        val port: Int = 8500
     )
 }

@@ -135,7 +135,7 @@ constructor(
         if (
             CocoaSettingsProcessor
                 .locate<CocoaVelocitySettings>()!!
-                .consul.enabled
+                .autoRegisterFromServerSyncDiscovery
         )
         {
             ServerSync.configureIndependent()
@@ -227,10 +227,6 @@ constructor(
     {
         val settings = CocoaSettingsProcessor
             .locate<CocoaVelocitySettings>()!!
-
-        AwareHub.configure(settings.credentials) {
-            Serializers.gson
-        }
 
         GsonSerializer.provideCustomGson {
             Serializers.gson

@@ -270,7 +270,7 @@ constructor(
             spigotChannel.shutdown()
         })
 
-        if (VelocitySettingsProcessor.locate<CocoaVelocitySettings>()!!.masterProxy)
+        if (settings.masterProxy)
         {
             executor.scheduleAtFixedRate({
                 settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)

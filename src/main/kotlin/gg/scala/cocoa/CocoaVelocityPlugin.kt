@@ -49,6 +49,7 @@ import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.serializer.serializers.GsonSerializer
 import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
+import gg.scala.store.velocity.settings.VelocitySettingsProcessor
 import net.evilblock.cubed.serializers.Serializers
 import net.kyori.adventure.text.format.NamedTextColor
 import java.io.File
@@ -269,20 +270,24 @@ constructor(
             spigotChannel.shutdown()
         })
 
-        executor.scheduleAtFixedRate({
-            settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
-            {
-                this.connection.useResource {
-                    kotlin.runCatching {
-                        sync().set(
-                            "global-player-count${
-                                if (settings.externalProxy) settings.externalProxyPrefix else ""
-                            }", TrevorService.getAPI().instanceData.playerCount.toString()
-                        )
+        if (VelocitySettingsProcessor.locate<CocoaVelocitySettings>()!!.masterProxy)
+        {
+            executor.scheduleAtFixedRate({
+                settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
+                {
+                    this.connection.useResource {
+                        kotlin.runCatching {
+                            sync().set(
+                                "global-player-count${
+                                    if (settings.externalProxy) settings.externalProxyPrefix else ""
+                                }",
+                                TrevorService.getAPI().instanceData.playerCount.toString()
+                            )
+                        }
                     }
                 }
-            }
-        }, 0L, 500L, TimeUnit.MILLISECONDS)
+            }, 0L, 500L, TimeUnit.MILLISECONDS)
+        }
 
         executor.scheduleAtFixedRate({
             server.allPlayers.forEach {

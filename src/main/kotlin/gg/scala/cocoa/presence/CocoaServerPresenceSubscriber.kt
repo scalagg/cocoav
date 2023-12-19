@@ -1,6 +1,9 @@
 package gg.scala.cocoa.presence
 
+import co.schemati.trevor.api.TrevorAPI
 import co.schemati.trevor.api.TrevorService
+import co.schemati.trevor.common.TrevorCommon
+import co.schemati.trevor.velocity.TrevorVelocity
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyPingEvent
 import com.velocitypowered.api.proxy.server.ServerPing
@@ -45,7 +48,7 @@ object CocoaServerPresenceSubscriber
                 )
             },
             Players(
-                plugin.server.playerCount,
+                TrevorService.getAPI().instanceData.playerCount,
                 CocoaSettingsProcessor
                     .locate<CocoaServerPresenceSettings>()
                     ?.playerCap ?: 1000,

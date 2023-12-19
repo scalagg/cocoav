@@ -9,6 +9,7 @@ import gg.scala.cocoa.settings.CocoaSettingsModel
  */
 class CocoaVelocitySettings(
     val externalProxy: Boolean = false,
+    val masterProxy: Boolean = true,
     val showPlayerCountWhileWhitelisted: Boolean = false,
     val autoRegisterFromServerSyncDiscovery: Boolean = true,
     val ensureTokenWhitelisted: Boolean = false,

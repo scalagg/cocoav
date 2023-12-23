@@ -29,26 +29,29 @@ object CocoaServerPresenceRunnable : Runnable
 
     override fun run()
     {
-        val computed = CocoaServerPresenceHandler
-            .presences
-            .sortedByDescending {
-                it.getWeight()
-            }
-            .onEach { } // why do i need this bro
-            .firstOrNull {
-                it.shouldOverride()
-            }
+       kotlin.runCatching {
+           val computed = CocoaServerPresenceHandler
+               .presences.toList()
+               .sortedByDescending {
+                   it.getWeight()
+               }
+               .firstOrNull {
+                   it.shouldOverride()
+               }
 
-        if (computed != null)
-        {
-            CocoaServerPresenceHandler
-                .current = computed
-        }
+           if (computed != null)
+           {
+               CocoaServerPresenceHandler
+                   .current = computed
+           }
 
-        CocoaServerPresenceHandler
-            .presences.forEach {
-                cachedPresences[it.getUniqueId()] =
-                    it.updatedPresence()
-            }
+           CocoaServerPresenceHandler
+               .presences.toList().forEach {
+                   cachedPresences[it.getUniqueId()] =
+                       it.updatedPresence()
+               }
+       }.onFailure {
+           it.printStackTrace()
+       }
     }
 }

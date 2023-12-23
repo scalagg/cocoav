@@ -448,7 +448,7 @@ object PlayerListener
         }
 
         val server = if (isStaffMember)
-            plugin.fetchBestRestrictedLobby(null) else plugin.fetchBestLobby(null)
+            plugin.fetchBestRestrictedLobby(event.player, null) else plugin.fetchBestLobby(event.player, null)
 
         if (server != null)
         {
@@ -660,7 +660,7 @@ object PlayerListener
         }
 
         val newServer = if (event.player.hasPermission("cocoa.staff"))
-            plugin.fetchBestRestrictedLobby(event.server.serverInfo) else plugin.fetchBestLobby(event.server.serverInfo)
+            plugin.fetchBestRestrictedLobby(event.player, event.server.serverInfo) else plugin.fetchBestLobby(event.player, event.server.serverInfo)
 
         if (
             newServer != null &&

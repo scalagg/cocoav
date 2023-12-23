@@ -8,6 +8,7 @@ import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.plugin.Dependency
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
+import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import com.velocitypowered.api.proxy.server.ServerInfo
@@ -58,6 +59,7 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
+import kotlin.jvm.optionals.getOrNull
 import kotlin.properties.Delegates
 
 
@@ -338,27 +340,24 @@ constructor(
         }, 0L, 500L, TimeUnit.MILLISECONDS)
     }
 
-    fun fetchBestLobby(filterOut: ServerInfo? = null): RegisteredServer?
+    fun fetchBestLobby(player: Player, filterOut: ServerInfo? = null): RegisteredServer?
     {
-        if (filterOut != null)
+        val redirect = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
+            .preferHubServerRedirects.entries.firstOrNull {
+                player.currentServer.getOrNull()?.serverInfo?.name?.contains(it.key) == true
+            }
+
+        if (redirect != null)
         {
-            val redirect = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
-                .preferHubServerRedirects.entries.firstOrNull {
-                    filterOut.name.contains(it.key)
-                }
+            val result = server.allServers.filter {
+                it.serverInfo.name == redirect.value || it.serverInfo.name.contains(redirect.value)
+            }.minByOrNull {
+                it.playersConnected.size
+            }
 
-            if (redirect != null)
+            if (result != null)
             {
-                val result = server.allServers.filter {
-                    it.serverInfo.name == redirect.value || it.serverInfo.name.contains(redirect.value)
-                }.minByOrNull {
-                    it.playersConnected.size
-                }
-
-                if (result != null)
-                {
-                    return result
-                }
+                return result
             }
         }
 
@@ -369,36 +368,14 @@ constructor(
             .minByOrNull { it.playersConnected.size }
     }
 
-    fun fetchBestRestrictedLobby(filterOut: ServerInfo? = null): RegisteredServer?
+    fun fetchBestRestrictedLobby(player: Player, filterOut: ServerInfo? = null): RegisteredServer?
     {
-        if (filterOut != null)
-        {
-            val redirect = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
-                .preferHubServerRedirects.entries.firstOrNull {
-                    filterOut.name.contains(it.key)
-                }
-
-            if (redirect != null)
-            {
-                val result = server.allServers.filter {
-                    it.serverInfo.name == redirect.value || it.serverInfo.name.contains(redirect.value)
-                }.minByOrNull {
-                    it.playersConnected.size
-                }
-
-                if (result != null)
-                {
-                    return result
-                }
-            }
-        }
-
         return server.allServers
             .filter {
                 (filterOut == null || it.serverInfo.name != filterOut.name) && isRestrictedLobbyServer(it.serverInfo)
             }
             .minByOrNull { it.playersConnected.size }
-            ?: fetchBestLobby(filterOut)
+            ?: fetchBestLobby(player, filterOut)
     }
 
     fun isLobbyServer(info: ServerInfo): Boolean

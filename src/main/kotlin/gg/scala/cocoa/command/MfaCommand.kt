@@ -125,7 +125,7 @@ object MfaCommand : BaseCommand()
                     .hasPermission("cocoa.staff")
 
                 val bestHubServer = if (isStaffMember)
-                    plugin.fetchBestRestrictedLobby() else plugin.fetchBestLobby()
+                    plugin.fetchBestRestrictedLobby(player) else plugin.fetchBestLobby(player)
 
                 player.createConnectionRequest(bestHubServer).connect()
             }

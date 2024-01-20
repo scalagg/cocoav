@@ -1,18 +1,11 @@
 package gg.scala.cocoa.subscribe
 
 import com.velocitypowered.api.proxy.Player
-import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.aware.annotation.Subscribe
 import gg.scala.aware.message.AwareMessage
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.countdown.CocoaCountdownSettings
-import gg.scala.cocoa.presence.CocoaServerPresenceSettings
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
-import gg.scala.store.storage.type.DataStoreStorageType
+import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 import net.kyori.adventure.text.minimessage.MiniMessage
-import java.net.InetSocketAddress
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 /**
@@ -26,10 +19,8 @@ object CocoaRedisSubscriber
     @Subscribe("maintenance-kick")
     fun onMaintenanceKick(message: AwareMessage)
     {
-        val notification = CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()
-            ?.whitelistedNotification
-            ?: "<red>We're currently whitelisted."
+        val notification = CocoaVelocitySettingsDataSync.cached()
+            .presence.whitelistedNotification
 
         val component = MiniMessage.miniMessage().deserialize(notification)
 
@@ -38,71 +29,6 @@ object CocoaRedisSubscriber
             .forEach {
                 it.disconnect(component)
             }
-    }
-
-    @Subscribe("add-server-DEPRECATED")
-    fun onAddServer(message: AwareMessage)
-    {
-        val id = message
-            .retrieve("id", String::class)
-
-        val server = plugin.server.allServers.firstOrNull {
-            it.serverInfo.name.equals(id, true)
-        }
-
-        if (server != null)
-            return
-
-        plugin.server.registerServer(
-            ServerInfo(
-                id, InetSocketAddress(
-                    message.retrieve("address", String::class),
-                    message.retrieve("port", Int::class)
-                )
-            )
-        )
-    }
-
-    @Subscribe("remove-server-DEPRECATED")
-    fun onRemoveServer(message: AwareMessage)
-    {
-        val server = plugin.server.allServers.firstOrNull {
-            it.serverInfo.name.equals(message.retrieve("id"), true)
-        } ?: throw RuntimeException("That server does not exist.")
-
-        plugin.server.unregisterServer(server.serverInfo)
-    }
-
-    // temporary !!!
-    val settings = mutableMapOf(
-        "countdown" to CocoaCountdownSettings::class,
-        "settings" to CocoaVelocitySettings::class,
-        "presence" to CocoaServerPresenceSettings::class
-    )
-
-    //    @Subscribe("cloud-sync")
-    fun onCloudSync(message: AwareMessage)
-    {
-        println("[Cocoa] Started cloud sync request!")
-
-        settings.forEach {
-            CocoaVelocityPlugin.INSTANCE.cloudLayer
-                .loadAll(DataStoreStorageType.REDIS)
-                .thenAccept { models ->
-                    models.forEach { serialized ->
-                        CocoaSettingsProcessor.settings[it.value] =
-                            serialized.value
-
-                        CocoaSettingsProcessor.saveSettingsToFile(
-                            it.value, it.key, commit = false
-                        )
-                    }
-                }
-
-            println("[Cocoa] Processing cloud sync for: ${it.value.java.simpleName}")
-        }
-
-        println("[Cocoa] Completed cloud sync request!")
     }
 
     fun sendStaffNotification(

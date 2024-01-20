@@ -1,10 +1,8 @@
 package gg.scala.cocoa.network
 
-import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 import kong.unirest.Unirest
 import net.evilblock.cubed.serializers.Serializers
-import java.net.URL
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
@@ -35,8 +33,7 @@ object CocoaNetworkAddressHandler
             return CompletableFuture.completedFuture(cached)
         }
 
-        val apiKey = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
+        val apiKey = CocoaVelocitySettingsDataSync.cached()
             .networking.apiKey
 
         return Unirest

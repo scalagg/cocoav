@@ -2,8 +2,7 @@ package gg.scala.cocoa.discovery
 
 import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 import gg.scala.commons.agnostic.sync.server.ServerContainer
 import gg.scala.commons.agnostic.sync.server.impl.GameServer
 import java.net.InetSocketAddress
@@ -16,8 +15,7 @@ object CocoaServerSyncDiscovery : Runnable
 {
     override fun run()
     {
-        val healthy = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
+        val healthy = CocoaVelocitySettingsDataSync.cached()
             .listeningGroups
             .flatMap {
                 ServerContainer.getServersInGroup(it)
@@ -43,8 +41,7 @@ object CocoaServerSyncDiscovery : Runnable
                     )
             }
             .filter {
-                !CocoaSettingsProcessor
-                    .locate<CocoaVelocitySettings>()!!
+                !CocoaVelocitySettingsDataSync.cached()
                     .listeningExemptions
                     .contains(it.serverInfo.name)
             }

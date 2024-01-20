@@ -25,32 +25,23 @@ import gg.scala.cocoa.command.MfaCommand
 import gg.scala.cocoa.command.administration.CocoaCommand
 import gg.scala.cocoa.command.administration.CountdownCommand
 import gg.scala.cocoa.command.administration.TrafficCommand
-import gg.scala.cocoa.countdown.CocoaCountdown
-import gg.scala.cocoa.countdown.CocoaCountdownPresence
-import gg.scala.cocoa.countdown.CocoaCountdownSettings
 import gg.scala.cocoa.discovery.CocoaServerSyncDiscovery
+import gg.scala.cocoa.dps.DPSRedisShared
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.lemon.validate.ScalaValidateUtil
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
-import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
-import gg.scala.cocoa.presence.override.impl.WhitelistedPresenceOverride
-import gg.scala.cocoa.settings.CocoaSettingsModel
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.commons.acf.ConditionFailedException
 import gg.scala.commons.acf.MessageKeys
 import gg.scala.commons.acf.MessageType
 import gg.scala.commons.acf.VelocityCommandManager
 import gg.scala.commons.agnostic.sync.ServerSync
-import gg.scala.store.controller.DataStoreObjectController
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.serializer.serializers.GsonSerializer
-import gg.scala.store.storage.impl.RedisDataStoreStorageLayer
-import gg.scala.store.storage.type.DataStoreStorageType
-import gg.scala.store.velocity.settings.VelocitySettingsProcessor
 import net.evilblock.cubed.serializers.Serializers
 import net.kyori.adventure.text.format.NamedTextColor
 import java.io.File
@@ -61,7 +52,6 @@ import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 import kotlin.jvm.optionals.getOrNull
 import kotlin.properties.Delegates
-
 
 /**
  * @author GrowlyX
@@ -92,25 +82,32 @@ constructor(
         var INSTANCE by Delegates.notNull<CocoaVelocityPlugin>()
     }
 
-    val directoryFile: File = directory.toFile().also {
-        if (!it.exists())
-        {
-            it.mkdirs()
+    private val directoryFile = directory.toFile()
+        .also {
+            if (!it.exists())
+            {
+                it.mkdirs()
+            }
         }
-    }
+
+    private val instanceSettings = File(directoryFile, "instance.settings.json")
+        .let {
+            if (!it.exists())
+            {
+                it.createNewFile()
+                it.writeText(
+                    Serializers.gson.toJson(InstanceSpecificSettings())
+                )
+            }
+
+            Serializers.gson.fromJson(
+                it.readText(),
+                InstanceSpecificSettings::class.java
+            )
+        }
 
     var proxyChannel by Delegates.notNull<Aware<AwareMessage>>()
     var spigotChannel by Delegates.notNull<Aware<AwareMessage>>()
-
-    var settingsLayer by Delegates.notNull<DataStoreObjectController<CocoaVelocitySettingsEntry>>()
-    var cloudLayer by Delegates.notNull<DataStoreObjectController<CocoaSettingsModel>>()
-
-    private val proxySettings = mutableMapOf<String, Boolean>()
-
-    private var maintenanceRank: String? = null
-
-    val maintenance: Boolean
-        get() = proxySettings.getOrDefault("maintenance", false)
 
     init
     {
@@ -119,27 +116,15 @@ constructor(
 
     private fun configureVelocityPlugin()
     {
-        CocoaSettingsProcessor.initialLoad()
-
-        CocoaSettingsProcessor.loadSettings<CocoaVelocitySettings>("settings")
-        CocoaSettingsProcessor.loadSettings<CocoaServerPresenceSettings>("presence")
-        CocoaSettingsProcessor.loadSettings<CocoaCountdownSettings>("countdown")
-
-        val executor = Executors
-            .newScheduledThreadPool(1)
+        val executor = Executors.newSingleThreadScheduledExecutor()
 
         DataStoreHandler.configure()
-
-        CocoaServerPresenceHandler.initialLoad()
-        CocoaCountdown.initialLoad()
-
         startRedisFunctionality()
 
-        if (
-            CocoaSettingsProcessor
-                .locate<CocoaVelocitySettings>()!!
-                .autoRegisterFromServerSyncDiscovery
-        )
+        CocoaServerPresenceHandler.initialLoad()
+
+        val cached = CocoaVelocitySettingsDataSync.cached()
+        if (cached.autoRegisterFromServerSyncDiscovery)
         {
             ServerSync.configureIndependent()
 
@@ -168,25 +153,35 @@ constructor(
                 File(this.directoryFile, "acf-core_en.properties").inputStream()
             )
 
-            for (message in MessageKeys.values())
+            for (message in MessageKeys.entries)
             {
                 val locale = Locale("en")
 
                 commandManager.locales.addMessage(
                     locale, message,
                     properties
-                        .getProperty("acf-core.${message.name.toLowerCase()}")
+                        .getProperty("acf-core.${message.name.lowercase(Locale.getDefault())}")
                         .replace("&", "§")
                 )
             }
         }
 
-        listOf<MessageType>(
-            MessageType.HELP, MessageType.INFO, MessageType.SYNTAX
-        ).forEach {
+        logger.info("Loading instance data from the API...")
+        val serverData = ScalaValidateUtil
+            .fetchServerData(
+                instanceSettings.apiID,
+                instanceSettings.apiUseHTTPS,
+                instanceSettings.apiSupplier
+            )
+            ?: return run {
+                logger.info("Failed to load instance data from the API!")
+            }
+
+        logger.info("Loaded onto server type ${serverData.serverName}!")
+        listOf<MessageType>(MessageType.HELP, MessageType.INFO, MessageType.SYNTAX).forEach {
             commandManager.getFormat(it).setColor(3, NamedTextColor.GRAY)
-            commandManager.getFormat(it).setColor(2, NamedTextColor.YELLOW)
-            commandManager.getFormat(it).setColor(1, NamedTextColor.GOLD)
+            commandManager.getFormat(it).setColor(2, NamedTextColor.NAMES.value(serverData.secondary.lowercase()))
+            commandManager.getFormat(it).setColor(1, NamedTextColor.NAMES.value(serverData.secondary.lowercase()))
             commandManager.getFormat(it).setColor(4, NamedTextColor.WHITE)
         }
 
@@ -228,12 +223,12 @@ constructor(
 
     private fun startRedisFunctionality()
     {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
-
         GsonSerializer.provideCustomGson {
             Serializers.gson
         }
+
+        DPSRedisShared.keyValueCache
+        CocoaVelocitySettingsDataSync.load()
 
         proxyChannel = AwareBuilder
             .of<AwareMessage>("cocoa")
@@ -257,37 +252,24 @@ constructor(
 
         spigotChannel.connect().toCompletableFuture().join()
 
-        settingsLayer = DataStoreObjectControllerCache.create()
-        cloudLayer = DataStoreObjectControllerCache.create()
-
         DataStoreObjectControllerCache.create<Guild>()
 
-        val executor = Executors
-            .newScheduledThreadPool(1)
+        val executor = Executors.newSingleThreadScheduledExecutor()
 
         Runtime.getRuntime().addShutdownHook(Thread {
             executor.shutdown()
-
-            proxyChannel.shutdown()
-            spigotChannel.shutdown()
+            AwareHub.close()
         })
 
-        if (settings.masterProxy)
+        if (instanceSettings.masterProxy)
         {
             executor.scheduleAtFixedRate({
-                settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
-                {
-                    this.connection.useResource {
-                        kotlin.runCatching {
-                            sync().set(
-                                "global-player-count${
-                                    if (settings.externalProxy) settings.externalProxyPrefix else ""
-                                }",
-                                TrevorService.getAPI().instanceData.playerCount.toString()
-                            )
-                        }
-                    }
-                }
+                DPSRedisShared.keyValueCache.sync().set(
+                    "global-player-count${
+                        if (instanceSettings.externalProxy) instanceSettings.externalProxyPrefix else ""
+                    }",
+                    TrevorService.getAPI().instanceData.playerCount.toString()
+                )
             }, 0L, 500L, TimeUnit.MILLISECONDS)
         }
 
@@ -296,53 +278,11 @@ constructor(
                 DataStoreHandler.updateRank(it.uniqueId)
             }
         }, 0L, 2L, TimeUnit.SECONDS)
-
-        executor.scheduleAtFixedRate({
-            settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
-            {
-                this.connection.useResource {
-                    for (entry in sync().hgetall(
-                        "cocoa:metadata${
-                            if (settings.externalProxy) settings.externalProxyPrefix else ""
-                        }"
-                    ).entries)
-                    {
-                        proxySettings[entry.key] =
-                            entry.value.toBoolean()
-                    }
-
-                    for (entry in sync().hgetall(
-                        "cocoa:unique-ids${
-                            if (settings.externalProxy) settings.externalProxyPrefix else ""
-                        }"
-                    ).entries)
-                    {
-                        if (
-                            maintenanceRank != null &&
-                            maintenanceRank != entry.value
-                        )
-                        {
-                            CocoaRedisSubscriber.buildMessage(
-                                "maintenance-kick",
-                                mapOf()
-                            ).publish(
-                                channel = "cocoa"
-                            )
-
-                            maintenanceRank = entry.value
-                            return@useResource
-                        }
-
-                        maintenanceRank = entry.value
-                    }
-                }
-            }
-        }, 0L, 500L, TimeUnit.MILLISECONDS)
     }
 
     fun fetchBestLobby(player: Player, filterOut: ServerInfo? = null): RegisteredServer?
     {
-        val redirect = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
+        val redirect = CocoaVelocitySettingsDataSync.cached()
             .preferHubServerRedirects.entries.firstOrNull {
                 player.currentServer.getOrNull()?.serverInfo?.name?.contains(it.key) == true
             }
@@ -390,53 +330,19 @@ constructor(
 
     fun updateMaintenanceRank(lemonSpigotRank: Rank)
     {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
+        val cached = CocoaVelocitySettingsDataSync.cached()
+        cached.maintenance.rank = lemonSpigotRank.uuid
 
-        settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
-        {
-            this.connection.useResource {
-                sync().hset(
-                    "cocoa:unique-ids${
-                        if (settings.externalProxy) settings.externalProxyPrefix else ""
-                    }", "maintenance-rank", lemonSpigotRank.uuid.toString()
-                )
-            }
-        }
+        CocoaVelocitySettingsDataSync.sync(cached)
     }
 
     fun updateMaintenanceMode(lemonSpigotRank: Rank?)
     {
-        val newValue = !maintenance
-        proxySettings["maintenance"] = newValue
+        val cached = CocoaVelocitySettingsDataSync.cached()
+        cached.maintenance.rank = lemonSpigotRank?.uuid
+        cached.maintenance.enabled = !cached.maintenance.enabled
 
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
-
-        if (lemonSpigotRank != null)
-        {
-            settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
-            {
-                this.connection.useResource {
-                    sync().hset(
-                        "cocoa:unique-ids${
-                            if (settings.externalProxy) settings.externalProxyPrefix else ""
-                        }", "maintenance-rank", lemonSpigotRank.uuid.toString()
-                    )
-                }
-            }
-        }
-
-        settingsLayer.useLayer<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>>(DataStoreStorageType.REDIS)
-        {
-            this.connection.useResource {
-                sync().hset(
-                    "cocoa:metadata${
-                        if (settings.externalProxy) settings.externalProxyPrefix else ""
-                    }", "maintenance", newValue.toString()
-                )
-            }
-        }
+        CocoaVelocitySettingsDataSync.sync(cached)
     }
 
     fun shouldAllowOrStay(uuid: UUID): Boolean
@@ -452,39 +358,20 @@ constructor(
             return true
         }
 
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
-
+        val settings = CocoaVelocitySettingsDataSync.cached()
         if (settings.ensureTokenWhitelisted && maintenanceRank.weight < settings.tokenWhitelistHighestWeightBeforeNotEffective)
         {
-            if (
-                settingsLayer.useLayerWithReturn<RedisDataStoreStorageLayer<CocoaVelocitySettingsEntry>, Boolean>(DataStoreStorageType.REDIS)
-                {
-                    this.connection.useResourceWithReturn {
-                        sync().hexists("whitelist-tokens:whitelisted", uuid.toString())
-                    } == true
-                }
-            )
-            {
-                return true
-            }
+            return DPSRedisShared.keyValueCache.sync()
+                .hexists("whitelist-tokens:whitelisted", uuid.toString())
         }
 
         return false
     }
 
-    fun maintenanceRank(): Rank
-    {
-        maintenanceRank ?: return DataStoreHandler.getDefaultRank()
-
-        try
-        {
-            return DataStoreHandler.findRank(
-                UUID.fromString(maintenanceRank)
-            ) ?: return DataStoreHandler.getDefaultRank()
-        } catch (ignored: Exception)
-        {
-            return DataStoreHandler.getDefaultRank()
-        }
-    }
+    fun maintenanceRank() = kotlin.runCatching {
+        DataStoreHandler
+            .findRank(CocoaVelocitySettingsDataSync.cached().maintenance.rank)
+    }.getOrElse {
+        DataStoreHandler.getDefaultRank()
+    } ?: DataStoreHandler.getDefaultRank()
 }

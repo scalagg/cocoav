@@ -1,12 +1,9 @@
 package gg.scala.cocoa.presence.override.impl
 
-import gg.scala.cocoa.presence.CocoaServerPresenceSettings
+import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 import gg.scala.cocoa.presence.override.PresenceOverride
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
 /**
  * @author GrowlyX
@@ -22,12 +19,10 @@ object DefaultPresenceOverride : PresenceOverride
 
     override fun updatePresence(): Component
     {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()!!
-
         return MiniMessage.miniMessage()
             .deserialize(
-                settings.normalPresence
+                CocoaVelocitySettingsDataSync.cached()
+                    .presence.normalPresence
             )
     }
 }

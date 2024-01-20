@@ -2,17 +2,10 @@ package gg.scala.cocoa.command.administration
 
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.ServerInfo
-import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.centered
-import gg.scala.cocoa.countdown.CocoaCountdown
-import gg.scala.cocoa.countdown.CocoaCountdownSettings
-import gg.scala.cocoa.legacy
+import gg.scala.cocoa.*
 import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.presence.CocoaServerPresenceRunnable
-import gg.scala.cocoa.presence.CocoaServerPresenceSettings
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.commons.acf.BaseCommand
 import gg.scala.commons.acf.CommandHelp
@@ -63,75 +56,63 @@ object CocoaCommand : BaseCommand()
     }
 
     @Subcommand("max-player-count")
-    fun onValueThing(player: Player, newValue: Int)
-    {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()!!
-
-        settings.playerCap = newValue
-        CocoaSettingsProcessor.saveSettingsToFile(
-            CocoaServerPresenceSettings::class, "presence"
-        )
-
-        player.sendMessage {
-            "&aYou've updated the max player count to: &f$newValue".legacy()
+    fun onValueThing(player: Player, newValue: Int) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            presence.playerCap = newValue
         }
-    }
+        .thenRun {
+            player.sendMessage {
+                "&aYou've updated the max player count to: &f$newValue".legacy()
+            }
+        }
 
     @Subcommand("maintenance deny-component update")
     @Description("Update the component shown when a player logs in when not whitelisted.")
-    fun onDenyComponentUpdate(player: Player, message: String)
-    {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()!!
-
-        settings.whitelistedNotification = message
-            .replace("<nl>", "\n")
-
-        player.sendMessage {
-            "&cYou've updated the component to:".legacy()
+    fun onDenyComponentUpdate(player: Player, message: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            presence.whitelistedNotification = message
+                .replace("<nl>", "\n")
         }
+        .thenRun {
+            player.sendMessage {
+                "&cYou've updated the component to:".legacy()
+            }
 
-        player.sendMessage(
-            MiniMessage
-                .miniMessage()
-                .deserialize(
-                    message.replace("<nl>", "\n")
-                )
-        )
-    }
+            player.sendMessage(
+                MiniMessage
+                    .miniMessage()
+                    .deserialize(
+                        message.replace("<nl>", "\n")
+                    )
+            )
+        }
 
     @Subcommand("maintenance deny-component append")
     @Description("Append text to the component shown when a player logs in when not whitelisted.")
-    fun onDenyComponentAppend(player: Player, message: String)
-    {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()!!
-
-        settings.whitelistedNotification =
-            settings.whitelistedNotification + message
+    fun onDenyComponentAppend(player: Player, message: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            presence.whitelistedNotification += message
                 .replace("<nl>", "\n")
-
-        player.sendMessage {
-            "&cYou've added the following text to the component:".legacy()
         }
+        .thenRun {
+            player.sendMessage {
+                "&cYou've added the following text to the component:".legacy()
+            }
 
-        player.sendMessage(
-            MiniMessage
-                .miniMessage()
-                .deserialize(
-                    message.replace("<nl>", "\n")
-                )
-        )
-    }
+            player.sendMessage(
+                MiniMessage
+                    .miniMessage()
+                    .deserialize(
+                        message.replace("<nl>", "\n")
+                    )
+            )
+        }
 
     @Subcommand("maintenance deny-component view")
     @Description("View the text shown when a player logs in when not whitelisted.")
     fun onDenyComponentView(player: Player)
     {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()!!
-
+        val settings = CocoaVelocitySettingsDataSync.cached()
         player.sendMessage {
             "&aThe following text is shown:".legacy()
         }
@@ -139,7 +120,7 @@ object CocoaCommand : BaseCommand()
         player.sendMessage {
             MiniMessage
                 .miniMessage()
-                .deserialize(settings.whitelistedNotification)
+                .deserialize(settings.presence.whitelistedNotification)
         }
     }
 
@@ -148,9 +129,8 @@ object CocoaCommand : BaseCommand()
     @Description("Update maintenance mode's rank.")
     fun onUpdateRank(sender: Player, rank: Rank)
     {
-        val currentStatus = plugin.maintenance
-
-        if (!currentStatus)
+        val settings = CocoaVelocitySettingsDataSync.cached()
+        if (!settings.maintenance.enabled)
         {
             throw ConditionFailedException("You must enable maintenance mode to perform this command.")
         }
@@ -171,11 +151,10 @@ object CocoaCommand : BaseCommand()
         @Optional rank: Rank?
     )
     {
-        val currentStatus = plugin.maintenance
-
-        if (!currentStatus && rank == null)
+        val settings = CocoaVelocitySettingsDataSync.cached()
+        if (!settings.maintenance.enabled && rank == null)
         {
-            throw ConditionFailedException("You must define a rank to toggle maintenance mode")
+            throw ConditionFailedException("You must define a rank to toggle maintenance mode!")
         }
 
         plugin.updateMaintenanceMode(rank)
@@ -183,7 +162,7 @@ object CocoaCommand : BaseCommand()
         sender.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize(
-                    if (!currentStatus)
+                    if (!settings.maintenance.enabled)
                     {
                         CocoaRedisSubscriber.buildMessage(
                             "maintenance-kick",
@@ -205,9 +184,8 @@ object CocoaCommand : BaseCommand()
     @Description("View maintenance information.")
     fun onList(sender: Player)
     {
-        val currentStatus = plugin.maintenance
-
-        if (!currentStatus)
+        val settings = CocoaVelocitySettingsDataSync.cached()
+        if (!settings.maintenance.enabled)
         {
             throw ConditionFailedException("Maintenance mode is not enabled.")
         }
@@ -238,39 +216,36 @@ object CocoaCommand : BaseCommand()
         actor: Player, type: PresenceType
     )
     {
-        CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()
-            ?.let { settings ->
+        val settings = CocoaVelocitySettingsDataSync.cached()
+        actor.sendMessage {
+            LegacyComponentSerializer.legacyAmpersand()
+                .deserialize("&aViewing ${type.name} motd below:")
+        }
+
+        val presence = when (type)
+        {
+            PresenceType.Maintenance -> settings.presence.whitelistedPresence
+            PresenceType.Public -> settings.presence.normalPresence
+        }
+
+        presence.split("\n")
+            .forEach {
                 actor.sendMessage {
-                    LegacyComponentSerializer.legacyAmpersand()
-                        .deserialize("&aViewing ${type.name} motd below:")
-                }
-
-                val presence = when (type)
-                {
-                    PresenceType.Maintenance -> settings.whitelistedPresence
-                    PresenceType.Public -> settings.normalPresence
-                }
-
-                presence.split("\n")
-                    .forEach {
-                        actor.sendMessage {
+                    LegacyComponentSerializer
+                        .legacySection()
+                        .deserialize(
                             LegacyComponentSerializer
                                 .legacySection()
-                                .deserialize(
-                                    LegacyComponentSerializer
-                                        .legacySection()
-                                        .serialize(
-                                            MiniMessage
-                                                .miniMessage()
-                                                .deserialize(
-                                                    if (settings.shouldCenterPresence)
-                                                        it.centered(132.2) else it
-                                                )
+                                .serialize(
+                                    MiniMessage
+                                        .miniMessage()
+                                        .deserialize(
+                                            if (settings.presence.shouldCenterPresence)
+                                                it.centered(132.2) else it
                                         )
                                 )
-                        }
-                    }
+                        )
+                }
             }
     }
 
@@ -279,101 +254,91 @@ object CocoaCommand : BaseCommand()
     fun onUpdateLine(
         actor: Player, type: PresenceType,
         line: PresenceLine, content: String
-    )
-    {
-        CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()
-            ?.let {
-                val lineIndex = line.ordinal
+    ) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            val lineIndex = line.ordinal
 
-                when (type)
+            when (type)
+            {
+                PresenceType.Maintenance ->
                 {
-                    PresenceType.Maintenance ->
-                    {
-                        val split = it
-                            .whitelistedPresence
-                            .split("\n")
-                            .toMutableList()
+                    val split = presence
+                        .whitelistedPresence
+                        .split("\n")
+                        .toMutableList()
 
-                        split[lineIndex] = content
-                            .replace("&", "§")
+                    split[lineIndex] = content
+                        .replace("&", "§")
 
-                        actor.sendMessage {
-                            LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize(
-                                    "&aYou've updated the ${type.name} presence ${line.name} line to:\n${
-                                        LegacyComponentSerializer.legacyAmpersand()
-                                            .serialize(
-                                                MiniMessage.miniMessage().deserialize(split[lineIndex])
-                                            )
-                                    }"
-                                )
-                        }
-
-                        it.whitelistedPresence = split
-                            .joinToString("\n")
+                    actor.sendMessage {
+                        LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize(
+                                "&aYou've updated the ${type.name} presence ${line.name} line to:\n${
+                                    LegacyComponentSerializer.legacyAmpersand()
+                                        .serialize(
+                                            MiniMessage.miniMessage().deserialize(split[lineIndex])
+                                        )
+                                }"
+                            )
                     }
 
-                    PresenceType.Public ->
-                    {
-                        val split = it
-                            .normalPresence
-                            .split("\n")
-                            .toMutableList()
+                    presence.whitelistedPresence = split
+                        .joinToString("\n")
+                }
 
-                        split[lineIndex] = content
-                            .replace("&", "§")
+                PresenceType.Public ->
+                {
+                    val split = presence
+                        .normalPresence
+                        .split("\n")
+                        .toMutableList()
 
-                        actor.sendMessage {
-                            LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize(
-                                    "&aYou've updated the ${type.name} presence ${line.name} line to:\n${
-                                        LegacyComponentSerializer.legacyAmpersand()
-                                            .serialize(
-                                                MiniMessage.miniMessage().deserialize(split[lineIndex])
-                                            )
-                                    }"
-                                )
-                        }
+                    split[lineIndex] = content
+                        .replace("&", "§")
 
-                        it.normalPresence = split
-                            .joinToString("\n")
+                    actor.sendMessage {
+                        LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize(
+                                "&aYou've updated the ${type.name} presence ${line.name} line to:\n${
+                                    LegacyComponentSerializer.legacyAmpersand()
+                                        .serialize(
+                                            MiniMessage.miniMessage().deserialize(split[lineIndex])
+                                        )
+                                }"
+                            )
                     }
+
+                    presence.normalPresence = split
+                        .joinToString("\n")
                 }
             }
-
-        CocoaSettingsProcessor.saveSettingsToFile(
-            CocoaServerPresenceSettings::class, "presence"
-        )
-    }
+        }
+        .thenRun {
+            actor.sendMessage {
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize("&aYou've toggled presence centering.")
+            }
+        }
 
     @Subcommand("presence center")
     @Description("Center/left-align cocoa presences.")
-    fun onCenter(actor: Player)
-    {
-        CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()
-            ?.let {
-                it.shouldCenterPresence = !it.shouldCenterPresence
-
-                actor.sendMessage {
-                    LegacyComponentSerializer.legacyAmpersand()
-                        .deserialize("&aYou've toggled presence centering. &7(${it.shouldCenterPresence})")
-                }
+    fun onCenter(actor: Player) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            presence.shouldCenterPresence = !presence.shouldCenterPresence
+        }
+        .thenRun {
+            actor.sendMessage {
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize("&aYou've toggled presence centering.")
             }
-
-        CocoaSettingsProcessor.saveSettingsToFile(
-            CocoaServerPresenceSettings::class, "presence"
-        )
-    }
+        }
 
     @Subcommand("network settings")
     @Description("View network configuration.")
     @CommandPermission("cocoa.command.inet-settings")
     fun onInetSettings(actor: Player)
     {
-        val networking = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!.networking
+        val networking = CocoaVelocitySettingsDataSync.cached().networking
 
         val message = """
             &a&lCocoa Networking:
@@ -404,8 +369,7 @@ object CocoaCommand : BaseCommand()
                 .deserialize("&aFinding ip info for this player...")
         }
 
-        val settings = CocoaSettingsProcessor.locate<CocoaVelocitySettings>()!!
-
+        val settings = CocoaVelocitySettingsDataSync.cached()
         if (!settings.networking.handleNetworkingChecks)
         {
             throw ConditionFailedException("Cocoa networking is currently disabled.")
@@ -481,45 +445,6 @@ object CocoaCommand : BaseCommand()
         actor.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize("&e$server&a has been unregistered.")
-        }
-    }
-
-    @Subcommand("manager reload")
-    @Description("Reload Cocoa configuration files.")
-    fun onReload(actor: Player)
-    {
-        val start = System.currentTimeMillis()
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&7Attempting reload of configs...")
-        }
-
-        CocoaSettingsProcessor.loadSettings<CocoaVelocitySettings>("settings")
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(" &eReloaded &fsettings.json&e... &8(${System.currentTimeMillis() - start}ms)")
-        }
-
-        CocoaSettingsProcessor.loadSettings<CocoaServerPresenceSettings>("presence")
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(" &eReloaded &fpresence.json&e... &8(${System.currentTimeMillis() - start}ms)")
-        }
-
-        CocoaSettingsProcessor.loadSettings<CocoaCountdownSettings>("countdown")
-        CocoaCountdown.initialLoad()
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(" &eReloaded &7countdown.json&e... &8(${System.currentTimeMillis() - start}ms)")
-        }
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&a&lFinished!&a We took ${System.currentTimeMillis() - start}ms in total.")
         }
     }
 }

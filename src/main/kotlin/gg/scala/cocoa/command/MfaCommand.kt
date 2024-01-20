@@ -4,22 +4,14 @@ import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
 import dev.samstevens.totp.recovery.RecoveryCodeGenerator
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.totp.TimeBasedOneTimePasswordUtil
+import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 import gg.scala.cocoa.legacy
 import gg.scala.cocoa.lemon.TwoFactorModel
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.cocoa.totp.TimeBasedOneTimePasswordUtil
 import gg.scala.commons.acf.BaseCommand
 import gg.scala.commons.acf.CommandHelp
 import gg.scala.commons.acf.ConditionFailedException
-import gg.scala.commons.acf.annotation.CommandAlias
-import gg.scala.commons.acf.annotation.CommandPermission
-import gg.scala.commons.acf.annotation.Default
-import gg.scala.commons.acf.annotation.Dependency
-import gg.scala.commons.acf.annotation.Description
-import gg.scala.commons.acf.annotation.HelpCommand
-import gg.scala.commons.acf.annotation.Single
-import gg.scala.commons.acf.annotation.Subcommand
+import gg.scala.commons.acf.annotation.*
 import gg.scala.commons.acf.velocity.contexts.OnlinePlayer
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import kong.unirest.Unirest
@@ -203,17 +195,14 @@ object MfaCommand : BaseCommand()
 
         val url = TimeBasedOneTimePasswordUtil
             .qrImageUrl(
-                CocoaSettingsProcessor
-                    .locate<CocoaVelocitySettings>()
-                    ?.totpIssuer
-                    ?: "Scala%20Studios",
+                CocoaVelocitySettingsDataSync.cached()
+                    .totpIssuer,
                 secret,
                 player.username
             )
 
-        CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()
-            ?.bitlyApiKey
+        CocoaVelocitySettingsDataSync.cached()
+            .bitlyApiKey
             ?.apply {
                 player.sendMessage(
                     "&6Once you receive your 6 character code, enter it in &f/mfa authenticate&6.".legacy()

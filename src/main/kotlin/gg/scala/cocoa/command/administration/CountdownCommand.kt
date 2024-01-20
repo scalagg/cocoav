@@ -1,22 +1,14 @@
 package gg.scala.cocoa.command.administration
 
 import com.velocitypowered.api.proxy.Player
-import gg.scala.cocoa.countdown.CocoaCountdown
-import gg.scala.cocoa.countdown.CocoaCountdownSettings
+import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 import gg.scala.cocoa.formatIntoAbbreviatedString
 import gg.scala.cocoa.formatIntoDetailedString
 import gg.scala.cocoa.parseDuration
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import gg.scala.commons.acf.BaseCommand
 import gg.scala.commons.acf.CommandHelp
 import gg.scala.commons.acf.ConditionFailedException
-import gg.scala.commons.acf.annotation.CommandAlias
-import gg.scala.commons.acf.annotation.CommandPermission
-import gg.scala.commons.acf.annotation.Default
-import gg.scala.commons.acf.annotation.Description
-import gg.scala.commons.acf.annotation.HelpCommand
-import gg.scala.commons.acf.annotation.Single
-import gg.scala.commons.acf.annotation.Subcommand
+import gg.scala.commons.acf.annotation.*
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.util.concurrent.TimeUnit
 
@@ -40,132 +32,123 @@ object CountdownCommand : BaseCommand()
     fun onStaging(
         actor: Player,
         presence: String
-    )
-    {
-        CocoaCountdown.INSTANCE.presenceFormat = presence
-
-        CocoaSettingsProcessor.saveSettingsToFile(
-            CocoaCountdownSettings::class, "countdown"
-        )
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&aYou've set the &lSTAGING&a presence to:\n$presence")
+    ) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            countdown.presenceStaging = presence
         }
-    }
+        .thenRun {
+            actor.sendMessage {
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize("&aYou've set the &6&lSTAGING&a presence to:\n$presence")
+            }
+        }
 
     @Subcommand("presence commenced")
     @Description("Set the commenced presence of the countdown.")
     fun onEnded(
         actor: Player,
         presence: String
-    )
-    {
-        CocoaCountdown.INSTANCE.commencedFormat = presence
-
-        CocoaSettingsProcessor.saveSettingsToFile(
-            CocoaCountdownSettings::class, "countdown"
-        )
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&aYou've set the &lENDED&a presence to:\n$presence")
+    ) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            countdown.presenceCommenced = presence
         }
-    }
+        .thenRun {
+            actor.sendMessage {
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize("&aYou've set the &d&lCOMMENCED&a presence to:\n$presence")
+            }
+        }
 
     @Subcommand("manager start")
     @Description("Start the countdown with the current configuration.")
-    fun onStartNow(actor: Player)
-    {
-        CocoaCountdown.INSTANCE.addedAt = System.currentTimeMillis()
-        CocoaCountdown.INSTANCE.activated = true
-
-        CocoaSettingsProcessor.saveSettingsToFile(
-            CocoaCountdownSettings::class, "countdown"
-        )
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&aYou've started the countdown! &lPresence will update shortly.")
+    fun onStartNow(actor: Player) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            countdown.addedAt = System.currentTimeMillis()
+            countdown.active = true
         }
-    }
+        .thenRun {
+            actor.sendMessage {
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize("&aYou've started the countdown! The settings  will propagate on all registered proxies shortly.")
+            }
+        }
 
     @Subcommand("manager stop")
     @Description("End the countdown and restore previous presence state.")
-    fun onStop(actor: Player)
-    {
-        CocoaCountdown.INSTANCE.activated = false
-
-        CocoaSettingsProcessor.saveSettingsToFile(
-            CocoaCountdownSettings::class, "countdown"
-        )
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&aYou've stopped the countdown.")
+    fun onStop(actor: Player) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            countdown.addedAt = System.currentTimeMillis()
+            countdown.active = false
         }
-    }
+        .thenRun {
+            actor.sendMessage {
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize("&cYou've stopped the countdown! The presence on all registered proxies will update shortly.")
+            }
+        }
 
     @Subcommand("manager duration")
     @Description("Set the duration of the countdown from its start date.")
     fun onDuration(
         actor: Player,
         @Single duration: String
-    )
-    {
-        try
-        {
-            CocoaCountdown.INSTANCE.duration = parseDuration(duration)
-        } catch (ignored: Exception)
-        {
-            throw ConditionFailedException("That is an invalid date!")
+    ) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            try
+            {
+                countdown.duration = parseDuration(duration)
+            } catch (ignored: Exception)
+            {
+                throw ConditionFailedException("That is an invalid duration!")
+            }
         }
-
-        CocoaSettingsProcessor.saveSettingsToFile(
-            CocoaCountdownSettings::class, "countdown"
-        )
-
-        actor.sendMessage {
-            LegacyComponentSerializer.legacyAmpersand()
-                .deserialize("&aYou've set the &lDURATION&a to:\n${
-                    formatIntoAbbreviatedString(
-                        TimeUnit.MILLISECONDS.toSeconds(CocoaCountdown.INSTANCE.duration).toInt()
+        .thenRun {
+            actor.sendMessage {
+                LegacyComponentSerializer.legacyAmpersand()
+                    .deserialize(
+                        "&aYou've set the &lDURATION&a to:\n$duration"
                     )
-                }")
+            }
         }
-    }
 
     @Subcommand("manager configuration")
     @Description("View the current configuration as a fancy message.")
     fun onInfo(actor: Player)
     {
-        val duration = CocoaCountdown.INSTANCE.duration
+        val countdown = CocoaVelocitySettingsDataSync.cached().countdown
 
         var message = """
             &a&lCocoa Countdown:
             
              &aPresence:
               &7● &fStaging:
-               &e${CocoaCountdown.INSTANCE.presenceFormat}
+               &e${countdown.presenceStaging}
               &7● &fCommenced:
-               &e${CocoaCountdown.INSTANCE.commencedFormat}
+               &e${countdown.presenceCommenced}
                
              &aSettings:
               &7● &fActive: ${
-                  if (CocoaCountdown.INSTANCE.activated)
-                    "&aYes" else "&cNo"
-              }
+            if (countdown.active)
+                "&aYes" else "&cNo"
+        }
               &7● &fDuration: 
         """.trimIndent()
 
-        message += if (duration == 0L)
+        message += if (countdown.duration == 0L)
         {
             " &cNot set"
         } else
         {
-            "\n   &6- &fDetailed: &7${formatIntoDetailedString(TimeUnit.MILLISECONDS.toSeconds(duration).toInt())}\n   &6- &fAbbreviated: &7${formatIntoAbbreviatedString(TimeUnit.MILLISECONDS.toSeconds(duration).toInt())}"
+            "\n   &6- &fDetailed: &7${
+                formatIntoDetailedString(
+                    TimeUnit.MILLISECONDS.toSeconds(countdown.duration).toInt()
+                )
+            }\n   &6- &fAbbreviated: &7${
+                formatIntoAbbreviatedString(
+                    TimeUnit.MILLISECONDS.toSeconds(countdown.duration).toInt()
+                )
+            }"
         }
-
 
         actor.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()

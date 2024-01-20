@@ -1,15 +1,10 @@
 package gg.scala.cocoa.presence
 
-import co.schemati.trevor.api.TrevorAPI
 import co.schemati.trevor.api.TrevorService
-import co.schemati.trevor.common.TrevorCommon
-import co.schemati.trevor.velocity.TrevorVelocity
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyPingEvent
 import com.velocitypowered.api.proxy.server.ServerPing
-import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.CocoaVelocitySettings
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
+import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 
 /**
  * @author GrowlyX
@@ -20,42 +15,33 @@ typealias Version = ServerPing.Version
 
 object CocoaServerPresenceSubscriber
 {
-    private val plugin = CocoaVelocityPlugin.INSTANCE
-
     private val whitelisted = Version(
         5000, "Whitelisted"
     )
 
-    private val brand = CocoaSettingsProcessor
-        .locate<CocoaVelocitySettings>()!!
-        .serverBrand
-
     @Subscribe
     fun onProxyPing(event: ProxyPingEvent)
     {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaVelocitySettings>()!!
+        val settings = CocoaVelocitySettingsDataSync.cached()
 
         event.ping = ServerPing(
-            if (plugin.maintenance && !settings.showPlayerCountWhileWhitelisted)
+            if (settings.maintenance.enabled && !settings.showPlayerCountWhileWhitelisted)
             {
                 whitelisted
             } else
             {
                 Version(
                     event.ping.version.protocol,
-                    brand
+                    CocoaVelocitySettingsDataSync.cached()
+                        .serverBrand
                 )
             },
             Players(
                 TrevorService.getAPI().instanceData.playerCount,
-                CocoaSettingsProcessor
-                    .locate<CocoaServerPresenceSettings>()
-                    ?.playerCap ?: 1000,
+                settings.presence.playerCap,
                 mutableListOf()
             ),
-            CocoaServerPresenceRunnable
-                .cachedPresence(),
+            CocoaServerPresenceRunnable.cachedPresence(),
             event.ping.favicon.orElse(null),
             event.ping.modinfo.orElse(null)
         )

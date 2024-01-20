@@ -1,10 +1,9 @@
 package gg.scala.cocoa.countdown
 
+import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 import gg.scala.cocoa.formatIntoAbbreviatedString
 import gg.scala.cocoa.formatIntoDetailedString
-import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.presence.override.PresenceOverride
-import gg.scala.cocoa.settings.CocoaSettingsProcessor
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -21,21 +20,19 @@ object CocoaCountdownPresence : PresenceOverride
     override fun getWeight() = 30000
 
     override fun ableToBeManuallyToggle() = false
-    override fun shouldOverride() = CocoaCountdown.INSTANCE.activated
+    override fun shouldOverride() = CocoaVelocitySettingsDataSync.cached().countdown.active
 
     override fun updatePresence(): TextComponent
     {
-        val settings = CocoaSettingsProcessor
-            .locate<CocoaServerPresenceSettings>()!!
+        val settings = CocoaVelocitySettingsDataSync.cached()
 
         val firstLineOfNormal = MiniMessage
             .miniMessage().deserialize(
-                settings.normalPresence
-                    .split("\n")[0]
+                settings.presence.normalPresence.split("\n")[0]
             )
 
         val secondsUntilEnd = TimeUnit.MILLISECONDS.toSeconds(
-            (CocoaCountdown.INSTANCE.duration + CocoaCountdown.INSTANCE.addedAt) - System.currentTimeMillis()
+            (settings.countdown.duration + settings.countdown.addedAt) - System.currentTimeMillis()
         ).toInt()
 
         val ended = secondsUntilEnd < 0
@@ -52,10 +49,10 @@ object CocoaCountdownPresence : PresenceOverride
                             .deserialize(
                                 if (ended)
                                 {
-                                    CocoaCountdown.INSTANCE.commencedFormat
+                                    settings.countdown.presenceCommenced
                                 } else
                                 {
-                                    CocoaCountdown.INSTANCE.presenceFormat
+                                    settings.countdown.presenceStaging
                                         .replace("[abbrev]", abbreviated)
                                         .replace("[detailed]", detailed)
                                 }

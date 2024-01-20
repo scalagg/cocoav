@@ -200,6 +200,172 @@ object CocoaCommand : BaseCommand()
         }
     }
 
+    @Subcommand("settings show-player-count-while-whitelisted")
+    @Description("Shows the server's current player count while it is whitelisted.")
+    fun onSettingsShowPlayerCountWhileWhitelisted(sender: Player) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.showPlayerCountWhileWhitelisted = !this.showPlayerCountWhileWhitelisted
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've updated showing player count while whitelisted to: &f${
+                    CocoaVelocitySettingsDataSync.cached().showPlayerCountWhileWhitelisted
+                }".legacy()
+            }
+        }
+
+    @Subcommand("settings auto-register-from-server-sync")
+    @Description("Automaticially register servers based on their server-sync discovery.")
+    fun onSettingsAutoRegisterFromServerSync(sender: Player) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.autoRegisterFromServerSyncDiscovery = !this.autoRegisterFromServerSyncDiscovery
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've updated servers auto registering from server-sync discovery to: &f${
+                    CocoaVelocitySettingsDataSync.cached().autoRegisterFromServerSyncDiscovery
+                }".legacy()
+            }
+        }
+
+    @Subcommand("settings ensure-token-whitelisted")
+    @Description("Make sure that each player who joins has a whitelist token.")
+    fun onSettingsEnsureTokenWhitelisted(sender: Player) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.ensureTokenWhitelisted = !this.ensureTokenWhitelisted
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've updated the status of ensuring token whitelisted on login to: &f${
+                    CocoaVelocitySettingsDataSync.cached().ensureTokenWhitelisted
+                }".legacy()
+            }
+        }
+
+    @Subcommand("settings token-whitelist-highest-weight-before-not-effective")
+    @Description("Set the token whitelist rank weight requirement.")
+    fun onSettingsTokenWhitelistHighestWeightBeforeNotEffective(sender: Player, weight: Int) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.tokenWhitelistHighestWeightBeforeNotEffective = weight
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've updated the token whitelist rank weight requirement to: &f$weight".legacy()
+            }
+        }
+
+    @Subcommand("settings set-server-brand")
+    @Description("Set the server's brand")
+    fun onSettingsSetServerBrand(sender: Player, brand: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.serverBrand = brand
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've updated the server's brand to: &f$brand".legacy()
+            }
+        }
+
+    @Subcommand("settings set-middleware")
+    @Description("Set the server's middleware")
+    fun onSettingsSetServerMiddleware(sender: Player, middleware: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.middleware = middleware
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've updated the server's middleware to: &f$middleware".legacy()
+            }
+        }
+
+    @Subcommand("settings set-totp-issuer")
+    @Description("Set the server's totp issuer.")
+    fun onSettingsSetServerTotpIssuer(sender: Player, issuer: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.totpIssuer = issuer
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've updated the server's totp issuer to: &f$issuer".legacy()
+            }
+        }
+
+    @Subcommand("settings listening-groups add")
+    @Description("Add a new listening group.")
+    fun onSettingsAddListeningGroup(sender: Player, group: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.listeningGroups.add(group)
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've added a new listening group: &f$group".legacy()
+            }
+        }
+
+    @Subcommand("settings listening-groups remove")
+    @Description("Removes an existing listening group.")
+    fun onSettingsRemoveListeningGroup(sender: Player, group: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            if (this.listeningGroups.contains(group))
+            {
+                this.listeningGroups.remove(group)
+            } else
+            {
+                throw ConditionFailedException(
+                    "The listening groups does not contain the entry $group"
+                )
+            }
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&cYou've removed a listening group: &f$group".legacy()
+            }
+        }
+
+    @Subcommand("settings listening-groups add-exemption")
+    @Description("Add a new listening group exemption.")
+    fun onSettingsAddListeningGroupExtemption(sender: Player, group: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.listeningExemptions.add(group)
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've added a new listening group exemption: &f$group".legacy()
+            }
+        }
+
+    @Subcommand("settings listening-groups remove-exemption")
+    @Description("Removes an existing listening group exemption.")
+    fun onSettingsRemoveListeningGroupExemption(sender: Player, group: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            if (this.listeningExemptions.contains(group))
+            {
+                this.listeningExemptions.remove(group)
+            } else
+            {
+                throw ConditionFailedException(
+                    "The listening group exemptions does not contain the entry $group"
+                )
+            }
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&cYou've removed a listening group exemption: &f$group".legacy()
+            }
+        }
+
+    @Subcommand("settings preferred-redirects set")
+    @Description("Sets a preferred redirect.")
+    fun onSettingsSetPreferredRedirect(sender: Player, server: String, redirect: String) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            this.preferHubServerRedirects[server] = redirect
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou've set a preferred redirect: &f$server to $redirect".legacy()
+            }
+        }
+
     enum class PresenceType
     {
         Maintenance, Public

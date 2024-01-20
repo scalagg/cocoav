@@ -9,19 +9,19 @@ import java.util.UUID
  * @since 12/15/2021
  */
 class CocoaVelocitySettings(
-    val showPlayerCountWhileWhitelisted: Boolean = false,
-    val autoRegisterFromServerSyncDiscovery: Boolean = true,
-    val ensureTokenWhitelisted: Boolean = false,
-    val tokenWhitelistHighestWeightBeforeNotEffective: Int = 99,
-    val serverBrand: String = "1.8.9-1.19.2",
-    val middleware: String? = null,
-    val listeningGroups: List<String> = listOf("practice", "hub"),
-    val listeningExemptions: List<String> = listOf("build"),
+    var showPlayerCountWhileWhitelisted: Boolean = false,
+    var autoRegisterFromServerSyncDiscovery: Boolean = true,
+    var ensureTokenWhitelisted: Boolean = false,
+    var tokenWhitelistHighestWeightBeforeNotEffective: Int = 99,
+    var serverBrand: String = "1.8.9-1.19.2",
+    var middleware: String? = null,
+    val listeningGroups: MutableList<String> = mutableListOf("practice", "hub"),
+    val listeningExemptions: MutableList<String> = mutableListOf("build"),
     val networking: NetworkingSettings = NetworkingSettings(),
-    val preferHubServerRedirects: Map<String, String> = mutableMapOf(
+    val preferHubServerRedirects: MutableMap<String, String> = mutableMapOf(
         "mipgame" to "miplobby"
     ),
-    val totpIssuer: String = "Scala%20Studios",
+    var totpIssuer: String = "Scala%20Studios",
     val bitlyApiKey: String? = "",
     val countdown: CocoaCountdown = CocoaCountdown(),
     val maintenance: MaintenanceSettings = MaintenanceSettings(),

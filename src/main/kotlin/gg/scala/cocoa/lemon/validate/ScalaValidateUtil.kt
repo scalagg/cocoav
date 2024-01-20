@@ -19,8 +19,7 @@ object ScalaValidateUtil
     /**
      * Fetches server design information from our API.
      *
-     * [id] - The server-specific identifier
-     */
+     * [id] - The server-specific identifier */
     @JvmStatic
     fun fetchServerData(id: String, https: Boolean, supplier: String): ScalaValidateData?
     {

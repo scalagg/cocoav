@@ -181,7 +181,7 @@ constructor(
         listOf<MessageType>(MessageType.HELP, MessageType.INFO, MessageType.SYNTAX).forEach {
             commandManager.getFormat(it).setColor(3, NamedTextColor.GRAY)
             commandManager.getFormat(it).setColor(2, NamedTextColor.NAMES.value(serverData.secondary.lowercase()))
-            commandManager.getFormat(it).setColor(1, NamedTextColor.NAMES.value(serverData.secondary.lowercase()))
+            commandManager.getFormat(it).setColor(1, NamedTextColor.NAMES.value(serverData.primary.lowercase()))
             commandManager.getFormat(it).setColor(4, NamedTextColor.WHITE)
         }
 
@@ -263,6 +263,7 @@ constructor(
 
         if (instanceSettings.masterProxy)
         {
+            logger.info("Updating the global player count as the master proxy ID")
             executor.scheduleAtFixedRate({
                 DPSRedisShared.keyValueCache.sync().set(
                     "global-player-count${

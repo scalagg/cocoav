@@ -311,6 +311,25 @@ constructor(
 
     fun fetchBestRestrictedLobby(player: Player, filterOut: ServerInfo? = null): RegisteredServer?
     {
+        val redirect = CocoaVelocitySettingsDataSync.cached()
+            .preferHubServerRedirects.entries.firstOrNull {
+                player.currentServer.getOrNull()?.serverInfo?.name?.contains(it.key) == true
+            }
+
+        if (redirect != null)
+        {
+            val result = server.allServers.filter {
+                it.serverInfo.name == redirect.value || it.serverInfo.name.contains(redirect.value)
+            }.minByOrNull {
+                it.playersConnected.size
+            }
+
+            if (result != null)
+            {
+                return result
+            }
+        }
+
         return server.allServers
             .filter {
                 (filterOut == null || it.serverInfo.name != filterOut.name) && isRestrictedLobbyServer(it.serverInfo)

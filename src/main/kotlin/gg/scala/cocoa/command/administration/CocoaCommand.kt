@@ -195,7 +195,7 @@ object CocoaCommand : BaseCommand()
         sender.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize(
-                    "&aThe server is currently restricted to players with a rank weight above: &f${maintenanceRank.name}"
+                    "&aThe server is currently restricted to players with a rank weight above: &f${maintenanceRank.color.replace("§", "&")}${maintenanceRank.name}"
                 )
         }
     }

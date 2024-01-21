@@ -162,7 +162,7 @@ object CocoaCommand : BaseCommand()
         sender.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize(
-                    if (!settings.maintenance.enabled)
+                    if (settings.maintenance.enabled)
                     {
                         CocoaRedisSubscriber.buildMessage(
                             "maintenance-kick",

@@ -23,11 +23,18 @@ object CocoaServerPresenceSubscriber
     fun onProxyPing(event: ProxyPingEvent)
     {
         val settings = CocoaVelocitySettingsDataSync.cached()
+        val onIncompatibleVersion = settings.allowedVersions != null && event.ping.version.protocol !in settings.allowedVersions!!
 
         event.ping = ServerPing(
             if (settings.maintenance.enabled && !settings.showPlayerCountWhileWhitelisted)
             {
                 whitelisted
+            } else if (onIncompatibleVersion)
+            {
+                Version(
+                    5000,
+                    CocoaVelocitySettingsDataSync.cached().serverBrand
+                )
             } else
             {
                 Version(

@@ -126,7 +126,7 @@ object PlayerListener
 
         if (settings.allowedVersions != null)
         {
-            if (event.player.protocolVersion.protocol !in settings.allowedVersions)
+            if (event.player.protocolVersion.protocol !in settings.allowedVersions!!)
             {
                 event.result = ResultedEvent.ComponentResult.denied(
                     Component.text("You cannot join the server on this version!")

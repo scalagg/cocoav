@@ -447,6 +447,10 @@ object CocoaCommand : BaseCommand()
                         .split("\n")
                         .toMutableList()
 
+                    split
+                        .takeIf { it.size == 1 }
+                        ?.add("")
+
                     split[lineIndex] = content
                         .replace("&", "§")
 
@@ -472,6 +476,10 @@ object CocoaCommand : BaseCommand()
                         .normalPresence
                         .split("\n")
                         .toMutableList()
+
+                    split
+                        .takeIf { it.size == 1 }
+                        ?.add("")
 
                     split[lineIndex] = content
                         .replace("&", "§")

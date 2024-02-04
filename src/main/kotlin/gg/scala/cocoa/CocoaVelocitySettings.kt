@@ -25,6 +25,7 @@ class CocoaVelocitySettings(
     val bitlyApiKey: String? = "",
     val countdown: CocoaCountdown = CocoaCountdown(),
     val maintenance: MaintenanceSettings = MaintenanceSettings(),
+    var allowedVersions: MutableList<Int>? = mutableListOf(),
     val presence: CocoaServerPresenceSettings = CocoaServerPresenceSettings(),
 )
 {

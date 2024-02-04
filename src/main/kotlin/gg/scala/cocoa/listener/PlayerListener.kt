@@ -124,6 +124,18 @@ object PlayerListener
         val uniqueId = event.player.uniqueId
         val settings = CocoaVelocitySettingsDataSync.cached()
 
+        if (settings.allowedVersions != null)
+        {
+            if (event.player.protocolVersion.protocol !in settings.allowedVersions)
+            {
+                event.result = ResultedEvent.ComponentResult.denied(
+                    Component.text("You cannot join the server on this version!")
+                        .color(NamedTextColor.RED)
+                )
+                return
+            }
+        }
+
         kotlin.runCatching scope@{
             val loadedRank = DataStoreHandler
                 .loadRankOfNow(event.player.uniqueId)

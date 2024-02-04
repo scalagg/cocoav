@@ -200,6 +200,20 @@ object CocoaCommand : BaseCommand()
         }
     }
 
+    @Subcommand("settings add-allowed-version")
+    @Description("Shows the server's current player count while it is whitelisted.")
+    fun onSettingsAddAllowedVersion(sender: Player, protocolVersion: Int) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            allowedVersions?.add(protocolVersion) ?: kotlin.run {
+                allowedVersions = mutableListOf(protocolVersion)
+            }
+        }
+        .thenRun {
+            sender.sendMessage {
+                "&aYou have added the following protocol version to the list of allowed versions: &f$protocolVersion".legacy()
+            }
+        }
+
     @Subcommand("settings show-player-count-while-whitelisted")
     @Description("Shows the server's current player count while it is whitelisted.")
     fun onSettingsShowPlayerCountWhileWhitelisted(sender: Player) = CocoaVelocitySettingsDataSync

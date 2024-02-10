@@ -26,6 +26,7 @@ class CocoaVelocitySettings(
     val countdown: CocoaCountdown = CocoaCountdown(),
     val maintenance: MaintenanceSettings = MaintenanceSettings(),
     var allowedVersions: MutableList<Int>? = mutableListOf(),
+    val shouldRestrictAllowedVersions: Boolean = true,
     val presence: CocoaServerPresenceSettings = CocoaServerPresenceSettings(),
 )
 {

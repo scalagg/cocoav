@@ -30,6 +30,7 @@ import gg.scala.cocoa.dps.DPSRedisShared
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.lemon.validate.ScalaValidateData
 import gg.scala.cocoa.lemon.validate.ScalaValidateUtil
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
@@ -114,6 +115,8 @@ constructor(
         INSTANCE = this
     }
 
+    var serverData: ScalaValidateData? = null
+
     private fun configureVelocityPlugin()
     {
         val executor = Executors.newSingleThreadScheduledExecutor()
@@ -167,7 +170,7 @@ constructor(
         }
 
         logger.info("Loading instance data from the API...")
-        val serverData = ScalaValidateUtil
+        serverData = ScalaValidateUtil
             .fetchServerData(
                 instanceSettings.apiID,
                 instanceSettings.apiUseHTTPS,
@@ -177,11 +180,11 @@ constructor(
                 logger.info("Failed to load instance data from the API!")
             }
 
-        logger.info("Loaded onto server type ${serverData.serverName}!")
+        logger.info("Loaded onto server type ${serverData!!.serverName}!")
         listOf<MessageType>(MessageType.HELP, MessageType.INFO, MessageType.SYNTAX).forEach {
             commandManager.getFormat(it).setColor(3, NamedTextColor.GRAY)
-            commandManager.getFormat(it).setColor(2, NamedTextColor.NAMES.value(serverData.secondary.lowercase()))
-            commandManager.getFormat(it).setColor(1, NamedTextColor.NAMES.value(serverData.primary.lowercase()))
+            commandManager.getFormat(it).setColor(2, NamedTextColor.NAMES.value(serverData!!.secondary.lowercase()))
+            commandManager.getFormat(it).setColor(1, NamedTextColor.NAMES.value(serverData!!.primary.lowercase()))
             commandManager.getFormat(it).setColor(4, NamedTextColor.WHITE)
         }
 

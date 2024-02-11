@@ -25,6 +25,11 @@ object CocoaCountdownPresence : PresenceOverride
     fun getStagingFooter(): TextComponent?
     {
         val settings = CocoaVelocitySettingsDataSync.cached()
+        if (!settings.countdown.active)
+        {
+            return null
+        }
+
         val secondsUntilEnd = TimeUnit.MILLISECONDS.toSeconds(
             (settings.countdown.duration + settings.countdown.addedAt) - System.currentTimeMillis()
         ).toInt()

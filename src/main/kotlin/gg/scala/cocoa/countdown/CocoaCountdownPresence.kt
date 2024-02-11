@@ -22,6 +22,31 @@ object CocoaCountdownPresence : PresenceOverride
     override fun ableToBeManuallyToggle() = false
     override fun shouldOverride() = CocoaVelocitySettingsDataSync.cached().countdown.active
 
+    fun getStagingFooter(): TextComponent?
+    {
+        val settings = CocoaVelocitySettingsDataSync.cached()
+        val secondsUntilEnd = TimeUnit.MILLISECONDS.toSeconds(
+            (settings.countdown.duration + settings.countdown.addedAt) - System.currentTimeMillis()
+        ).toInt()
+
+        val ended = secondsUntilEnd < 0
+
+        val detailed = formatIntoDetailedString(secondsUntilEnd)
+        val abbreviated = formatIntoAbbreviatedString(secondsUntilEnd)
+
+        if (ended)
+        {
+            return null
+        }
+
+        return LegacyComponentSerializer.legacyAmpersand()
+            .deserialize(
+                settings.countdown.presenceStaging
+                    .replace("[abbrev]", abbreviated)
+                    .replace("[detailed]", detailed)
+            )
+    }
+
     override fun updatePresence(): TextComponent
     {
         val settings = CocoaVelocitySettingsDataSync.cached()

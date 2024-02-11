@@ -21,6 +21,8 @@ import gg.scala.aware.message.AwareMessage
 import gg.scala.aware.thread.AwareThreadContext
 import gg.scala.cache.uuid.ScalaStoreUuidCache
 import gg.scala.cocoa.*
+import gg.scala.cocoa.countdown.CocoaCountdown
+import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.lemon.TwoFactorModel
@@ -149,12 +151,21 @@ object PlayerListener
             {
                 if (!plugin.shouldAllowOrStay(uniqueId))
                 {
-                    event.result = ResultedEvent.ComponentResult.denied(
-                        MiniMessage.miniMessage().deserialize(
+                    val stagingFooter = CocoaCountdownPresence.getStagingFooter()
+                    var notification = MiniMessage.miniMessage()
+                        .deserialize(
                             settings.presence.whitelistedNotification
                         )
-                    )
 
+                    if (stagingFooter != null)
+                    {
+                        notification = notification
+                            .append(Component.newline())
+                            .append(Component.newline())
+                            .append(stagingFooter)
+                    }
+
+                    event.result = ResultedEvent.ComponentResult.denied(notification)
                     DataStoreHandler.rankOf.remove(uniqueId)
                     return@scope
                 }
@@ -654,7 +665,10 @@ object PlayerListener
         }
 
         val newServer = if (event.player.hasPermission("cocoa.staff"))
-            plugin.fetchBestRestrictedLobby(event.player, event.server.serverInfo) else plugin.fetchBestLobby(event.player, event.server.serverInfo)
+            plugin.fetchBestRestrictedLobby(
+                event.player,
+                event.server.serverInfo
+            ) else plugin.fetchBestLobby(event.player, event.server.serverInfo)
 
         if (
             newServer != null &&

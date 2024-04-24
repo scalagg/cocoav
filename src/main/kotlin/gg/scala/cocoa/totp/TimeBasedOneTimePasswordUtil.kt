@@ -115,8 +115,9 @@ object TimeBasedOneTimePasswordUtil
     fun qrImageUrl(keyId: String, secret: String, username: String): String
     {
         val sb = StringBuilder(128)
-        sb.append("https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=200x200&chld=M|0&cht=qr&chl=")
-        addOtpAuthPart(keyId, username, secret, sb)
+        sb.append("https://quickchart.io/qr?text=${
+            addOtpAuthPart(keyId, username, secret, sb)
+        }&dark=ff7300&size=500")
         return sb.toString()
     }
 
@@ -127,10 +128,7 @@ object TimeBasedOneTimePasswordUtil
         return sb.toString()
     }
 
-    private fun addOtpAuthPart(keyId: String, username: String?, secret: String, sb: StringBuilder)
-    {
-        sb.append("otpauth://totp/$keyId:$username?secret=$secret&issuer=$keyId")
-    }
+    private fun addOtpAuthPart(keyId: String, username: String?, secret: String, sb: StringBuilder) = "otpauth://totp/$keyId:$username?secret=$secret&issuer=$keyId"
 
     fun zeroPrepend(num: Long, digits: Int): String
     {

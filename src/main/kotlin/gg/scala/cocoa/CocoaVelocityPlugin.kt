@@ -139,7 +139,7 @@ constructor(
         }
     }
 
-    private val commandManager by lazy {
+    val commandManager by lazy {
         VelocityCommandManager(server, this)
     }
 

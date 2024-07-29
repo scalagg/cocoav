@@ -14,7 +14,7 @@ object CocoaVelocitySettingsDataSync : DPSDataSync<CocoaVelocitySettings>()
 {
     object CocoaDataSyncKeys : DPSDataSyncKeys
     {
-        override fun newStore() = "cocoa-settings"
+        override fun newStore() = "${if (CocoaVelocityPlugin.INSTANCE.instanceSettings.externalProxy) "dev-" else ""}cocoa-settings"
 
         override fun store() = Key.key("cocoa", "settings")
         override fun sync() = Key.key("cocoa", "settingsync")

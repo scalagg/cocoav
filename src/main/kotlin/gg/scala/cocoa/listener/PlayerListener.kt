@@ -332,10 +332,19 @@ object PlayerListener
 
         if (isStaffMember && serverName != null)
         {
-            CocoaRedisSubscriber.sendStaffNotification(
-                event.player,
-                "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
-            )
+            if (event.player.uniqueId in englishMen)
+            {
+                CocoaRedisSubscriber.sendStaffNotification(
+                    event.player,
+                    "§b${color(event.player.uniqueId) + event.player.username}§3 has gracefully departed from §b$serverName§3."
+                )
+            } else
+            {
+                CocoaRedisSubscriber.sendStaffNotification(
+                    event.player,
+                    "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
+                )
+            }
         }
 
         DataStoreHandler.rankOf
@@ -539,6 +548,12 @@ object PlayerListener
         }
     }
 
+    private val englishMen = listOf(
+        UUID.fromString("97e85757-14e3-4176-beb2-cf9f3fa52892"),
+        UUID.fromString("c944df10-5987-4799-ad5e-bdfb1fa1e37c"),
+        UUID.fromString("ff16dcbd-ed92-4f11-ab99-7947f2f74fb6")
+    )
+
     @Subscribe
     fun onServerConnected(event: ServerConnectedEvent)
     {
@@ -551,10 +566,25 @@ object PlayerListener
 
             if (previousServer != null)
             {
-                CocoaRedisSubscriber.sendStaffNotification(
-                    event.player,
-                    "§b${color(event.player.uniqueId) + event.player.username}§3 joined §b$serverName§3 from §b${previousServer.serverInfo.name}§3."
+                if (
+                    !(previousServer.serverInfo.name.contains("practice") &&
+                        serverName.contains("practice"))
                 )
+                {
+                    if (event.player.uniqueId in englishMen)
+                    {
+                        CocoaRedisSubscriber.sendStaffNotification(
+                            event.player,
+                            "§b${color(event.player.uniqueId) + event.player.username}§3 has graced §b$serverName§3 with their presence, having arrived from the distinguished §b${previousServer.serverInfo.name}§3."
+                        )
+                        return
+                    }
+
+                    CocoaRedisSubscriber.sendStaffNotification(
+                        event.player,
+                        "§b${color(event.player.uniqueId) + event.player.username}§3 joined §b$serverName§3 from §b${previousServer.serverInfo.name}§3."
+                    )
+                }
             } else
             {
                 plugin.server.scheduler.buildTask(plugin) {
@@ -570,10 +600,19 @@ object PlayerListener
                         )
                     }
 
-                    CocoaRedisSubscriber.sendStaffNotification(
-                        event.player,
-                        "§b${color(event.player.uniqueId) + event.player.username}§3 connected to §b$serverName§3."
-                    )
+                    if (event.player.uniqueId in englishMen)
+                    {
+                        CocoaRedisSubscriber.sendStaffNotification(
+                            event.player,
+                            "§b${color(event.player.uniqueId) + event.player.username}§3 has splendidly connected to the esteemed §b$serverName§3, marking their arrival with grandeur."
+                        )
+                    } else
+                    {
+                        CocoaRedisSubscriber.sendStaffNotification(
+                            event.player,
+                            "§b${color(event.player.uniqueId) + event.player.username}§3 connected to §b$serverName§3."
+                        )
+                    }
                 }.delay(HUNDRED_MILLI).schedule()
             }
         }

@@ -91,7 +91,7 @@ constructor(
             }
         }
 
-    private val instanceSettings = File(directoryFile, "instance.settings.json")
+    val instanceSettings = File(directoryFile, "instance.settings.json")
         .let {
             if (!it.exists())
             {

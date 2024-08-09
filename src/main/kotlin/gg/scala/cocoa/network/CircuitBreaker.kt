@@ -11,7 +11,7 @@ import java.time.Duration
 val vpnDetectorAPICircuitBreakerConfig = CircuitBreakerConfig.custom()
     .failureRateThreshold(50F)
     .waitDurationInOpenState(Duration.ofSeconds(30))
-    .permittedNumberOfCallsInHalfOpenState(5) // Number of calls allowed in half-open state
+    .permittedNumberOfCallsInHalfOpenState(5)
     .slidingWindowSize(10)
     .build()
 

@@ -27,11 +27,8 @@ object CocoaServerSyncDiscovery : Runnable
                 it.id
             }
 
-        val registered = CocoaVelocityPlugin
-            .INSTANCE.server.allServers
-
-        val registeredNames = registered
-            .map { it.serverInfo.name }
+        val registered = CocoaVelocityPlugin.INSTANCE.server.allServers
+        val registeredNames = registered.map { it.serverInfo.name }
 
         registered
             .filter {

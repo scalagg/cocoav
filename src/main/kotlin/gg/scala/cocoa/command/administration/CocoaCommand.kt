@@ -48,13 +48,14 @@ object CocoaCommand : BaseCommand()
     }
 
     @Subcommand("reload-config")
-    fun reloadConfig(source: CommandSource) = CocoaVelocitySettingsDataSync
-        .useThenSave {
+    fun reloadConfig(source: CommandSource) = CompletableFuture
+        .runAsync {
             source.sendMessage("Re-syncing config...".legacy())
+            CocoaVelocitySettingsDataSync.reload()
         }
         .thenRun {
             source.sendMessage(Component
-                .text("Synced config from MongoDB!")
+                .text("Pulled config from data source!")
                 .color(NamedTextColor.GREEN))
         }
 

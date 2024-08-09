@@ -151,7 +151,7 @@ object MfaCommand : BaseCommand()
                 .text("[Click to copy your new recovery codes]")
                 .color(TextColor.fromHexString("#dffc03"))
                 .clickEvent(
-                    ClickEvent.copyToClipboard(
+                    ClickEvent.suggestCommand(
                         modelSelf.recoveryCodes!!.joinToString("\n")
                     )
                 )
@@ -201,40 +201,13 @@ object MfaCommand : BaseCommand()
                 player.username
             )
 
-        CocoaVelocitySettingsDataSync.cached()
-            .bitlyApiKey
-            ?.apply {
-                player.sendMessage(
-                    "&6Once you receive your 6 character code, enter it in &f/mfa authenticate&6.".legacy()
-                )
-
-                player.sendMessage("&7Generating your QR code link...".legacy())
-
-                Unirest
-                    .post("https://api-ssl.bitly.com/v4/shorten")
-                    .header(
-                        "Authorization",
-                        "Bearer $this"
-                    )
-                    .body(
-                        """
-                            {"long_url":"$url","domain":"bit.ly"}
-                        """.trimIndent()
-                    )
-                    .header(
-                        "Content-Type",
-                        "application/json"
-                    )
-                    .asJsonAsync()
-                    .thenAccept { resp ->
-                        val link = resp.body.`object`
-                            .get("link").toString()
-
-                        player.sendMessage(
-                            "&6Your 2FA QR code can be viewed by opening this link: &r$link".legacy()
-                        )
-                    }
-            }
+        player.sendMessage(
+            "&6Once you receive your 6 character code, enter it in &f/mfa authenticate&6.".legacy()
+        )
+        player.sendMessage(
+            Component.text("[Click here to view the QR code!]")
+                .clickEvent(ClickEvent.openUrl(url))
+        )
     }
 
     @Subcommand("reset")

@@ -19,7 +19,6 @@ object CocoaCountdownPresence : PresenceOverride
     override fun getUniqueId() = "countdown"
     override fun getWeight() = 30000
 
-    override fun ableToBeManuallyToggle() = false
     override fun shouldOverride() = CocoaVelocitySettingsDataSync.cached().countdown.active
 
     fun getStagingFooter(): TextComponent?

@@ -551,6 +551,7 @@ object PlayerListener
     private val englishMen = listOf(
         UUID.fromString("97e85757-14e3-4176-beb2-cf9f3fa52892"),
         UUID.fromString("c944df10-5987-4799-ad5e-bdfb1fa1e37c"),
+        UUID.fromString("0b13a0a1-a09e-43bd-ad18-d45349bb0b8a"),
         UUID.fromString("ff16dcbd-ed92-4f11-ab99-7947f2f74fb6")
     )
 

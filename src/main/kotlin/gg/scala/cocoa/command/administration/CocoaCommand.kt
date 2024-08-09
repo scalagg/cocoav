@@ -1,5 +1,6 @@
 package gg.scala.cocoa.command.administration
 
+import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.cocoa.*
@@ -22,6 +23,7 @@ import gg.scala.commons.acf.annotation.Single
 import gg.scala.commons.acf.annotation.Subcommand
 import gg.scala.commons.acf.velocity.contexts.OnlinePlayer
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.net.InetSocketAddress
@@ -45,15 +47,16 @@ object CocoaCommand : BaseCommand()
         help.showHelp()
     }
 
-    @Subcommand("fix-fallback-presence")
-    fun onFixFallbackPresence(player: Player)
-    {
-        CocoaServerPresenceRunnable.run()
-
-        player.sendMessage(
-            Component.text("Fixed fallback presence. (Should look into restarting proxy soon)")
-        )
-    }
+    @Subcommand("reload-config")
+    fun reloadConfig(source: CommandSource) = CocoaVelocitySettingsDataSync
+        .useThenSave {
+            source.sendMessage("Re-syncing config...".legacy())
+        }
+        .thenRun {
+            source.sendMessage(Component
+                .text("Synced config from MongoDB!")
+                .color(NamedTextColor.GREEN))
+        }
 
     @Subcommand("max-player-count")
     fun onValueThing(player: Player, newValue: Int) = CocoaVelocitySettingsDataSync

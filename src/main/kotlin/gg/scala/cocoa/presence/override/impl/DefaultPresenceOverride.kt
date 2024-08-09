@@ -14,7 +14,6 @@ object DefaultPresenceOverride : PresenceOverride
     override fun getUniqueId() = "default"
     override fun getWeight() = 0
 
-    override fun ableToBeManuallyToggle() = false
     override fun shouldOverride() = true
 
     override fun updatePresence(): Component

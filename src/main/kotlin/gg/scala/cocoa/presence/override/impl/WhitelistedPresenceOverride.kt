@@ -14,7 +14,6 @@ object WhitelistedPresenceOverride : PresenceOverride
     override fun getUniqueId() = "maintenance"
     override fun getWeight() = 25000
 
-    override fun ableToBeManuallyToggle() = false
     override fun shouldOverride() = CocoaVelocitySettingsDataSync.cached()
         .maintenance.enabled
 

@@ -4,6 +4,7 @@ import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.presence.override.PresenceOverride
 import gg.scala.cocoa.presence.override.impl.DefaultPresenceOverride
 import gg.scala.cocoa.presence.override.impl.WhitelistedPresenceOverride
+import gg.scala.cocoa.presence.override.impl.freebotfridays.FreeBotFridaysPresenceOverride
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -29,6 +30,7 @@ object CocoaServerPresenceHandler
         )
 
         presences.add(DefaultPresenceOverride)
+        presences.add(FreeBotFridaysPresenceOverride)
         presences.add(WhitelistedPresenceOverride)
         presences.add(CocoaCountdownPresence)
     }

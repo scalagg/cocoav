@@ -15,9 +15,7 @@ interface PresenceOverride
     fun getUniqueId(): String
     fun getWeight(): Int
 
-    fun ableToBeManuallyToggle(): Boolean
     fun shouldOverride(): Boolean
-
     fun updatePresence(): Component
 
     fun updatedPresence(): Component

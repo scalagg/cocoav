@@ -28,6 +28,8 @@ import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.lemon.TwoFactorModel
 import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
+import gg.scala.cocoa.network.NetworkCheckException
+import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
 import gg.scala.cocoa.permission.CocoaPermissionEngine
 import gg.scala.cocoa.permission.CocoaPermissionEngine.hasCocoaPermission
 import gg.scala.cocoa.permission.CocoaPermissionProvider
@@ -36,6 +38,9 @@ import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
+import io.github.resilience4j.circuitbreaker.CircuitBreaker
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -176,39 +181,32 @@ object PlayerListener
                 !event.player.hasCocoaPermission("cocoa.vpn.bypass")
             )
             {
-                kotlin.runCatching {
-                    val networkModel = CocoaNetworkAddressHandler
-                        .requestHostData(
-                            event.player.remoteAddress
-                                .address.hostAddress
-                        )
+                val networkCheckSupplier = CircuitBreaker.decorateSupplier(vpnDetectorAPICircuitBreaker) {
+                    CocoaNetworkAddressHandler
+                        .requestHostData(event.player.remoteAddress.address.hostAddress)
                         .join()
+                        ?: throw NetworkCheckException("Network model is null")
+                }
 
-                    if (networkModel == null)
+                kotlin.runCatching {
+                    val result = networkCheckSupplier.get()
+                    if (result.shouldBlock)
                     {
-                        event.result = CocoaVelocityConstants
-                            .DENIED_NETWORKING_ERROR
-                        return@runCatching
-                    }
-
-                    if (networkModel.shouldBlock)
-                    {
-                        event.result = CocoaVelocityConstants
-                            .DENIED_NETWORKING_INVALID
-
                         CocoaRedisSubscriber.sendStaffNotification(
-                            null, "§3[global] §4${
-                                color(event.player.uniqueId) + event.player.username
-                            }§c tried logging on with a VPN.",
+                            null,
+                            "§3[global] §4${color(event.player.uniqueId) + event.player.username}§c tried logging on with a VPN.",
                             "lemon.vpn.notifications",
                             "vpn-alerts-disabled"
                         )
+                        event.result = CocoaVelocityConstants.DENIED_NETWORKING_INVALID
+                        return@runCatching
                     }
-                }.onFailure {
-                    it.printStackTrace()
-
-                    event.result = CocoaVelocityConstants
-                        .DENIED_NETWORKING_ERROR
+                }.onFailure { throwable ->
+                    if (throwable is NetworkCheckException)
+                    {
+                        throwable.printStackTrace()
+                        event.result = CocoaVelocityConstants.DENIED_NETWORKING_ERROR
+                    }
                 }
             }
 

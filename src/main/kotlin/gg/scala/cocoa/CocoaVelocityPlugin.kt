@@ -33,6 +33,7 @@ import gg.scala.cocoa.lemon.rank.Rank
 import gg.scala.cocoa.lemon.validate.ScalaValidateData
 import gg.scala.cocoa.lemon.validate.ScalaValidateUtil
 import gg.scala.cocoa.listener.PlayerListener
+import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
 import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
@@ -43,6 +44,7 @@ import gg.scala.commons.acf.VelocityCommandManager
 import gg.scala.commons.agnostic.sync.ServerSync
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.serializer.serializers.GsonSerializer
+import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import net.evilblock.cubed.serializers.Serializers
 import net.kyori.adventure.text.format.NamedTextColor
 import java.io.File
@@ -136,6 +138,38 @@ constructor(
                 0L, 500L,
                 TimeUnit.MILLISECONDS
             )
+        }
+
+        if (cached.networking.handleNetworkingChecks)
+        {
+            vpnDetectorAPICircuitBreaker.eventPublisher.onFailureRateExceeded {
+                CocoaRedisSubscriber.sendStaffNotification(
+                    null,
+                    "§3[global] §c§l${it.failureRate}%§c of VPN detector requests have resulted in a failure. Switching to CircuitBreaker OPEN mode.",
+                    "lemon.internal"
+                )
+            }
+
+            vpnDetectorAPICircuitBreaker.eventPublisher.onReset {
+                CocoaRedisSubscriber.sendStaffNotification(
+                    null,
+                    "§3[global] §aCircuitBreaker has been reset. Activity is now normal.",
+                    "lemon.internal"
+                )
+            }
+
+            vpnDetectorAPICircuitBreaker.eventPublisher.onStateTransition {
+                if (it.stateTransition != CircuitBreaker.StateTransition.OPEN_TO_HALF_OPEN)
+                {
+                    return@onStateTransition
+                }
+
+                CocoaRedisSubscriber.sendStaffNotification(
+                    null,
+                    "§3[global] §6Attempting a reset of the CircuitBreaker...",
+                    "lemon.internal"
+                )
+            }
         }
     }
 

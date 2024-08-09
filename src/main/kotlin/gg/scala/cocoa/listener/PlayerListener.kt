@@ -128,7 +128,7 @@ object PlayerListener
 
         if (CocoaVelocityPlugin.INSTANCE.serverData!!.serverName != "Minequest")
         {
-            if (settings.allowedVersions != null)
+            if (settings.shouldRestrictAllowedVersions && settings.allowedVersions != null)
             {
                 if (event.player.protocolVersion.protocol !in settings.allowedVersions!!)
                 {
@@ -207,10 +207,8 @@ object PlayerListener
                 }.onFailure {
                     it.printStackTrace()
 
-                    event.result = ResultedEvent.ComponentResult
-                        .denied(
-                            Component.text("Something went wrong")
-                        )
+                    event.result = CocoaVelocityConstants
+                        .DENIED_NETWORKING_ERROR
                 }
             }
 

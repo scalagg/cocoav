@@ -22,7 +22,6 @@ class CocoaVelocitySettings(
         "mipgame" to "miplobby"
     ),
     var totpIssuer: String = "Scala%20Studios",
-    val bitlyApiKey: String? = "",
     val countdown: CocoaCountdown = CocoaCountdown(),
     val maintenance: MaintenanceSettings = MaintenanceSettings(),
     var allowedVersions: MutableList<Int>? = mutableListOf(),

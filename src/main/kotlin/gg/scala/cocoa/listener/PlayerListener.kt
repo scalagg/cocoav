@@ -3,7 +3,6 @@ package gg.scala.cocoa.listener
 import co.schemati.trevor.api.TrevorService
 import com.google.common.cache.CacheBuilder
 import com.mongodb.client.model.Filters
-import com.velocitypowered.api.event.Continuation
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.ResultedEvent
 import com.velocitypowered.api.event.Subscribe
@@ -11,17 +10,12 @@ import com.velocitypowered.api.event.command.CommandExecuteEvent
 import com.velocitypowered.api.event.connection.DisconnectEvent
 import com.velocitypowered.api.event.connection.LoginEvent
 import com.velocitypowered.api.event.permission.PermissionsSetupEvent
-import com.velocitypowered.api.event.player.KickedFromServerEvent
-import com.velocitypowered.api.event.player.PlayerChatEvent
-import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent
-import com.velocitypowered.api.event.player.ServerConnectedEvent
-import com.velocitypowered.api.event.player.ServerPreConnectEvent
+import com.velocitypowered.api.event.player.*
 import com.velocitypowered.api.proxy.Player
 import gg.scala.aware.message.AwareMessage
 import gg.scala.aware.thread.AwareThreadContext
 import gg.scala.cache.uuid.ScalaStoreUuidCache
 import gg.scala.cocoa.*
-import gg.scala.cocoa.countdown.CocoaCountdown
 import gg.scala.cocoa.countdown.CocoaCountdownPresence
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.lemon.LemonPlayer
@@ -33,14 +27,11 @@ import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
 import gg.scala.cocoa.permission.CocoaPermissionEngine
 import gg.scala.cocoa.permission.CocoaPermissionEngine.hasCocoaPermission
 import gg.scala.cocoa.permission.CocoaPermissionProvider
-import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -48,7 +39,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bson.conversions.Bson
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.ForkJoinPool
 
 /**
  * @author GrowlyX
@@ -123,9 +113,7 @@ object PlayerListener
             )
         )
 
-    @Subscribe(
-        order = PostOrder.FIRST
-    )
+    @Subscribe(order = PostOrder.FIRST)
     fun onLogin(event: LoginEvent)
     {
         val uniqueId = event.player.uniqueId
@@ -266,7 +254,7 @@ object PlayerListener
             {
                 var model = DataStoreObjectControllerCache
                     .findNotNull<TwoFactorModel>()
-                    .load(event.player.uniqueId, DataStoreStorageType.REDIS)
+                    .load(event.player.uniqueId, DataStoreStorageType.MONGO)
                     .join()
 
                 if (model == null)
@@ -370,7 +358,7 @@ object PlayerListener
                     .remoteAddress.address.hostAddress
             }
 
-            twoFactor.save(model, DataStoreStorageType.REDIS)
+            twoFactor.save(model, DataStoreStorageType.MONGO)
         }
 
         val profile = connection.sync()

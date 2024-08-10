@@ -143,6 +143,7 @@ constructor(
         if (cached.networking.handleNetworkingChecks)
         {
             vpnDetectorAPICircuitBreaker.eventPublisher.onFailureRateExceeded {
+                logger.info("${it.failureRate}% of VPN detector requests have resulted in a failure. Switching to CircuitBreaker OPEN mode.")
                 CocoaRedisSubscriber.sendStaffNotification(
                     null,
                     "§3[global] §c§l${it.failureRate}%§c of VPN detector requests have resulted in a failure. Switching to CircuitBreaker OPEN mode.",
@@ -151,6 +152,7 @@ constructor(
             }
 
             vpnDetectorAPICircuitBreaker.eventPublisher.onReset {
+                logger.info("CircuitBreaker has been reset. Activity is now normal.")
                 CocoaRedisSubscriber.sendStaffNotification(
                     null,
                     "§3[global] §aCircuitBreaker has been reset. Activity is now normal.",
@@ -159,11 +161,13 @@ constructor(
             }
 
             vpnDetectorAPICircuitBreaker.eventPublisher.onStateTransition {
+                logger.info("Detected state change of CircuitBreaker ${it.stateTransition}")
                 if (it.stateTransition != CircuitBreaker.StateTransition.OPEN_TO_HALF_OPEN)
                 {
                     return@onStateTransition
                 }
 
+                logger.info("Attempting a reset of the CircuitBreaker...")
                 CocoaRedisSubscriber.sendStaffNotification(
                     null,
                     "§3[global] §6Attempting a reset of the CircuitBreaker...",

@@ -24,5 +24,5 @@ data class TwoFactorModel(
     override fun save() =
         DataStoreObjectControllerCache
             .findNotNull<TwoFactorModel>()
-            .save(this, DataStoreStorageType.REDIS)
+            .save(this, DataStoreStorageType.MONGO)
 }

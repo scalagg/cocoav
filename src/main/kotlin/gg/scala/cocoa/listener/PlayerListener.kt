@@ -123,18 +123,15 @@ object PlayerListener
         val uniqueId = event.player.uniqueId
         val settings = CocoaVelocitySettingsDataSync.cached()
 
-        if (CocoaVelocityPlugin.INSTANCE.serverData!!.serverName != "Minequest")
+        if (settings.shouldRestrictAllowedVersions && settings.allowedVersions != null)
         {
-            if (settings.shouldRestrictAllowedVersions && settings.allowedVersions != null)
+            if (event.player.protocolVersion.protocol !in settings.allowedVersions!!)
             {
-                if (event.player.protocolVersion.protocol !in settings.allowedVersions!!)
-                {
-                    event.result = ResultedEvent.ComponentResult.denied(
-                        Component.text("You cannot join the server on this version!")
-                            .color(NamedTextColor.RED)
-                    )
-                    return
-                }
+                event.result = ResultedEvent.ComponentResult.denied(
+                    Component.text("You cannot join the server on this version!")
+                        .color(NamedTextColor.RED)
+                )
+                return
             }
         }
 
@@ -457,6 +454,7 @@ object PlayerListener
         else plugin.fetchBestLobby(event.player, null)
 
         event.setOnKickCallback(::onKick)
+
         if (server == null)
         {
             event.addOnJoinCallback {

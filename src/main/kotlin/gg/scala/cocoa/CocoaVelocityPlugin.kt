@@ -29,9 +29,8 @@ import gg.scala.cocoa.discovery.CocoaServerSyncDiscovery
 import gg.scala.cocoa.dps.DPSRedisShared
 import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
+import gg.scala.cocoa.lemon.metadata.NetworkMetadataDataSync
 import gg.scala.cocoa.lemon.rank.Rank
-import gg.scala.cocoa.lemon.validate.ScalaValidateData
-import gg.scala.cocoa.lemon.validate.ScalaValidateUtil
 import gg.scala.cocoa.limbo.LimboServer
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
@@ -120,8 +119,6 @@ constructor(
     {
         INSTANCE = this
     }
-
-    var serverData: ScalaValidateData? = null
 
     private fun configureVelocityPlugin()
     {
@@ -212,22 +209,13 @@ constructor(
             }
         }
 
-        logger.info("Loading instance data from the API...")
-        serverData = ScalaValidateUtil
-            .fetchServerData(
-                instanceSettings.apiID,
-                instanceSettings.apiUseHTTPS,
-                instanceSettings.apiSupplier
-            )
-            ?: return run {
-                logger.info("Failed to load instance data from the API!")
-            }
+        NetworkMetadataDataSync.load()
+        val networkMetadata = NetworkMetadataDataSync.cached()
 
-        logger.info("Loaded onto server type ${serverData!!.serverName}!")
         listOf<MessageType>(MessageType.HELP, MessageType.INFO, MessageType.SYNTAX).forEach {
             commandManager.getFormat(it).setColor(3, NamedTextColor.GRAY)
-            commandManager.getFormat(it).setColor(2, NamedTextColor.NAMES.value(serverData!!.secondary.lowercase()))
-            commandManager.getFormat(it).setColor(1, NamedTextColor.NAMES.value(serverData!!.primary.lowercase()))
+            commandManager.getFormat(it).setColor(2, NamedTextColor.NAMES.value(networkMetadata.secondary.lowercase()))
+            commandManager.getFormat(it).setColor(1, NamedTextColor.NAMES.value(networkMetadata.primary.lowercase()))
             commandManager.getFormat(it).setColor(4, NamedTextColor.WHITE)
         }
 

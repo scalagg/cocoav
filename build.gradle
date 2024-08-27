@@ -46,6 +46,7 @@ dependencies {
 
     implementation "gg.scala.commons:velocity:3.5.2"
     implementation "gg.scala.commons:serversync:3.5.2"
+    implementation "gg.scala.lemon:common:1.9.1"
 
     implementation "ch.qos.logback:logback-classic:1.4.4"
     implementation 'net.kyori:adventure-text-minimessage:4.11.0'

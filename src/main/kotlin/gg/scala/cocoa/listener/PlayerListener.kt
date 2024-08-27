@@ -21,6 +21,7 @@ import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.lemon.TwoFactorModel
 import gg.scala.cocoa.lemon.category.PunishmentCategory
+import gg.scala.cocoa.limbo.LimboHandler
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.network.NetworkCheckException
 import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
@@ -32,6 +33,7 @@ import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
+import net.elytrium.limboapi.api.event.LoginLimboRegisterEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -39,6 +41,8 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bson.conversions.Bson
 import java.time.Duration
 import java.util.*
+import java.util.function.Function
+import java.util.logging.Level.CONFIG
 
 /**
  * @author GrowlyX
@@ -442,12 +446,25 @@ object PlayerListener
         if (server != null)
         {
             event.setInitialServer(server)
-            return
         }
+    }
 
-        event.player.disconnect(
-            "&cWhoops! We don't have any lobby servers for you to join!".legacy()
-        )
+    @Subscribe
+    fun onLoginLimboRegister(event: LoginLimboRegisterEvent)
+    {
+        event.setOnKickCallback(::onKick)
+        event.addOnJoinCallback {
+            val server = if (event.player.hasPermission("cocoa.staff"))
+                plugin.fetchBestRestrictedLobby(event.player, null)
+            else plugin.fetchBestLobby(event.player, null)
+
+            if (server == null)
+            {
+                plugin.limboServer.server.spawnPlayer(event.player, LimboHandler(plugin) {
+                    plugin.fetchBestLobby(event.player)
+                })
+            }
+        }
     }
 
     @Subscribe
@@ -567,6 +584,18 @@ object PlayerListener
                 }.delay(HUNDRED_MILLI).schedule()
             }
         }
+
+        plugin.server.scheduler.buildTask(plugin) {
+            produce(
+                "network-login",
+                "player" to event.player.uniqueId
+            ).apply {
+                publish(
+                    context = AwareThreadContext.SYNC,
+                    channel = "queue:backbone"
+                )
+            }
+        }.delay(HUNDRED_MILLI).schedule()
     }
 
     fun allowAction(player: Player, action: String = "performing this action"): Boolean
@@ -638,8 +667,7 @@ object PlayerListener
         }
     }
 
-    @Subscribe
-    fun onKick(event: KickedFromServerEvent)
+    fun onKick(event: KickedFromServerEvent): Boolean
     {
         if ("pack" in event.server.serverInfo.name)
         {
@@ -651,7 +679,7 @@ object PlayerListener
                             .color(NamedTextColor.RED)
                     )
                 )
-            return
+            return false
         }
 
         val newServer = if (event.player.hasPermission("cocoa.staff"))
@@ -683,7 +711,7 @@ object PlayerListener
                         .DisconnectPlayer.create(
                             event.serverKickReason.get()
                         )
-                    return
+                    return false
                 }
             }
 
@@ -704,22 +732,18 @@ object PlayerListener
                                 )
                         )
                     )
-                return
+                return false
             }
 
             event.result = KickedFromServerEvent
                 .RedirectPlayer.create(newServer)
-        } else
-        {
-            event.result = KickedFromServerEvent
-                .DisconnectPlayer.create(
-                    event.serverKickReason.orElse(
-                        Component
-                            .text("Oops! There are no lobby servers for you to join.")
-                            .color(NamedTextColor.RED)
-                    )
-                )
+            return false
         }
+
+        plugin.limboServer.server.spawnPlayer(event.player, LimboHandler(plugin) {
+            plugin.fetchBestLobby(event.player)
+        })
+        return true
     }
 
     private fun color(uuid: UUID): String

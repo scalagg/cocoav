@@ -5,6 +5,7 @@ import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.ServerInfo
 import gg.scala.cocoa.*
 import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.limbo.LimboHandler
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.presence.CocoaServerPresenceRunnable
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
@@ -69,6 +70,14 @@ object CocoaCommand : BaseCommand()
                 "&aYou've updated the max player count to: &f$newValue".legacy()
             }
         }
+
+    @Subcommand("limbotest")
+    fun onLimboTest(player: Player)
+    {
+        plugin.limboServer.server.spawnPlayer(player, LimboHandler(plugin) {
+            plugin.fetchBestLobby(player)
+        })
+    }
 
     @Subcommand("maintenance deny-component update")
     @Description("Update the component shown when a player logs in when not whitelisted.")

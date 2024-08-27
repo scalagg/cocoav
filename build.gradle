@@ -21,6 +21,12 @@ repositories {
         }
     }
 
+
+    maven {
+        setName("elytrium-repo")
+        setUrl("https://maven.elytrium.net/repo/")
+    }
+
     maven { url "https://repo.stellardrift.ca" }
     maven { url "https://nexus.velocitypowered.com/repository/maven-public/" }
     maven { url "https://jitpack.io" }
@@ -29,6 +35,7 @@ repositories {
 dependencies {
     compileOnly "com.velocitypowered:velocity-api:3.1.0"
     kapt "com.velocitypowered:velocity-api:3.1.0"
+    compileOnly("net.elytrium.limboapi:api:1.1.25")
 
     implementation "dev.samstevens.totp:totp:1.7.1"
 

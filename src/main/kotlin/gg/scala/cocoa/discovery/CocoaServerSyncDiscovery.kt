@@ -15,71 +15,75 @@ object CocoaServerSyncDiscovery : Runnable
 {
     override fun run()
     {
-        val healthy = CocoaVelocitySettingsDataSync.cached()
-            .listeningGroups
-            .flatMap {
-                ServerContainer.getServersInGroup(it)
-            }
-            .filterIsInstance<GameServer>()
+        kotlin.runCatching {
+            val healthy = CocoaVelocitySettingsDataSync.cached()
+                .listeningGroups
+                .flatMap {
+                    ServerContainer.getServersInGroup(it)
+                }
+                .filterIsInstance<GameServer>()
 
-        val mapped = healthy
-            .map {
-                it.id
-            }
+            val mapped = healthy
+                .map {
+                    it.id
+                }
 
-        val registered = CocoaVelocityPlugin.INSTANCE.server.allServers
-        val registeredNames = registered.map { it.serverInfo.name }
+            val registered = CocoaVelocityPlugin.INSTANCE.server.allServers
+            val registeredNames = registered.map { it.serverInfo.name }
 
-        registered
-            .filter {
-                !mapped
-                    .contains(
-                        it.serverInfo.name
+            registered
+                .filter {
+                    !mapped
+                        .contains(
+                            it.serverInfo.name
+                        )
+                }
+                .filter {
+                    !CocoaVelocitySettingsDataSync.cached()
+                        .listeningExemptions
+                        .contains(it.serverInfo.name)
+                }
+                .forEach {
+                    CocoaVelocityPlugin
+                        .INSTANCE.server
+                        .unregisterServer(
+                            it.serverInfo
+                        )
+
+                    CocoaVelocityPlugin
+                        .INSTANCE.logger
+                        .info(
+                            "[ServerSync] Unregistered dead server: ${it.serverInfo.name}"
+                        )
+                }
+
+            healthy
+                .filter {
+                    !registeredNames
+                        .contains(
+                            it.id
+                        )
+                }
+                .forEach {
+                    val info = ServerInfo(
+                        it.id,
+                        InetSocketAddress(
+                            it.getHost(), (it.getMetadata("server", "port")?.value as Double? ?: return@forEach).toInt()
+                        )
                     )
-            }
-            .filter {
-                !CocoaVelocitySettingsDataSync.cached()
-                    .listeningExemptions
-                    .contains(it.serverInfo.name)
-            }
-            .forEach {
-                CocoaVelocityPlugin
-                    .INSTANCE.server
-                    .unregisterServer(
-                        it.serverInfo
-                    )
 
-                CocoaVelocityPlugin
-                    .INSTANCE.logger
-                    .info(
-                        "[ServerSync] Unregistered dead server: ${it.serverInfo.name}"
-                    )
-            }
+                    CocoaVelocityPlugin
+                        .INSTANCE.server
+                        .registerServer(info)
 
-        healthy
-            .filter {
-                !registeredNames
-                    .contains(
-                        it.id
-                    )
-            }
-            .forEach {
-                val info = ServerInfo(
-                    it.id,
-                    InetSocketAddress(
-                        it.getHost(), (it.getMetadata("server", "port")?.value as Double? ?: return@forEach).toInt()
-                    )
-                )
-
-                CocoaVelocityPlugin
-                    .INSTANCE.server
-                    .registerServer(info)
-
-                CocoaVelocityPlugin
-                    .INSTANCE.logger
-                    .info(
-                        "[ServerSync] Registered healthy server: ${it.id}"
-                    )
-            }
+                    CocoaVelocityPlugin
+                        .INSTANCE.logger
+                        .info(
+                            "[ServerSync] Registered healthy server: ${it.id}"
+                        )
+                }
+        }.onFailure {
+            it.printStackTrace()
+        }
     }
 }

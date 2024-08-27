@@ -76,8 +76,7 @@ object CocoaCommand : BaseCommand()
     {
         plugin.limboServer.server.spawnPlayer(player, LimboHandler(plugin) {
             plugin.fetchBestLobby(player)
-        })
-    }
+        }) }
 
     @Subcommand("maintenance deny-component update")
     @Description("Update the component shown when a player logs in when not whitelisted.")

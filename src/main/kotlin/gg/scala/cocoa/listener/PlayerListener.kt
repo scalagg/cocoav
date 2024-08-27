@@ -452,14 +452,14 @@ object PlayerListener
     @Subscribe
     fun onLoginLimboRegister(event: LoginLimboRegisterEvent)
     {
-        event.setOnKickCallback(::onKick)
-        event.addOnJoinCallback {
-            val server = if (event.player.hasPermission("cocoa.staff"))
-                plugin.fetchBestRestrictedLobby(event.player, null)
-            else plugin.fetchBestLobby(event.player, null)
+        val server = if (event.player.hasPermission("cocoa.staff"))
+            plugin.fetchBestRestrictedLobby(event.player, null)
+        else plugin.fetchBestLobby(event.player, null)
 
-            if (server == null)
-            {
+        event.setOnKickCallback(::onKick)
+        if (server == null)
+        {
+            event.addOnJoinCallback {
                 plugin.limboServer.server.spawnPlayer(event.player, LimboHandler(plugin) {
                     plugin.fetchBestLobby(event.player)
                 })

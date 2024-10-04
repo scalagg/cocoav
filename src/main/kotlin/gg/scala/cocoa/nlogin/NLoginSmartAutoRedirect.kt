@@ -1,12 +1,12 @@
 package gg.scala.cocoa.nlogin
 
 import com.nickuc.login.api.event.velocity.auth.AuthenticateEvent
-import com.nickuc.login.api.event.velocity.auth.LoginEvent
 import com.velocitypowered.api.event.Subscribe
+import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocityPlugin
-import gg.scala.cocoa.listener.PlayerListener
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import java.time.Duration
 
 /**
  * @author GrowlyX
@@ -18,6 +18,11 @@ object NLoginSmartAutoRedirect
 
     @Subscribe
     fun AuthenticateEvent.on()
+    {
+        checkRedirectAvailability(player)
+    }
+
+    fun checkRedirectAvailability(player: Player)
     {
         val newServer = if (player.hasPermission("cocoa.staff"))
             plugin.fetchBestRestrictedLobby(player) else plugin.fetchBestLobby(player)
@@ -32,10 +37,16 @@ object NLoginSmartAutoRedirect
             player.createConnectionRequest(newServer).connect()
         } else
         {
-            player.sendMessage(
-                Component.text("We weren't able to find a lobby server for you to join!")
-                    .color(NamedTextColor.RED)
-            )
+            player.sendMessage(Component
+                .text("There are no servers online! We're searching for an available one right now...")
+                .color(NamedTextColor.RED))
+
+            plugin.server.scheduler.buildTask(plugin) {
+                if (player.isActive)
+                {
+                    checkRedirectAvailability(player)
+                }
+            }.delay(Duration.ofSeconds(1L)).schedule()
         }
     }
 }

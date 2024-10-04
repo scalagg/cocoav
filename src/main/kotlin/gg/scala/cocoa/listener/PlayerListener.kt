@@ -22,6 +22,7 @@ import gg.scala.cocoa.lemon.LemonPlayer
 import gg.scala.cocoa.lemon.TwoFactorModel
 import gg.scala.cocoa.lemon.category.PunishmentCategory
 import gg.scala.cocoa.limbo.LimboHandler
+import gg.scala.cocoa.limbo.NoOpLimboAccess
 import gg.scala.cocoa.network.CocoaNetworkAddressHandler
 import gg.scala.cocoa.network.NetworkCheckException
 import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
@@ -716,9 +717,16 @@ object PlayerListener
             return false
         }
 
-        plugin.limboServer.server.spawnPlayer(event.player, LimboHandler(plugin) {
-            plugin.fetchBestLobby(event.player)
-        })
+        if (plugin.limboAccess !is NoOpLimboAccess)
+        {
+            plugin.limboAccess.spawn(event.player)
+        } else
+        {
+
+            event.result = KickedFromServerEvent
+                .DisconnectPlayer.create(Component.text("Sorry, we could not find a server to connect you to!").color(
+                    NamedTextColor.RED))
+        }
         return true
     }
 

@@ -1,6 +1,7 @@
 package gg.scala.cocoa.limbo
 
 import com.velocitypowered.api.event.Subscribe
+import com.velocitypowered.api.proxy.Player
 import gg.scala.cocoa.CocoaVelocityPlugin
 import gg.scala.cocoa.listener.PlayerListener
 import net.elytrium.limboapi.api.event.LoginLimboRegisterEvent
@@ -9,7 +10,7 @@ import net.elytrium.limboapi.api.event.LoginLimboRegisterEvent
  * @author GrowlyX
  * @since 10/4/2024
  */
-class LimboPrep
+class LimboPrep : LimboAccess
 {
    val plugin = CocoaVelocityPlugin.Companion.INSTANCE
    val limboServer = LimboServer(plugin)
@@ -31,5 +32,12 @@ class LimboPrep
                 })
             }
         }
+    }
+
+    override fun spawn(player: Player)
+    {
+        limboServer.server.spawnPlayer(player, LimboHandler(this) {
+            plugin.fetchBestLobby(player)
+        })
     }
 }

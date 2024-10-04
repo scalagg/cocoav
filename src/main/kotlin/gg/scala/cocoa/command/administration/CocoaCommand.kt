@@ -55,9 +55,11 @@ object CocoaCommand : BaseCommand()
             CocoaVelocitySettingsDataSync.reload()
         }
         .thenRun {
-            source.sendMessage(Component
-                .text("Pulled config from data source!")
-                .color(NamedTextColor.GREEN))
+            source.sendMessage(
+                Component
+                    .text("Pulled config from data source!")
+                    .color(NamedTextColor.GREEN)
+            )
         }
 
     @Subcommand("max-player-count")
@@ -70,13 +72,6 @@ object CocoaCommand : BaseCommand()
                 "&aYou've updated the max player count to: &f$newValue".legacy()
             }
         }
-
-    @Subcommand("limbotest")
-    fun onLimboTest(player: Player)
-    {
-        plugin.limboServer.server.spawnPlayer(player, LimboHandler(plugin) {
-            plugin.fetchBestLobby(player)
-        }) }
 
     @Subcommand("maintenance deny-component update")
     @Description("Update the component shown when a player logs in when not whitelisted.")
@@ -207,7 +202,12 @@ object CocoaCommand : BaseCommand()
         sender.sendMessage {
             LegacyComponentSerializer.legacyAmpersand()
                 .deserialize(
-                    "&aThe server is currently restricted to players with a rank weight above: &f${maintenanceRank.color.replace("§", "&")}${maintenanceRank.name}"
+                    "&aThe server is currently restricted to players with a rank weight above: &f${
+                        maintenanceRank.color.replace(
+                            "§",
+                            "&"
+                        )
+                    }${maintenanceRank.name}"
                 )
         }
     }
@@ -270,15 +270,16 @@ object CocoaCommand : BaseCommand()
 
     @Subcommand("settings token-whitelist-highest-weight-before-not-effective")
     @Description("Set the token whitelist rank weight requirement.")
-    fun onSettingsTokenWhitelistHighestWeightBeforeNotEffective(sender: Player, weight: Int) = CocoaVelocitySettingsDataSync
-        .useThenSave {
-            this.tokenWhitelistHighestWeightBeforeNotEffective = weight
-        }
-        .thenRun {
-            sender.sendMessage {
-                "&aYou've updated the token whitelist rank weight requirement to: &f$weight".legacy()
+    fun onSettingsTokenWhitelistHighestWeightBeforeNotEffective(sender: Player, weight: Int) =
+        CocoaVelocitySettingsDataSync
+            .useThenSave {
+                this.tokenWhitelistHighestWeightBeforeNotEffective = weight
             }
-        }
+            .thenRun {
+                sender.sendMessage {
+                    "&aYou've updated the token whitelist rank weight requirement to: &f$weight".legacy()
+                }
+            }
 
     @Subcommand("settings set-server-brand")
     @Description("Set the server's brand")

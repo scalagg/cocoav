@@ -31,7 +31,9 @@ import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.metadata.NetworkMetadataDataSync
 import gg.scala.cocoa.lemon.rank.Rank
+import gg.scala.cocoa.limbo.LimboAccess
 import gg.scala.cocoa.limbo.LimboPrep
+import gg.scala.cocoa.limbo.NoOpLimboAccess
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
@@ -113,6 +115,8 @@ constructor(
     var proxyChannel by Delegates.notNull<Aware<AwareMessage>>()
     var spigotChannel by Delegates.notNull<Aware<AwareMessage>>()
 
+    var limboAccess: LimboAccess = NoOpLimboAccess
+
     init
     {
         INSTANCE = this
@@ -121,10 +125,11 @@ constructor(
     private fun configureVelocityPlugin()
     {
         val executor = Executors.newSingleThreadScheduledExecutor()
-
         if (server.pluginManager.isLoaded("limboapi"))
         {
-            server.eventManager.register(LimboPrep(), this)
+            val limboPrep = LimboPrep()
+            limboAccess = limboPrep
+            server.eventManager.register(limboPrep, this)
         }
 
         DataStoreHandler.configure()

@@ -30,6 +30,12 @@ object NLoginSmartAutoRedirect
             )
 
             player.createConnectionRequest(newServer).connect()
+        } else
+        {
+            player.sendMessage(
+                Component.text("We weren't able to find a lobby server for you to join!")
+                    .color(NamedTextColor.RED)
+            )
         }
     }
 }

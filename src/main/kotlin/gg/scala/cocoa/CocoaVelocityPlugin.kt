@@ -31,7 +31,7 @@ import gg.scala.cocoa.handler.DataStoreHandler
 import gg.scala.cocoa.handler.LemonRedisHandler
 import gg.scala.cocoa.lemon.metadata.NetworkMetadataDataSync
 import gg.scala.cocoa.lemon.rank.Rank
-import gg.scala.cocoa.limbo.LimboServer
+import gg.scala.cocoa.limbo.LimboPrep
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
@@ -68,7 +68,7 @@ import kotlin.properties.Delegates
     authors = ["Scala"],
     dependencies = [
         Dependency(id = "store-velocity"),
-        Dependency(id = "limboapi"),
+        Dependency(id = "limboapi", optional = true),
     ]
 )
 class CocoaVelocityPlugin
@@ -113,8 +113,6 @@ constructor(
     var proxyChannel by Delegates.notNull<Aware<AwareMessage>>()
     var spigotChannel by Delegates.notNull<Aware<AwareMessage>>()
 
-    lateinit var limboServer: LimboServer
-
     init
     {
         INSTANCE = this
@@ -123,7 +121,11 @@ constructor(
     private fun configureVelocityPlugin()
     {
         val executor = Executors.newSingleThreadScheduledExecutor()
-        limboServer = LimboServer(this)
+
+        if (server.pluginManager.isLoaded("limboapi"))
+        {
+            server.eventManager.register(LimboPrep(), this)
+        }
 
         DataStoreHandler.configure()
         startRedisFunctionality()

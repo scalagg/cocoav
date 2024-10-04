@@ -3,7 +3,6 @@ package gg.scala.cocoa.limbo
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.server.RegisteredServer
 import com.velocitypowered.api.scheduler.ScheduledTask
-import gg.scala.cocoa.CocoaVelocityPlugin
 import net.elytrium.limboapi.api.Limbo
 import net.elytrium.limboapi.api.LimboSessionHandler
 import net.elytrium.limboapi.api.player.LimboPlayer
@@ -17,7 +16,7 @@ import javax.imageio.ImageIO
 val hors = ImageIO.read(File("hors.jpg"))
 
 class LimboHandler(
-    private val plugin: CocoaVelocityPlugin,
+    private val plugin: LimboPrep,
     private val reconnectAttempt: (Player) -> RegisteredServer?
 ) : LimboSessionHandler
 {
@@ -34,7 +33,7 @@ class LimboHandler(
         player.disableFalling()
         player.sendImage(hors)
 
-        this.task = plugin.server.scheduler
+        this.task = plugin.plugin.server.scheduler
             .buildTask(
                 plugin
             ) {

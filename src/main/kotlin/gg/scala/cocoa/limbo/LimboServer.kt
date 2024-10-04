@@ -1,23 +1,19 @@
 package gg.scala.cocoa.limbo
 
-import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.plugin.PluginContainer
 import gg.scala.cocoa.CocoaVelocityPlugin
-import net.elytrium.limboapi.api.Limbo
 import net.elytrium.limboapi.api.LimboFactory
 import net.elytrium.limboapi.api.chunk.Dimension
-import net.elytrium.limboapi.api.chunk.VirtualWorld
-import net.elytrium.limboapi.api.event.LoginLimboRegisterEvent
 import net.elytrium.limboapi.api.player.LimboPlayer
 import java.util.*
 import kotlin.jvm.optionals.getOrElse
-import kotlin.jvm.optionals.getOrNull
 
 /**
  * @author GrowlyX
  * @since 8/27/2024
  */
-class LimboServer(plugin: CocoaVelocityPlugin) {
+class LimboServer(plugin: CocoaVelocityPlugin)
+{
     val players = LinkedList<LimboPlayer>()
     val limboFactory = plugin.server.pluginManager.getPlugin("limboapi")
         .flatMap(PluginContainer::getInstance)

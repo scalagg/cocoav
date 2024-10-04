@@ -33,7 +33,6 @@ import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
-import net.elytrium.limboapi.api.event.LoginLimboRegisterEvent
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -41,8 +40,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bson.conversions.Bson
 import java.time.Duration
 import java.util.*
-import java.util.function.Function
-import java.util.logging.Level.CONFIG
 
 /**
  * @author GrowlyX
@@ -443,25 +440,6 @@ object PlayerListener
         if (server != null)
         {
             event.setInitialServer(server)
-        }
-    }
-
-    @Subscribe
-    fun onLoginLimboRegister(event: LoginLimboRegisterEvent)
-    {
-        val server = if (event.player.hasPermission("cocoa.staff"))
-            plugin.fetchBestRestrictedLobby(event.player, null)
-        else plugin.fetchBestLobby(event.player, null)
-
-        event.setOnKickCallback(::onKick)
-
-        if (server == null)
-        {
-            event.addOnJoinCallback {
-                plugin.limboServer.server.spawnPlayer(event.player, LimboHandler(plugin) {
-                    plugin.fetchBestLobby(event.player)
-                })
-            }
         }
     }
 

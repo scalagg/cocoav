@@ -131,12 +131,12 @@ constructor(
         {
             val limboPrep = LimboPrep()
             limboAccess = limboPrep
-            server.eventManager.register(limboPrep, this)
+            server.eventManager.register(this, limboPrep)
         }
 
         if (server.pluginManager.isLoaded("nlogin"))
         {
-            server.eventManager.register(NLoginSmartAutoRedirect, this)
+            server.eventManager.register(this, NLoginSmartAutoRedirect)
         }
 
         DataStoreHandler.configure()
@@ -388,12 +388,12 @@ constructor(
 
     fun isLobbyServer(info: ServerInfo): Boolean
     {
-        return (info.name.startsWith("hub") || info.name.startsWith("lobby"))
+        return (info.name.contains("hub") || info.name.contains("lobby"))
     }
 
     private fun isRestrictedLobbyServer(info: ServerInfo): Boolean
     {
-        return (info.name.startsWith("hub") || info.name.startsWith("lobby")) && info.name.endsWith("restricted")
+        return (info.name.contains("hub") || info.name.contains("lobby")) && info.name.endsWith("restricted")
     }
 
     fun updateMaintenanceRank(lemonSpigotRank: Rank)

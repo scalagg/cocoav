@@ -36,6 +36,7 @@ import gg.scala.cocoa.limbo.LimboPrep
 import gg.scala.cocoa.limbo.NoOpLimboAccess
 import gg.scala.cocoa.listener.PlayerListener
 import gg.scala.cocoa.network.vpnDetectorAPICircuitBreaker
+import gg.scala.cocoa.nlogin.NLoginSmartAutoRedirect
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
 import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
@@ -71,6 +72,7 @@ import kotlin.properties.Delegates
     dependencies = [
         Dependency(id = "store-velocity"),
         Dependency(id = "limboapi", optional = true),
+        Dependency(id = "nlogin", optional = true),
     ]
 )
 class CocoaVelocityPlugin
@@ -130,6 +132,11 @@ constructor(
             val limboPrep = LimboPrep()
             limboAccess = limboPrep
             server.eventManager.register(limboPrep, this)
+        }
+
+        if (server.pluginManager.isLoaded("nlogin"))
+        {
+            server.eventManager.register(NLoginSmartAutoRedirect, this)
         }
 
         DataStoreHandler.configure()

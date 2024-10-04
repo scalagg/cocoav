@@ -30,6 +30,7 @@ repositories {
     maven { url "https://repo.stellardrift.ca" }
     maven { url "https://nexus.velocitypowered.com/repository/maven-public/" }
     maven { url "https://jitpack.io" }
+    maven { url "https://repo.nickuc.com/maven-releases/" }
 }
 
 dependencies {
@@ -40,6 +41,7 @@ dependencies {
     implementation "dev.samstevens.totp:totp:1.7.1"
 
     compileOnly "gg.scala.store:velocity:0.1.3"
+    compileOnly "com.nickuc.login:api:10.4"
 
     // https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-circuitbreaker
     implementation("io.github.resilience4j:resilience4j-circuitbreaker:2.2.0")

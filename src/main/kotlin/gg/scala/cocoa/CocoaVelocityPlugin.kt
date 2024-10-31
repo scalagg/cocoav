@@ -304,10 +304,10 @@ constructor(
 
         val executor = Executors.newSingleThreadScheduledExecutor()
 
-        Runtime.getRuntime().addShutdownHook(Thread {
-            executor.shutdown()
-            AwareHub.close()
-        })
+//        Runtime.getRuntime().addShutdownHook(Thread {
+//            executor.shutdown()
+//            AwareHub.close()
+//        })
 
         if (instanceSettings.masterProxy)
         {

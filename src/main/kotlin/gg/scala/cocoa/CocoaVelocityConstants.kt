@@ -14,12 +14,12 @@ object CocoaVelocityConstants
     @JvmStatic
     val NETWORKING_ERROR = LegacyComponentSerializer
         .legacyAmpersand()
-        .deserialize("&cWe were unable to contact an internal service.\n&cPlease contact a system administrator!")
+        .deserialize("&8»&7»&f»   &6&lSolara   &f«&7«&8«&r\n&r\n&cWe were unable to contact an internal service.\n&cPlease contact a system administrator!\n&r\n&cThink this is a mistake: https://discord.solara.gg")
 
     @JvmStatic
     val NETWORKING_INVALID = LegacyComponentSerializer
         .legacyAmpersand()
-        .deserialize("&cYou cannot join with a VPN!")
+        .deserialize("&8»&7»&f»   &6&lSolara   &f«&7«&8«&r\n&r\n&fYour IP address has been flagged as malicious.\n&fPlease disable your VPN / Proxy.\n&r\n&cThink this is a mistake: https://discord.solara.gg")
 
     @JvmStatic
     val DENIED_NETWORKING_ERROR = ResultedEvent
@@ -29,5 +29,5 @@ object CocoaVelocityConstants
     val DENIED_NETWORKING_INVALID = ResultedEvent
         .ComponentResult.denied(NETWORKING_INVALID)!!
 
-    const val DENIED_SERVER_ENTRY = "&cYour connection to &c&l%s&c has been prevented due to you being %s."
+    const val DENIED_SERVER_ENTRY = "&8»&7»&f»   &6&lSolara   &f«&7«&8«&r\n&r\n&cYour connection to &c&l%s&c has been prevented due to you being %s.\n&r\n&cThink this is a mistake: https://discord.solara.gg"
 }

@@ -30,7 +30,7 @@ object FreeBotFridaysPresenceOverride : PresenceOverride
             .append(
                 Component.text {
                     it.append(Component
-                        .text("FREE BOT FRIDAYS! ")
+                        .text("FREE BOT WEEKEND! ")
                         .decorate(TextDecoration.BOLD)
                         .color(NamedTextColor.GOLD))
 

@@ -138,7 +138,6 @@ object PlayerListener
                 .loadRankOfNow(event.player.uniqueId)
 
             DataStoreHandler.rankOf[uniqueId] = loadedRank.uuid
-
             if (settings.maintenance.enabled)
             {
                 if (!plugin.shouldAllowOrStay(uniqueId))
@@ -157,8 +156,8 @@ object PlayerListener
                             .append(stagingFooter)
                     }
 
-                    event.result = ResultedEvent.ComponentResult.denied(notification)
                     DataStoreHandler.rankOf.remove(uniqueId)
+                    event.result = ResultedEvent.ComponentResult.denied(notification)
                     return@scope
                 }
             }
@@ -289,6 +288,7 @@ object PlayerListener
                         "§a${event.player.username}§e joined."
                     )
                 }
+                .join()
         }.onFailure {
             it.printStackTrace()
             event.result = ResultedEvent.ComponentResult.denied(
@@ -644,7 +644,8 @@ object PlayerListener
         }
     }
 
-    fun onKick(event: KickedFromServerEvent): Boolean
+    @Subscribe
+    fun onKick(event: KickedFromServerEvent)
     {
         if ("pack" in event.server.serverInfo.name)
         {
@@ -656,7 +657,7 @@ object PlayerListener
                             .color(NamedTextColor.RED)
                     )
                 )
-            return false
+            return
         }
 
         val newServer = if (event.player.hasPermission("cocoa.staff"))
@@ -688,7 +689,7 @@ object PlayerListener
                         .DisconnectPlayer.create(
                             event.serverKickReason.get()
                         )
-                    return false
+                    return
                 }
             }
 
@@ -709,12 +710,12 @@ object PlayerListener
                                 )
                         )
                     )
-                return false
+                return
             }
 
             event.result = KickedFromServerEvent
                 .RedirectPlayer.create(newServer)
-            return false
+            return
         }
 
         if (plugin.limboAccess !is NoOpLimboAccess)
@@ -727,7 +728,7 @@ object PlayerListener
                 .DisconnectPlayer.create(Component.text("Sorry, we could not find a server to connect you to!").color(
                     NamedTextColor.RED))
         }
-        return true
+        return
     }
 
     private fun color(uuid: UUID): String

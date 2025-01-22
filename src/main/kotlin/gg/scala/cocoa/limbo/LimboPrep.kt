@@ -22,7 +22,7 @@ class LimboPrep : LimboAccess
             plugin.fetchBestRestrictedLobby(event.player, null)
         else plugin.fetchBestLobby(event.player, null)
 
-        event.setOnKickCallback(PlayerListener::onKick)
+//        event.setOnKickCallback(PlayerListener::onKick)
 
         if (server == null)
         {

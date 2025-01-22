@@ -37,7 +37,7 @@ object CocoaNetworkAddressHandler
             .networking.apiKey
 
         return Unirest
-            .get("https://api.vpnblocker.net/v2/json/$ipAddress")
+            .get("https://proxycheck.io/v2/json/$ipAddress")
             .header("X-API-KEY", apiKey)
             .asStringAsync()
             .thenApply {

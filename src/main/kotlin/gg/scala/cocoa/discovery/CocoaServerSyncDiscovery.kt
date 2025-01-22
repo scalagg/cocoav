@@ -68,7 +68,8 @@ object CocoaServerSyncDiscovery : Runnable
                     val info = ServerInfo(
                         it.id,
                         InetSocketAddress(
-                            it.getHost(), (it.getMetadata("server", "port")?.value as Double? ?: return@forEach).toInt()
+                            if (CocoaVelocityPlugin.INSTANCE.instanceSettings.docker) "172.18.0.1" else it.getHost(),
+                            (it.getMetadata("server", "port")?.value as Double? ?: return@forEach).toInt()
                         )
                     )
 

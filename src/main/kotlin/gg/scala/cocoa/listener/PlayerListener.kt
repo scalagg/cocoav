@@ -317,7 +317,7 @@ object PlayerListener
         {
             CocoaRedisSubscriber.sendStaffNotification(
                 event.player,
-                "§b${color(event.player.uniqueId) + event.player.username}§3 disconnected from §b$serverName§3."
+                "§b${color(event.player.uniqueId) + event.player.username}§3 has §cdisconnected §3from §b$serverName§3."
             )
         }
 
@@ -556,7 +556,7 @@ object PlayerListener
 
                     CocoaRedisSubscriber.sendStaffNotification(
                         event.player,
-                        "§b${color(event.player.uniqueId) + event.player.username}§3 connected to §b$serverName§3."
+                        "§b${color(event.player.uniqueId) + event.player.username}§3 has §aconnected §3to §b$serverName§3."
                     )
                 }.delay(HUNDRED_MILLI).schedule()
             }

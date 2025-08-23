@@ -180,7 +180,7 @@ object PlayerListener
                     {
                         CocoaRedisSubscriber.sendStaffNotification(
                             null,
-                            "§3[global] §4${color(event.player.uniqueId) + event.player.username}§c tried logging on with a VPN.",
+                            "§3[global] §4${rankFormat(event.player.uniqueId) + event.player.username}§c tried logging on with a VPN.",
                             "lemon.vpn.notifications",
                             "vpn-alerts-disabled"
                         )
@@ -313,11 +313,13 @@ object PlayerListener
         val serverName = event.player.currentServer
             .orElse(null)?.serverInfo?.name
 
+        val proxyName = TrevorService.getAPI().platform.instanceConfiguration.id
+
         if (isStaffMember && serverName != null)
         {
             CocoaRedisSubscriber.sendStaffNotification(
                 event.player,
-                "§b${color(event.player.uniqueId) + event.player.username}§3 has §cdisconnected §3from §b$serverName§3."
+                "§b${rankFormat(event.player.uniqueId) + event.player.username} §cdisconnected §bfrom the network §7($proxyName)"
             )
         }
 
@@ -526,6 +528,7 @@ object PlayerListener
         if (event.player.hasPermission("cocoa.staff"))
         {
             val serverName = event.server.serverInfo.name
+            val proxyName = TrevorService.getAPI().platform.instanceConfiguration.id
 
             if (previousServer != null)
             {
@@ -536,7 +539,7 @@ object PlayerListener
                 {
                     CocoaRedisSubscriber.sendStaffNotification(
                         event.player,
-                        "§b${color(event.player.uniqueId) + event.player.username}§3 joined §b$serverName§3 from §b${previousServer.serverInfo.name}§3."
+                        "§b${rankFormat(event.player.uniqueId) + event.player.username}§e switched §bto $serverName§7 (from ${previousServer.serverInfo.name})"
                     )
                 }
             } else
@@ -556,7 +559,7 @@ object PlayerListener
 
                     CocoaRedisSubscriber.sendStaffNotification(
                         event.player,
-                        "§b${color(event.player.uniqueId) + event.player.username}§3 has §aconnected §3to §b$serverName§3."
+                        "§b${rankFormat(event.player.uniqueId) + event.player.username}§a joined §bthe network §7($proxyName)"
                     )
                 }.delay(HUNDRED_MILLI).schedule()
             }
@@ -731,10 +734,16 @@ object PlayerListener
         return
     }
 
-    private fun color(uuid: UUID): String
-    {
-        return DataStoreHandler.findRank(
-            DataStoreHandler.rankOf[uuid] ?: DataStoreHandler.getDefaultRank().uuid
-        )?.color ?: ""
+    private fun rankFormat(uuid: UUID, includePrefix: Boolean = true): String {
+        val rankUuid = DataStoreHandler.rankOf[uuid] ?: DataStoreHandler.getDefaultRank().uuid
+        val rank = DataStoreHandler.findRank(rankUuid) ?: return ""
+
+        val prefixPart = if (includePrefix && !rank.prefix.isNullOrBlank()) {
+            "${rank.prefix}${rank.color} "
+        } else {
+            ""
+        }
+
+        return "$prefixPart${rank.color}"
     }
 }

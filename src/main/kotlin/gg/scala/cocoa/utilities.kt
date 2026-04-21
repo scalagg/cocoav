@@ -1,6 +1,7 @@
 package gg.scala.cocoa
 
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import net.kyori.adventure.text.Component
 import java.util.*
 import java.util.regex.Pattern
 
@@ -22,8 +23,37 @@ val serializer by lazy {
     LegacyComponentSerializer
         .legacyAmpersand()
         .toBuilder()
+        .useUnusualXRepeatedCharacterHexFormat()
         .extractUrls()
         .build()
+}
+
+val sectionSerializer by lazy {
+    LegacyComponentSerializer
+        .legacySection()
+        .toBuilder()
+        .useUnusualXRepeatedCharacterHexFormat()
+        .extractUrls()
+        .build()
+}
+
+val legacySectionSerializer by lazy {
+    LegacyComponentSerializer
+        .legacySection()
+        .toBuilder()
+        .extractUrls()
+        .build()
+}
+
+fun supportsHex(protocolVersion: Int): Boolean
+{
+    return protocolVersion >= 735
+}
+
+fun motdForProtocol(component: Component, protocolVersion: Int): Component
+{
+    val serializer = if (supportsHex(protocolVersion)) sectionSerializer else legacySectionSerializer
+    return serializer.deserialize(serializer.serialize(component))
 }
 
 fun String.legacy() = serializer

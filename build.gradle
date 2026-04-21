@@ -1,13 +1,19 @@
 plugins {
     id "maven-publish"
     id "com.jfrog.artifactory" version "4.28.2"
-    id "org.jetbrains.kotlin.jvm" version "1.9.10"
-    id "org.jetbrains.kotlin.kapt" version "1.9.10"
+    id "org.jetbrains.kotlin.jvm" version "2.1.0"
+    id "org.jetbrains.kotlin.kapt" version "2.1.0"
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
 group "gg.scala.cocoa"
 version "1.2.0"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -28,7 +34,13 @@ repositories {
     }
 
     maven { url "https://repo.stellardrift.ca" }
-    maven { url "https://nexus.velocitypowered.com/repository/maven-public/" }
+    maven { url "https://repo.papermc.io/repository/maven-public/" }
+    maven {
+        url "https://nexus.velocitypowered.com/repository/maven-public/"
+        content {
+            includeGroup("com.velocitypowered")
+        }
+    }
     maven { url "https://jitpack.io" }
     maven { url "https://repo.nickuc.com/maven-releases/" }
 }

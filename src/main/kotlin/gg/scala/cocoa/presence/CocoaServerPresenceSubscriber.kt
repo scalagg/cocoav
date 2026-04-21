@@ -1,10 +1,11 @@
 package gg.scala.cocoa.presence
 
-import co.schemati.trevor.api.TrevorService
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyPingEvent
 import com.velocitypowered.api.proxy.server.ServerPing
 import gg.scala.cocoa.CocoaVelocitySettingsDataSync
+import gg.scala.cocoa.motdForProtocol
+import gg.scala.cocoa.symphony.SymphonyCompat
 
 /**
  * @author GrowlyX
@@ -44,11 +45,11 @@ object CocoaServerPresenceSubscriber
                 )
             },
             Players(
-                TrevorService.getAPI().instanceData.playerCount,
+                SymphonyCompat.globalPlayerCount(),
                 settings.presence.playerCap,
                 mutableListOf()
             ),
-            CocoaServerPresenceRunnable.cachedPresence(),
+            motdForProtocol(CocoaServerPresenceRunnable.cachedPresence(), event.ping.version.protocol),
             event.ping.favicon.orElse(null),
             event.ping.modinfo.orElse(null)
         )

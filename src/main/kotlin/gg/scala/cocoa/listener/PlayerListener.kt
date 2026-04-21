@@ -1,6 +1,5 @@
 package gg.scala.cocoa.listener
 
-import co.schemati.trevor.api.TrevorService
 import com.google.common.cache.CacheBuilder
 import com.mongodb.client.model.Filters
 import com.velocitypowered.api.event.PostOrder
@@ -30,6 +29,7 @@ import gg.scala.cocoa.permission.CocoaPermissionEngine
 import gg.scala.cocoa.permission.CocoaPermissionEngine.hasCocoaPermission
 import gg.scala.cocoa.permission.CocoaPermissionProvider
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
+import gg.scala.cocoa.symphony.SymphonyCompat
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.storage.impl.MongoDataStoreStorageLayer
 import gg.scala.store.storage.type.DataStoreStorageType
@@ -198,7 +198,7 @@ object PlayerListener
 
             if (
                 !event.player.hasCocoaPermission("cocoa.playercap.bypass") &&
-                TrevorService.getAPI().instanceData.playerCount >= settings.presence.playerCap
+                SymphonyCompat.globalPlayerCount() >= settings.presence.playerCap
             )
             {
                 event.result = ResultedEvent.ComponentResult
@@ -313,7 +313,7 @@ object PlayerListener
         val serverName = event.player.currentServer
             .orElse(null)?.serverInfo?.name
 
-        val proxyName = TrevorService.getAPI().platform.instanceConfiguration.id
+        val proxyName = SymphonyCompat.proxyId(plugin.instanceSettings.proxyId)
 
         if (isStaffMember && serverName != null)
         {
@@ -528,7 +528,7 @@ object PlayerListener
         if (event.player.hasPermission("cocoa.staff"))
         {
             val serverName = event.server.serverInfo.name
-            val proxyName = TrevorService.getAPI().platform.instanceConfiguration.id
+            val proxyName = SymphonyCompat.proxyId(plugin.instanceSettings.proxyId)
 
             if (previousServer != null)
             {

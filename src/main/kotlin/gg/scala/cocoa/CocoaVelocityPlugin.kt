@@ -1,6 +1,5 @@
 package gg.scala.cocoa
 
-import co.schemati.trevor.api.TrevorService
 import com.google.inject.Inject
 import com.velocitypowered.api.event.PostOrder
 import com.velocitypowered.api.event.Subscribe
@@ -40,11 +39,13 @@ import gg.scala.cocoa.nlogin.NLoginSmartAutoRedirect
 import gg.scala.cocoa.presence.CocoaServerPresenceHandler
 import gg.scala.cocoa.presence.CocoaServerPresenceSubscriber
 import gg.scala.cocoa.subscribe.CocoaRedisSubscriber
+import gg.scala.cocoa.symphony.SymphonyCompat
 import gg.scala.commons.acf.ConditionFailedException
 import gg.scala.commons.acf.MessageKeys
 import gg.scala.commons.acf.MessageType
 import gg.scala.commons.acf.VelocityCommandManager
 import gg.scala.commons.agnostic.sync.ServerSync
+import gg.scala.commons.agnostic.sync.server.ServerContainer
 import gg.scala.store.controller.DataStoreObjectControllerCache
 import gg.scala.store.serializer.serializers.GsonSerializer
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
@@ -309,6 +310,10 @@ constructor(
             AwareHub.close()
         })
 
+        executor.scheduleAtFixedRate({
+            SymphonyCompat.refreshGlobalPlayerCount()
+        }, 0L, 500L, TimeUnit.MILLISECONDS)
+
         if (instanceSettings.masterProxy)
         {
             logger.info("Updating the global player count as the master proxy ID")
@@ -317,7 +322,7 @@ constructor(
                     "global-player-count${
                         if (instanceSettings.externalProxy) instanceSettings.externalProxyPrefix else ""
                     }",
-                    TrevorService.getAPI().instanceData.playerCount.toString()
+                    SymphonyCompat.globalPlayerCount().toString()
                 )
             }, 0L, 500L, TimeUnit.MILLISECONDS)
         }
@@ -388,12 +393,20 @@ constructor(
 
     fun isLobbyServer(info: ServerInfo): Boolean
     {
-        return info.name.contains("hub")
+        if (info.name.contains("hub"))
+        {
+            return true
+        }
+
+        val syncServer = ServerContainer.getServer(info.name)
+        return syncServer != null && syncServer.groups.any {
+            it.equals("hub", ignoreCase = true) || it.equals("lobby", ignoreCase = true)
+        }
     }
 
     private fun isRestrictedLobbyServer(info: ServerInfo): Boolean
     {
-        return info.name.contains("hub") && info.name.endsWith("restricted")
+        return isLobbyServer(info) && info.name.endsWith("restricted")
     }
 
     fun updateMaintenanceRank(lemonSpigotRank: Rank)

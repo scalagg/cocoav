@@ -30,7 +30,7 @@ object CocoaServerPresenceHandler
         )
 
         presences.add(DefaultPresenceOverride)
-        presences.add(FreeBotFridaysPresenceOverride)
+//        presences.add(FreeBotFridaysPresenceOverride)
         presences.add(WhitelistedPresenceOverride)
         presences.add(CocoaCountdownPresence)
     }

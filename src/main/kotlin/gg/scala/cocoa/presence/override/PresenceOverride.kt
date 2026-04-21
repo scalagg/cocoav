@@ -2,6 +2,7 @@ package gg.scala.cocoa.presence.override
 
 import gg.scala.cocoa.CocoaVelocitySettingsDataSync
 import gg.scala.cocoa.centered
+import gg.scala.cocoa.sectionSerializer
 import gg.scala.cocoa.presence.CocoaServerPresenceSettings
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -34,10 +35,7 @@ interface PresenceOverride
                 parts += part.centered(132.2)
             }
 
-            return LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(
-                    parts.joinToString(separator = "\n")
-                )
+            return sectionSerializer.deserialize(parts.joinToString(separator = "\n"))
         } else
         {
             return updatePresence()

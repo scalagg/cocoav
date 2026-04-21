@@ -58,30 +58,42 @@ object CocoaServerSyncDiscovery : Runnable
                 }
 
             healthy
-                .filter {
-                    !registeredNames
-                        .contains(
-                            it.id
-                        )
-                }
                 .forEach {
-                    val info = ServerInfo(
-                        it.id,
-                        InetSocketAddress(
-                            if (CocoaVelocityPlugin.INSTANCE.instanceSettings.docker) "172.18.0.1" else it.getHost(),
-                            (it.getMetadata("server", "port")?.value as Double? ?: return@forEach).toInt()
-                        )
-                    )
+                    val host = if (CocoaVelocityPlugin.INSTANCE.instanceSettings.docker) "172.18.0.1" else it.getHost()
+                    val port = (it.getMetadata("server", "port")?.value as Double? ?: return@forEach).toInt()
+                    val address = InetSocketAddress(host, port)
+                    val info = ServerInfo(it.id, address)
 
-                    CocoaVelocityPlugin
-                        .INSTANCE.server
-                        .registerServer(info)
+                    val existing = CocoaVelocityPlugin.INSTANCE.server
+                        .getServer(it.id).orElse(null)
 
-                    CocoaVelocityPlugin
-                        .INSTANCE.logger
-                        .info(
-                            "[ServerSync] Registered healthy server: ${it.id}"
-                        )
+                    if (existing == null)
+                    {
+                        CocoaVelocityPlugin
+                            .INSTANCE.server
+                            .registerServer(info)
+
+                        CocoaVelocityPlugin
+                            .INSTANCE.logger
+                            .info(
+                                "[ServerSync] Registered healthy server: ${it.id}"
+                            )
+                    } else if (existing.serverInfo.address != address)
+                    {
+                        CocoaVelocityPlugin
+                            .INSTANCE.server
+                            .unregisterServer(existing.serverInfo)
+
+                        CocoaVelocityPlugin
+                            .INSTANCE.server
+                            .registerServer(info)
+
+                        CocoaVelocityPlugin
+                            .INSTANCE.logger
+                            .info(
+                                "[ServerSync] Updated server address: ${it.id} -> $host:$port"
+                            )
+                    }
                 }
         }.onFailure {
             it.printStackTrace()
